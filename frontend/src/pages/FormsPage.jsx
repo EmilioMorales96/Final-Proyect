@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth"; // <-- Import your auth hook
 import {
   DndContext,
   DragOverlay,
@@ -29,8 +30,9 @@ export default function FormsPage() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth(); // <-- Get user from auth context
 
-// Detect mode based on the route
+  // Detect mode based on the route
   let mode = "create";
   if (location.pathname.endsWith("/edit")) mode = "builder";
   if (location.pathname.endsWith("/fill")) mode = "fill";
@@ -323,19 +325,25 @@ export default function FormsPage() {
     return null;
   }
 
+  // Add this helper
+  const isActionAllowed = user && user.token;
+
   return (
-    <div className="bg-gray-100 dark:bg-gray-900 py-10 px-2">
-      <div className="max-w-3xl mx-auto">
+    <div className="relative min-h-screen w-full overflow-hidden">
+      <div className="fixed inset-0 z-0 forms-animated-bg" />
+      <div className="relative z-10 max-w-3xl mx-auto py-10 px-2">
         {mode !== "fill" && (
           <div className="flex justify-end mb-4">
-            <button
-              type="button"
-              onClick={() => setPreview((p) => !p)}
-              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition"
-              disabled={loading}
-            >
-              {preview ? "Exit preview" : "Preview"}
-            </button>
+            {isActionAllowed && (
+              <button
+                type="button"
+                onClick={() => setPreview((p) => !p)}
+                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow transition"
+                disabled={loading}
+              >
+                {preview ? "Exit preview" : "Preview"}
+              </button>
+            )}
           </div>
         )}
         {preview && (
@@ -358,8 +366,20 @@ export default function FormsPage() {
               preview
                 ? (e) => e.preventDefault()
                 : mode === "fill"
-                ? handleSubmit
-                : handleSave
+                ? (e) => {
+                    if (!isActionAllowed) {
+                      e.preventDefault();
+                      return toast.error("You must be logged in to submit answers.");
+                    }
+                    handleSubmit(e);
+                  }
+                : (e) => {
+                    if (!isActionAllowed) {
+                      e.preventDefault();
+                      return toast.error("You must be logged in to save forms.");
+                    }
+                    handleSave(e);
+                  }
             }
             className="dark:bg-gray-800 rounded-2xl shadow-xl p-6 space-y-8"
           >
@@ -477,7 +497,8 @@ export default function FormsPage() {
               <button
                 type="submit"
                 className="px-8 py-3 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-bold text-lg shadow hover:from-purple-800 hover:to-indigo-900 transition-all"
-                disabled={loading || preview}
+                disabled={loading || preview || !isActionAllowed}
+                title={!isActionAllowed ? "You must be logged in to perform this action." : ""}
               >
                 {preview
                   ? "Preview active"
@@ -486,6 +507,11 @@ export default function FormsPage() {
                   : "Save form"}
               </button>
             </div>
+            {!isActionAllowed && (
+              <div className="text-center text-red-600 dark:text-red-400 font-medium text-sm py-3 rounded bg-red-50 dark:bg-red-900/30 animate-fade-in">
+                You must be logged in to {mode === "fill" ? "submit answers" : "save forms"}.
+              </div>
+            )}
           </form>
         )}
       </div>
