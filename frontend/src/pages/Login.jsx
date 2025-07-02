@@ -43,53 +43,62 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center font-sans login-animated-bg transition-colors duration-1000">
-      <div className="w-full max-w-[450px] bg-white/90 dark:bg-gray-800/90 rounded-2xl p-10 shadow-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-md animate-fade-in-up">
-        <div>
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400 mb-2 animate-pulse">Log in</h2>
-            <p className="text-gray-500 dark:text-gray-300 text-sm">Enter your credentials to access</p>
-          </div>
-          <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-            <div>
-              <input
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+    <div className="relative min-h-screen w-full overflow-hidden">
+      <div className="fixed inset-0 z-0 login-animated-bg" />
+      <div className="relative z-10 flex min-h-screen items-center justify-center font-sans">
+        <div className="w-full max-w-[450px] bg-white/90 dark:bg-gray-800/90 rounded-2xl p-10 shadow-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-md animate-fade-in-up">
+          <div>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400 mb-2 animate-pulse">
+                Log in
+              </h2>
+              <p className="text-gray-500 dark:text-gray-300 text-sm">
+                Enter your credentials to access
+              </p>
             </div>
-            <div>
-              <input
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+            <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+              <div>
+                <input
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <input
+                  className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <button
+                className="w-full py-3 rounded-lg bg-purple-700 hover:bg-purple-800 text-white font-bold text-lg shadow transition"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Log in"}
+              </button>
+              {error && (
+                <div className="text-center text-red-600 dark:text-red-400 font-medium text-sm py-3 rounded bg-red-50 dark:bg-red-900/30 animate-fade-in">
+                  {error}
+                </div>
+              )}
+            </form>
+            <div className="text-center mt-6 text-gray-500 dark:text-gray-300 text-sm">
+              Don't have an account?{" "}
+              <a
+                href="/register"
+                className="text-purple-700 dark:text-purple-400 font-semibold hover:underline"
+              >
+                Register
+              </a>
             </div>
-            <button
-              className="w-full py-3 rounded-lg bg-purple-700 hover:bg-purple-800 text-white font-bold text-lg shadow transition"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Logging in..." : "Log in"}
-            </button>
-            {error && (
-              <div className="text-center text-red-600 dark:text-red-400 font-medium text-sm py-3 rounded bg-red-50 dark:bg-red-900/30 animate-fade-in">{error}</div>
-            )}
-          </form>
-          <div className="text-center mt-6 text-gray-500 dark:text-gray-300 text-sm">
-            Don't have an account?{" "}
-            <a
-              href="/register"
-              className="text-purple-700 dark:text-purple-400 font-semibold hover:underline"
-            >
-              Register
-            </a>
           </div>
         </div>
       </div>
