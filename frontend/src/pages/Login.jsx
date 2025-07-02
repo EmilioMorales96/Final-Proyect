@@ -42,6 +42,8 @@ export default function Login() {
     }
   };
 
+  console.log("Login loaded");
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
       <div className="fixed inset-0 z-0 login-animated-bg" />

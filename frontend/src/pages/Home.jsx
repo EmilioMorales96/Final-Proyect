@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 
 export default function Home() {
+  console.log("Home loaded");
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
       <div className="fixed inset-0 z-0 home-animated-bg" />
