@@ -1,6 +1,8 @@
 import { Outlet, Link } from "react-router-dom";
 import UserMenu from '../UserMenu'; 
 
+console.log("MainLayout loaded");
+
 export const MainLayout = () => {
   const parsedUser = JSON.parse(localStorage.getItem("user"));
 
