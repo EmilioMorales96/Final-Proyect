@@ -83,8 +83,16 @@ export default function FormsDashboard() {
               ))}
             </div>
           ) : templates.length === 0 ? (
-            <div className="text-gray-500 dark:text-gray-400 text-center py-16">
-              You don't have any templates yet. Create a new one!
+            <div className="text-gray-500 dark:text-gray-400 text-center py-16 flex flex-col items-center gap-6">
+              <span>You don't have any templates yet. Create a new one!</span>
+              {!user && (
+                <button
+                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-semibold shadow hover:from-purple-800 hover:to-indigo-900 transition-all text-lg"
+                  onClick={() => navigate("/login")}
+                >
+                  Start creating
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
