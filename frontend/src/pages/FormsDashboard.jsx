@@ -1,16 +1,17 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiPlus, FiEdit2, FiClipboard, FiTrash2 } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { useTemplatesData } from "../hooks/useTemplatesData.js";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 import { Modal } from "../components/Modal";
 
 export default function FormsDashboard() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { templates, loading, fetchTemplates } = useTemplatesData(token);
   const [modalOpen, setModalOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchTemplates();
@@ -56,13 +57,15 @@ export default function FormsDashboard() {
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
             My Forms
           </h1>
-          <Link
-            to="/forms/new"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-semibold shadow hover:from-purple-800 hover:to-indigo-900 transition-all text-lg"
-          >
-            <FiPlus className="text-xl" />
-            Create form
-          </Link>
+          {user && (
+            <Link
+              to="/forms/new"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-semibold shadow hover:from-purple-800 hover:to-indigo-900 transition-all text-lg"
+            >
+              <FiPlus className="text-xl" />
+              Create form
+            </Link>
+          )}
         </div>
 
         {/* Forms gallery */}
@@ -103,38 +106,46 @@ export default function FormsDashboard() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 mt-2 min-w-0">
-                    <Link
-                      to={`/forms/${template.id}/edit`}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition w-full sm:w-auto"
-                      title="Edit"
-                    >
-                      <FiEdit2 />
-                      Edit
-                    </Link>
-                    <Link
-                      to={`/forms/${template.id}/fill`}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition w-full sm:w-auto"
-                      title="Fill"
-                    >
-                      <FiClipboard />
-                      Fill
-                    </Link>
-                    <Link
-                      to={`/forms/${template.id}/answers`}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition w-full sm:w-auto"
-                      title="View answers"
-                    >
-                      <FiClipboard />
-                      View answers
-                    </Link>
-                    <button
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition w-full sm:w-auto"
-                      title="Delete"
-                      onClick={() => openDeleteModal(template.id)}
-                    >
-                      <FiTrash2 />
-                      Delete
-                    </button>
+                    {user ? (
+                      <>
+                        <Link
+                          to={`/forms/${template.id}/edit`}
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition w-full sm:w-auto"
+                          title="Edit"
+                        >
+                          <FiEdit2 />
+                          Edit
+                        </Link>
+                        <Link
+                          to={`/forms/${template.id}/fill`}
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition w-full sm:w-auto"
+                          title="Fill"
+                        >
+                          <FiClipboard />
+                          Fill
+                        </Link>
+                        <Link
+                          to={`/forms/${template.id}/answers`}
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition w-full sm:w-auto"
+                          title="View answers"
+                        >
+                          <FiClipboard />
+                          View answers
+                        </Link>
+                        <button
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition w-full sm:w-auto"
+                          title="Delete"
+                          onClick={() => openDeleteModal(template.id)}
+                        >
+                          <FiTrash2 />
+                          Delete
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center text-gray-400 text-sm py-2">
+                        Log in to edit, fill, or delete forms.
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
