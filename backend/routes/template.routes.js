@@ -70,6 +70,16 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const template = await Template.findByPk(req.params.id);
     if (!template) return res.status(404).json({ message: 'Template not found' });
 
+    // Permitir acceso a cualquier usuario si el template es público
+    if (template.isPublic) {
+      // Convert tags string to array
+      const tagsArray = template.tags
+        ? template.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+        : [];
+      return res.json({ ...template.toJSON(), tags: tagsArray });
+    }
+
+    // Si no es público, usa la lógica de acceso actual
     if (!userHasAccess(template, req.user.id, req.user.role)) {
       return res.status(403).json({ message: 'You do not have access to this template.' });
     }
