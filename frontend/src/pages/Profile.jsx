@@ -3,6 +3,7 @@ import { useState } from "react";
 import { FiCamera } from "react-icons/fi";
 import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Profile() {
   const { user, login } = useAuth();
@@ -32,7 +33,7 @@ export default function Profile() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3000/api/users/me", {
+      const res = await fetch(`${API_URL}/api/users/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -66,7 +67,7 @@ export default function Profile() {
 
     try {
       const res = await fetch(
-        "http://localhost:3000/api/users/change-password",
+        `${API_URL}/api/users/change-password`,
         {
           method: "PUT",
           headers: {
@@ -108,8 +109,7 @@ export default function Profile() {
       const formData = new FormData();
       formData.append("avatar", avatar);
 
-      // Change the URL to your backend if needed
-      const res = await fetch("http://localhost:3000/api/users/avatar", {
+      const res = await fetch(`${API_URL}/api/users/avatar`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

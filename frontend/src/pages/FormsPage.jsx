@@ -18,6 +18,8 @@ import FormQuestion from "../components/FormQuestion";
 import DraggableQuestion from "../components/DraggableQuestion";
 import toast from "react-hot-toast";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const defaultQuestion = () => ({
   id: Date.now() + Math.random(),
   type: "text",
@@ -75,10 +77,10 @@ export default function FormsPage() {
       setLoading(true);
       setLoadError(false);
       const token = localStorage.getItem("token");
-      // If in fill mode, load the base template
-      // If in builder mode, load the form for editing
       fetch(
-        mode === "fill" ? `/api/templates/${id}` : `/api/forms/${id}`,
+        mode === "fill"
+          ? `${API_URL}/api/templates/${id}`
+          : `${API_URL}/api/forms/${id}`,
         {
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -204,11 +206,10 @@ export default function FormsPage() {
     const payload = {
       title,
       description,
-      topic: "General", // <--- Add this!
+      topic: "General",
       questions,
-      // Add here imageUrl, tags, isPublic, accessUsers if you use them
     };
-    const res = await fetch("/api/templates", {
+    const res = await fetch(`${API_URL}/api/templates`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -226,8 +227,8 @@ export default function FormsPage() {
   // Save answers (filler)
   async function sendAnswersToBackend() {
     const token = localStorage.getItem("token");
-    const templateId = Number(id); // template id from useParams
-    const res = await fetch("/api/forms", {
+    const templateId = Number(id);
+    const res = await fetch(`${API_URL}/api/forms`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

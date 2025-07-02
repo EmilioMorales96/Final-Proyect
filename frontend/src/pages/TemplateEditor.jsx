@@ -1,23 +1,42 @@
 import React, { useState } from "react";
 import UserAutocomplete from "../components/UserAutocomplete";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function TemplateEditor() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [accessType, setAccessType] = useState("public");
   const [selectedUsers, setSelectedUsers] = useState([]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you send the data to the backend
     const data = {
       title,
       description,
       accessType,
       allowedUsers: accessType === "restricted" ? selectedUsers.map(u => u.id) : [],
     };
-    console.log("Send template:", data);
-    // fetch("/api/templates", { ... })
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/api/templates`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        // Maneja el error aquí si lo deseas
+        console.error("Error saving template");
+      } else {
+        // Maneja el éxito aquí si lo deseas
+        console.log("Template saved!");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+    }
   };
 
   return (

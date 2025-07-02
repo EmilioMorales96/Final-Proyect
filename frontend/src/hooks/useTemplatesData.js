@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 /**
  * Custom hook to fetch and manage template data from the API.
  * @param {string} token - The user's authentication token.
@@ -16,7 +18,7 @@ export function useTemplatesData(token) {
    */
   const fetchTemplates = useCallback(() => {
     setLoading(true);
-    fetch("/api/templates", {
+    fetch(`${API_URL}/api/templates`, {
       headers: {
         "Authorization": `Bearer ${token}`,
       },

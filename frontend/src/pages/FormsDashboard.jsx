@@ -6,6 +6,8 @@ import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 import { Modal } from "../components/Modal";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function FormsDashboard() {
   const { token, user } = useAuth();
   const { templates, loading, fetchTemplates } = useTemplatesData(token);
@@ -33,7 +35,7 @@ export default function FormsDashboard() {
   const handleDelete = async () => {
     if (!templateToDelete) return;
     try {
-      const res = await fetch(`/api/templates/${templateToDelete}`, {
+      const res = await fetch(`${API_URL}/api/templates/${templateToDelete}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,

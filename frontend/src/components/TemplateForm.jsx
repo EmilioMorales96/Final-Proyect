@@ -18,6 +18,8 @@ import { CSS } from "@dnd-kit/utilities";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const DEFAULT_QUESTION = type => ({
   type,
   title: "",
@@ -159,7 +161,7 @@ export default function TemplateForm({ onSubmit }) {
 
   const fetchTagOptions = async (inputValue) => {
     try {
-      const res = await fetch(`/api/tags?search=${inputValue}`);
+      const res = await fetch(`${API_URL}/api/tags?search=${inputValue}`);
       const data = await res.json();
       return data.map(tag => ({ label: tag.name, value: tag.name }));
     } catch (e) {

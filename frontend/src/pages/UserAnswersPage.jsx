@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function UserAnswersPage() {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch("/api/forms/mine", {
+    fetch(`${API_URL}/api/forms/mine`, {
       headers: { "Authorization": `Bearer ${token}` },
     })
       .then(res => res.json())

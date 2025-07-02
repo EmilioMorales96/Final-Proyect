@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import FormQuestion from "../components/FormQuestion";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function FillFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,7 +17,7 @@ export default function FillFormPage() {
   // Load template
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(`/api/templates/${id}`, {
+    fetch(`${API_URL}/api/templates/${id}`, {
       headers: { "Authorization": `Bearer ${token}` },
     })
       .then(res => res.json())
@@ -94,7 +96,7 @@ export default function FillFormPage() {
 
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("/api/forms", {
+      const res = await fetch(`${API_URL}/api/forms`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
