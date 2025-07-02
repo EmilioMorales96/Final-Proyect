@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:5173', // desarrollo local
-    'https://tu-frontend-en-render.onrender.com' // producción, reemplaza por tu URL real de frontend
+    'https://frontend-9ajm.onrender.com' // producción, reemplaza por tu URL real de frontend
   ],
   credentials: true
 }));
