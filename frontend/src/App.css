@@ -1,0 +1,17 @@
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+/* Animated gradient background for login */
+.login-animated-bg, .register-animated-bg, .home-animated-bg {
+  background: linear-gradient(120deg, #5E35B1, #3949AB, #43A047, #FFC107, #E53935);
+  background-size: 400% 400%;
+  animation: gradientMove 10s ease-in-out infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
