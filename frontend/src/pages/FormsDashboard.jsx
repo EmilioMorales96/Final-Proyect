@@ -10,8 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function FormsDashboard() {
   const { token, user } = useAuth();
-  const [templates] = useState([]);
-  const { loading, fetchTemplates } = useTemplatesData(token);
+  const { templates, loading, fetchTemplates } = useTemplatesData(token);
   const [modalOpen, setModalOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null);
   const navigate = useNavigate();
