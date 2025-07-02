@@ -10,7 +10,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function FormsDashboard() {
   const { token, user } = useAuth();
-  const { templates, loading, fetchTemplates } = useTemplatesData(token);
+  const [templates] = useState([]);
+  const { loading, fetchTemplates } = useTemplatesData(token);
   const [modalOpen, setModalOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null);
   const navigate = useNavigate();
@@ -98,7 +99,7 @@ export default function FormsDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {templates.map((template) => (
+              {Array.isArray(templates) && templates.map((template) => (
                 <div
                   key={template.id}
                   className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg hover:shadow-xl transition-all flex flex-col h-full p-0 overflow-hidden"
