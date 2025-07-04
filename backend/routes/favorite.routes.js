@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Get all favorite template IDs for the current user
 router.get("/", authenticateToken, async (req, res) => {
-  console.log("GET /api/favorites called by user:", req.user?.id);
+  console.log("User in /api/templates:", req.user);
   try {
     const user = await db.User.findByPk(req.user.id, {
       include: [{ model: db.Template, as: "Favorites", attributes: ["id"] }]

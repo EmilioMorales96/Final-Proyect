@@ -49,6 +49,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
 // Get all public templates
 router.get('/', authenticateToken, async (req, res) => {
+  console.log("User in /api/templates:", req.user);
   try {
     const templates = await Template.findAll({
       include: [
