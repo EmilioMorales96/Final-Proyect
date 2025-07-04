@@ -1,9 +1,12 @@
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const Tag = sequelize.define('Tag', {
     name: {
       type: DataTypes.STRING,
-      unique: true,
       allowNull: false,
+      unique: true,
+      validate: {
+        notEmpty: true,
+      },
     },
   });
   return Tag;

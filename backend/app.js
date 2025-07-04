@@ -11,6 +11,7 @@ import templateRoutes from './routes/template.routes.js';
 import commentRoutes from './routes/comment.routes.js';
 import likeRoutes from './routes/like.routes.js';
 import tagRoutes from './routes/tag.routes.js';
+import favoriteRoutes from './routes/favorite.routes.js';
 
 const app = express();
 
@@ -18,7 +19,7 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:5173', // desarrollo local
-    'https://frontend-9ajm.onrender.com' // producción, reemplaza por tu URL real de frontend
+    'https://frontend-9ajm.onrender.com' // production URL
   ],
   credentials: true
 }));
@@ -34,6 +35,7 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/tags', tagRoutes);
+app.use('/api/favorites', favoriteRoutes);
 
 // Serve static files from the "uploads" folder
 app.use('/uploads', express.static('uploads'));

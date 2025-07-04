@@ -6,6 +6,7 @@ import authenticateToken from '../middleware/auth.middleware.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { Op } from 'sequelize';
 
 // Multer configuration for avatar upload
 const storage = multer.diskStorage({
@@ -94,9 +95,11 @@ router.put('/avatar', authenticateToken, upload.single('avatar'), async (req, re
 });
 
 // List all users (admin only)
-router.get('/', authenticateToken, isAdmin, async (req, res) => {
+router.get('/admin', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const users = await User.findAll({ attributes: { exclude: ['password'] } });
+    const users = await User.findAll({
+      attributes: ['id', 'username', 'email', 'role', 'isBlocked', 'createdAt', 'avatar']
+    });
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching users.', error: err.message });
@@ -104,41 +107,45 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
 });
 
 // Block user (admin only)
-router.patch('/:id/block', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const user = await User.findByPk(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found.' });
-    user.isBlocked = true;
-    await user.save();
-    res.json({ message: 'User blocked.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error blocking user.', error: err.message });
+router.put('/admin/:id/block', authenticateToken, isAdmin, async (req, res) => {
+  if (parseInt(req.params.id) === req.user.id) {
+    return res.status(400).json({ message: "You can't block yourself." });
   }
+  await User.update({ isBlocked: true }, { where: { id: req.params.id } });
+  // Usuario bloqueado
+  return res.status(200).json({ message: "User blocked successfully." });
 });
 
 // Unblock user (admin only)
-router.patch('/:id/unblock', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const user = await User.findByPk(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found.' });
-    user.isBlocked = false;
-    await user.save();
-    res.json({ message: 'User unblocked.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error unblocking user.', error: err.message });
-  }
+router.put('/admin/:id/unblock', authenticateToken, isAdmin, async (req, res) => {
+  await User.update({ isBlocked: false }, { where: { id: req.params.id } });
+  // Usuario desbloqueado
+  return res.status(200).json({ message: "User unblocked successfully." });
 });
 
 // Delete user (admin only)
-router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const user = await User.findByPk(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found.' });
-    await user.destroy();
-    res.json({ message: 'User deleted.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error deleting user.', error: err.message });
+router.delete('/admin/:id', authenticateToken, isAdmin, async (req, res) => {
+  if (parseInt(req.params.id) === req.user.id) {
+    return res.status(400).json({ message: "You can't delete yourself." });
   }
+  await User.destroy({ where: { id: req.params.id } });
+  res.json({ message: 'User deleted.' });
+});
+
+// Add admin role
+router.put('/admin/:id/promote', authenticateToken, isAdmin, async (req, res) => {
+  await User.update({ role: 'admin' }, { where: { id: req.params.id } });
+  res.json({ message: 'User promoted to admin.' });
+});
+
+// Remove admin role (including self)
+router.put('/admin/:id/demote', authenticateToken, isAdmin, async (req, res) => {
+  const adminCount = await User.count({ where: { role: 'admin' } });
+  if (adminCount <= 1 && parseInt(req.params.id) === req.user.id) {
+    return res.status(400).json({ message: 'There must be at least one admin.' });
+  }
+  await User.update({ role: 'user' }, { where: { id: req.params.id } });
+  res.json({ message: 'Admin rights removed.' });
 });
 
 // Change role (toggle admin/user, admin only)
@@ -157,17 +164,18 @@ router.patch('/:id/admin', authenticateToken, isAdmin, async (req, res) => {
 // Autocomplete users by username or email (authenticated users only)
 router.get('/autocomplete', authenticateToken, async (req, res) => {
   const { q } = req.query;
-  if (!q) return res.status(400).json({ message: 'Missing search parameter.' });
+  if (!q || q.length < 2) return res.status(400).json({ message: 'Missing or too short search parameter.' });
 
   try {
     const users = await User.findAll({
       where: {
-        [User.sequelize.Op.or]: [
-          { username: { [User.sequelize.Op.like]: `%${q}%` } },
-          { email: { [User.sequelize.Op.like]: `%${q}%` } }
+        [Op.or]: [
+          { username: { [Op.iLike]: `%${q}%` } },
+          { email: { [Op.iLike]: `%${q}%` } }
         ]
       },
-      attributes: ['id', 'username', 'email']
+      attributes: ['id', 'username', 'email'],
+      limit: 10
     });
     res.json(users);
   } catch (err) {

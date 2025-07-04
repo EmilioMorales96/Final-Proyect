@@ -30,6 +30,36 @@
   animation: flash-drop 0.6s cubic-bezier(.68,-0.55,.27,1.55);
 }
 
+@keyframes floatTag {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-4px) scale(1.08); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+@keyframes bounce {
+  0%, 100% { transform: scale(1);}
+  30% { transform: scale(1.3);}
+  60% { transform: scale(0.9);}
+}
+.animate-bounce {
+  animation: bounce 0.7s;
+}
+
+@keyframes pop-fav {
+  0% { transform: scale(1); filter: brightness(1);}
+  30% { transform: scale(1.5) rotate(-10deg); filter: brightness(1.5);}
+  60% { transform: scale(0.9) rotate(5deg); filter: brightness(1.2);}
+  100% { transform: scale(1); filter: brightness(1);}
+}
+.animate-pop-fav {
+  animation: pop-fav 0.7s;
+}
+
 body {
   @apply bg-gray-100 dark:bg-gray-900;
 }
@@ -45,4 +75,16 @@ body {
 }
 .react-select__option--is-selected {
   @apply bg-violet-600 text-white;
+}
+.tag-animated {
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.tag-animated:hover {
+  animation: floatTag 0.5s;
+  box-shadow: 0 2px 8px 0 #a78bfa55;
+  transform: scale(1.08) translateY(-2px);
+  z-index: 2;
+}
+.card-animated {
+  animation: fadeInUp 0.6s cubic-bezier(.23,1.01,.32,1) both;
 }

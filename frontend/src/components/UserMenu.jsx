@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import ThemeMenu from "./ThemeMenu";
 import { HiOutlineUserCircle, HiOutlineChevronDown, HiOutlineLogout, HiOutlineUser } from "react-icons/hi";
-import { MdDarkMode } from "react-icons/md";
+import { MdDarkMode, MdAdminPanelSettings } from "react-icons/md";
 
 export default function UserMenu({ user }) {
   const { logout } = useAuth();
@@ -68,6 +68,16 @@ export default function UserMenu({ user }) {
               <HiOutlineUser className="text-purple-700 dark:text-purple-300" />
               My profile
             </Link>
+            {user?.role === "admin" && (
+              <Link
+                to="/admin/users"
+                className="flex items-center gap-2 px-5 py-2 font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow hover:from-indigo-700 hover:to-purple-700 transition my-2"
+                onClick={() => setOpen(false)}
+              >
+                <MdAdminPanelSettings className="text-2xl" />
+                Admin panel
+              </Link>
+            )}
             <ThemeMenu />
           </div>
           <div className="border-t border-gray-100 dark:border-gray-700" />

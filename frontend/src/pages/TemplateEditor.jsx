@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import UserAutocomplete from "../components/UserAutocomplete";
+import TagSelector from "../components/TagSelector";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -8,6 +9,7 @@ export default function TemplateEditor() {
   const [description, setDescription] = useState("");
   const [accessType, setAccessType] = useState("public");
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [tags, setTags] = useState([]); // Estado para los tags seleccionados
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +18,7 @@ export default function TemplateEditor() {
       description,
       accessType,
       allowedUsers: accessType === "restricted" ? selectedUsers.map(u => u.id) : [],
+      tags, // <-- envía los tags seleccionados al backend
     };
     try {
       const token = localStorage.getItem("token");
@@ -75,6 +78,10 @@ export default function TemplateEditor() {
         {accessType === "restricted" && (
           <UserAutocomplete selectedUsers={selectedUsers} setSelectedUsers={setSelectedUsers} />
         )}
+        <div>
+          <label className="block font-semibold mb-1">Tags</label>
+          <TagSelector value={tags} onChange={setTags} />
+        </div>
         <button
           type="submit"
           className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-bold text-lg shadow hover:from-purple-800 hover:to-indigo-900 transition-all"

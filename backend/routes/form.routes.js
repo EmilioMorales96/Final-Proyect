@@ -1,8 +1,9 @@
 import express from 'express';
 import db from '../models/index.js';
 import authenticateToken from '../middleware/auth.middleware.js';
+import { userHasAccess } from '../utils/access.js';
 
-const { Form, User } = db;
+const { Form, User, Template } = db;
 const router = express.Router();
 
 // Guardar respuestas de un formulario (protegido)
@@ -53,17 +54,30 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Actualizar formulario (solo dueño)
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const { title, description } = req.body;
     const form = await Form.findByPk(req.params.id);
     if (!form) return res.status(404).json({ message: 'Form not found' });
 
-    // Solo el dueño puede editar
-    if (form.userId !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para editar este formulario.' });
+    const template = await Template.findByPk(form.templateId);
+    if (!template) return res.status(404).json({ message: 'Template not found' });
+
+    const isOwner = form.userId === req.user.id;
+    const isTemplateOwner = template.authorId === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!(isOwner || isTemplateOwner || isAdmin)) {
+      // No tienes permiso
+      return res.status(403).json({ message: "You do not have permission to edit this template." });
     }
 
-    await form.update({ title, description });
-    res.json(form);
+    // Validación de datos
+    if ('answers' in req.body && typeof req.body.answers !== 'object') {
+      return res.status(400).json({ message: 'Answers must be an object.' });
+    }
+
+    await form.update(req.body);
+
+    // Formulario actualizado
+    return res.status(200).json({ message: "Form updated successfully.", form });
   } catch (err) {
     res.status(500).json({ message: 'Error updating form', error: err.message });
   }
@@ -75,9 +89,15 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     const form = await Form.findByPk(req.params.id);
     if (!form) return res.status(404).json({ message: 'Form not found' });
 
-    // Solo el dueño puede eliminar
-    if (form.userId !== req.user.id) {
-      return res.status(403).json({ message: 'No tienes permiso para eliminar este formulario.' });
+    const template = await Template.findByPk(form.templateId);
+    if (!template) return res.status(404).json({ message: 'Template not found' });
+
+    const isOwner = form.userId === req.user.id;
+    const isTemplateOwner = template.authorId === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!(isOwner || isTemplateOwner || isAdmin)) {
+      return res.status(403).json({ message: 'You do not have permission to delete this form.' });
     }
 
     await form.destroy();

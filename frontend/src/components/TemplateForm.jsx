@@ -15,6 +15,7 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import CreatableSelect from "react-select/creatable";
 import AsyncSelect from "react-select/async";
 import { toast } from "react-toastify";
 
@@ -65,6 +66,7 @@ export default function TemplateForm({ onSubmit }) {
   const [showMenu, setShowMenu] = useState(false);
   const [lastDroppedIdx, setLastDroppedIdx] = useState(null);
   const [tags, setTags] = useState([]);
+  const [allowedUsers, setAllowedUsers] = useState([]);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -149,7 +151,8 @@ export default function TemplateForm({ onSubmit }) {
         description,
         topic,
         questions,
-        tags: tags.map(t => t.value)
+        tags: tags.map(t => t.value),
+        allowedUsers: allowedUsers.map(u => u.value) // solo IDs
       });
       setTitle("");
       setDescription("");
@@ -167,6 +170,24 @@ export default function TemplateForm({ onSubmit }) {
     } catch (e) {
       return [];
     }
+  };
+
+  // Token de autenticación, ajústalo según tu contexto de auth
+  const token = localStorage.getItem("token");
+
+  const fetchUserOptions = async (inputValue) => {
+    if (!inputValue || inputValue.length < 2) return [];
+    const res = await fetch(`${API_URL}/api/users/autocomplete?q=${inputValue}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.map(user => ({
+      label: `${user.username} (${user.email})`,
+      value: user.id,
+      email: user.email,
+      username: user.username
+    }));
   };
 
   useEffect(() => {
@@ -202,50 +223,57 @@ export default function TemplateForm({ onSubmit }) {
 
       <div className="mb-6">
         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">Tags</label>
-        <AsyncSelect
+        <CreatableSelect
           isMulti
           value={tags}
           onChange={setTags}
           loadOptions={fetchTagOptions}
+          onCreateOption={async (inputValue) => {
+            const newTag = inputValue.trim().toLowerCase();
+            if (newTag.length < 2 || newTag.length > 64) {
+              toast.error("Tag must be between 2 and 64 characters.");
+              return;
+            }
+            if (tags.some(t => t.value === newTag)) {
+              toast.error("Tag already added.");
+              return;
+            }
+            // POST al backend
+            const res = await fetch(`${API_URL}/api/tags`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: newTag })
+            });
+            if (res.ok) {
+              setTags([...tags, { label: newTag, value: newTag }]);
+            } else {
+              toast.error("Could not create tag.");
+            }
+          }}
           placeholder="Type to search or create tags..."
           className="react-select-container"
           classNamePrefix="react-select"
           noOptionsMessage={() => "No matches found"}
           isClearable={false}
           formatCreateLabel={inputValue => `Create tag: "${inputValue}"`}
-          styles={{
-            control: (base, state) => ({
-              ...base,
-              backgroundColor: state.isFocused
-                ? (document.body.classList.contains("dark") ? "#374151" : "#f3f4f6")
-                : (document.body.classList.contains("dark") ? "#374151" : "#f3f4f6"),
-              borderColor: document.body.classList.contains("dark") ? "#4b5563" : "#e5e7eb",
-              color: document.body.classList.contains("dark") ? "#f3f4f6" : "#374151",
-              boxShadow: state.isFocused ? "0 0 0 2px #a78bfa" : base.boxShadow,
-            }),
-            menu: base => ({
-              ...base,
-              backgroundColor: document.body.classList.contains("dark") ? "#374151" : "#fff",
-              color: document.body.classList.contains("dark") ? "#f3f4f6" : "#374151",
-            }),
-            multiValue: base => ({
-              ...base,
-              backgroundColor: document.body.classList.contains("dark") ? "#6d28d9" : "#ede9fe",
-              color: "#fff",
-            }),
-            input: base => ({
-              ...base,
-              color: document.body.classList.contains("dark") ? "#f3f4f6" : "#374151",
-            }),
-            singleValue: base => ({
-              ...base,
-              color: document.body.classList.contains("dark") ? "#f3f4f6" : "#374151",
-            }),
-            placeholder: base => ({
-              ...base,
-              color: document.body.classList.contains("dark") ? "#a1a1aa" : "#9ca3af",
-            }),
-          }}
+        />
+      </div>
+
+      <div className="mb-6">
+        <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">
+          Allowed users (for restricted templates)
+        </label>
+        <AsyncSelect
+          isMulti
+          cacheOptions
+          loadOptions={fetchUserOptions}
+          defaultOptions={false}
+          value={allowedUsers}
+          onChange={setAllowedUsers}
+          placeholder="Type name or email to add users..."
+          className="react-select-container"
+          classNamePrefix="react-select"
+          noOptionsMessage={() => "No users found"}
         />
       </div>
 

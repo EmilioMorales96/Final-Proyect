@@ -39,7 +39,7 @@ const SortableQuestion = ({ question, removeQuestion }) => {
       } bg-white dark:bg-gray-800`}
       {...attributes}
     >
-      {/* Example delete button to use handleRemove */}
+      {/* delete button to use handleRemove */}
       <button
         type="button"
         className="absolute top-2 right-2 text-red-500 hover:text-red-700"
@@ -48,7 +48,6 @@ const SortableQuestion = ({ question, removeQuestion }) => {
       >
         <FiTrash2 />
       </button>
-      {/* Resto del componente... */}
     </div>
   );
 };
