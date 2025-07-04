@@ -60,4 +60,45 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Editar un comentario
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { content } = req.body;
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: "Content is required." });
+    }
+    const comment = await db.Comment.findByPk(req.params.id);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found." });
+    }
+    // Solo el autor o admin puede editar
+    if (comment.userId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ message: "Forbidden." });
+    }
+    comment.content = content.trim();
+    await comment.save();
+    res.json(comment);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating comment", error: err.message });
+  }
+});
+
+// Eliminar un comentario
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const comment = await db.Comment.findByPk(req.params.id);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found." });
+    }
+    // Solo el autor o admin puede eliminar
+    if (comment.userId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ message: "Forbidden." });
+    }
+    await comment.destroy();
+    res.json({ message: "Comment deleted." });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting comment", error: err.message });
+  }
+});
+
 export default router;
