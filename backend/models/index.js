@@ -23,6 +23,8 @@ import FavoriteModel from './Favorite.js';
 
 const db = {};
 db.sequelize = sequelize;
+
+// Definición de modelos
 db.User = UserModel(sequelize, DataTypes);
 db.Form = FormModel(sequelize, DataTypes);
 db.Template = TemplateModel(sequelize, DataTypes);
@@ -30,17 +32,36 @@ db.Tag = TagModel(sequelize, DataTypes);
 db.TemplateTag = TemplateTagModel(sequelize, DataTypes);
 db.Favorite = FavoriteModel(sequelize, DataTypes);
 
-// Relations
-db.Form.belongsTo(db.User, { foreignKey: "userId" });
-db.Form.belongsTo(db.Template, { foreignKey: "templateId" });
+// Relación muchos a muchos para favoritos
+db.User.belongsToMany(db.Template, {
+  through: db.Favorite,
+  as: "Favorites",
+  foreignKey: "userId",
+  otherKey: "templateId"
+});
+db.Template.belongsToMany(db.User, {
+  through: db.Favorite,
+  as: "FavoredBy",
+  foreignKey: "templateId",
+  otherKey: "userId"
+});
 
-db.User.hasMany(db.Form, { foreignKey: "userId" });
-db.Template.hasMany(db.Form, { foreignKey: "templateId" });
+// Relación muchos a muchos para tags
+db.Template.belongsToMany(db.Tag, {
+  through: db.TemplateTag,
+  as: "Tags",
+  foreignKey: "templateId",
+  otherKey: "tagId"
+});
+db.Tag.belongsToMany(db.Template, {
+  through: db.TemplateTag,
+  as: "Templates",
+  foreignKey: "tagId",
+  otherKey: "templateId"
+});
 
-db.Template.belongsToMany(db.Tag, { through: db.TemplateTag, foreignKey: 'templateId' });
-db.Tag.belongsToMany(db.Template, { through: db.TemplateTag, foreignKey: 'tagId' });
-
-db.User.belongsToMany(db.Template, { through: db.Favorite, as: "Favorites", foreignKey: "userId" });
-db.Template.belongsToMany(db.User, { through: db.Favorite, as: "FavoredBy", foreignKey: "templateId" });
+// Relación de autor
+db.Template.belongsTo(db.User, { as: "author", foreignKey: "authorId" });
+db.User.hasMany(db.Template, { as: "authoredTemplates", foreignKey: "authorId" });
 
 export default db;

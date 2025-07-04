@@ -51,21 +51,21 @@ router.post('/', authenticateToken, async (req, res) => {
 router.get('/', authenticateToken, async (req, res) => {
   console.log("User in /api/templates:", req.user);
   try {
-    const templates = await Template.findAll({
+    const templates = await db.Template.findAll({
       include: [
         {
           model: db.User,
-          as: "FavoredBy",
+          as: "FavoredBy", // Debe coincidir con el alias en models/index.js
           attributes: ["id"],
           through: { attributes: [] }
         },
         {
-          model: Tag,
+          model: db.Tag,
           through: { attributes: [] }
         },
         {
           model: db.User,
-          as: "author",
+          as: "author", // Debe coincidir con el alias en la relación Template.belongsTo(User, { as: "author", ... })
           attributes: ["id", "username", "avatar"]
         }
       ],
@@ -73,6 +73,7 @@ router.get('/', authenticateToken, async (req, res) => {
     });
     res.json(templates);
   } catch (err) {
+    console.error("Error fetching templates:", err);
     res.status(500).json({ message: 'Error fetching templates', error: err.message });
   }
 });
