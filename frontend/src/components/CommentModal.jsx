@@ -3,7 +3,6 @@ import toast from "react-hot-toast";
 import { FiEdit2, FiTrash2, FiCheck, FiX } from "react-icons/fi";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const token = localStorage.getItem("token");
 
 /**
  * CommentModal component for viewing, adding, editing, and deleting comments.
@@ -19,11 +18,18 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
 
   // Fetch all comments for the template
   const fetchComments = () => {
+    if (!user || !user.token) {
+      setComments([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    fetch(`${API_URL}/api/comments/template/${templateId}`)
+    fetch(`${API_URL}/api/comments/template/${templateId}`, {
+      headers: { Authorization: `Bearer ${user.token}` }
+    })
       .then(res => res.json())
-      .then(data => setComments(data))
-      .catch(() => toast.error("Error loading comments"))
+      .then(data => setComments(Array.isArray(data) ? data : []))
+      .catch(() => setComments([]))
       .finally(() => setLoading(false));
   };
 
@@ -31,18 +37,18 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
   useEffect(() => {
     if (open) fetchComments();
     // eslint-disable-next-line
-  }, [open, templateId]);
+  }, [open, templateId, user]);
 
   // Add a new comment
   const handleAdd = async () => {
-    if (!content.trim()) return;
+    if (!content.trim() || !user || !user.token) return;
     setPosting(true);
     try {
       const res = await fetch(`${API_URL}/api/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${user.token}`
         },
         body: JSON.stringify({ templateId, content })
       });
@@ -69,13 +75,13 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
 
   // Save edited comment
   const handleEdit = async (id) => {
-    if (!editContent.trim()) return;
+    if (!editContent.trim() || !user || !user.token) return;
     try {
       const res = await fetch(`${API_URL}/api/comments/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${user.token}`
         },
         body: JSON.stringify({ content: editContent })
       });
@@ -94,11 +100,11 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
 
   // Delete a comment
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this comment?")) return;
+    if (!window.confirm("Delete this comment?") || !user || !user.token) return;
     try {
       const res = await fetch(`${API_URL}/api/comments/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${user.token}` }
       });
       if (res.ok) {
         setComments(comments.filter(c => c.id !== id));
@@ -113,6 +119,8 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
     }
   };
 
+  const safeComments = Array.isArray(comments) ? comments : [];
+
   return (
     <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/40 ${open ? "" : "hidden"}`}>
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-lg w-full p-6 relative">
@@ -121,10 +129,12 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
         <h3 className="text-lg font-bold mb-4">Comments</h3>
         {loading ? (
           <div className="text-gray-500">Loading...</div>
+        ) : !user ? (
+          <div className="text-gray-400 text-sm mt-2">Log in to view and add comments.</div>
         ) : (
           <div className="space-y-4 max-h-64 overflow-y-auto mb-4">
-            {comments.length === 0 && <div className="text-gray-400">No comments yet.</div>}
-            {comments.map(c => (
+            {safeComments.length === 0 && <div className="text-gray-400">No comments yet.</div>}
+            {safeComments.map(c => (
               <div key={c.id} className="border-b pb-2 group relative">
                 <div className="flex items-center gap-2 mb-1">
                   <img src={c.User?.avatar || "/avatar.png"} alt="" className="w-6 h-6 rounded-full" />
@@ -204,9 +214,7 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
               {posting ? "Posting..." : "Send"}
             </button>
           </div>
-        ) : (
-          <div className="text-gray-400 text-sm mt-2">Log in to comment.</div>
-        )}
+        ) : null}
       </div>
     </div>
   );
