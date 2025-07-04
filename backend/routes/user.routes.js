@@ -93,26 +93,13 @@ router.put('/avatar', authenticateToken, upload.single('avatar'), async (req, re
   }
 });
 
-// List all users (admin only)
+// Obtener todos los usuarios admin (solo admins pueden ver)
 router.get('/admin', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const users = await User.findAll({
+    const admins = await User.findAll({
+      where: { role: 'admin' },
       attributes: ['id', 'username', 'email', 'role', 'isBlocked', 'createdAt', 'avatar']
     });
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching users.', error: err.message });
-  }
-});
-
-// Obtener todos los usuarios admin
-router.get('/admin', authenticateToken, async (req, res) => {
-  try {
-    // Opcional: solo permitir acceso a usuarios admin
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Forbidden' });
-    }
-    const admins = await User.findAll({ where: { role: 'admin' } });
     res.json(admins);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching admins', error: err.message });
@@ -125,14 +112,12 @@ router.put('/admin/:id/block', authenticateToken, isAdmin, async (req, res) => {
     return res.status(400).json({ message: "You can't block yourself." });
   }
   await User.update({ isBlocked: true }, { where: { id: req.params.id } });
-  // Usuario bloqueado
   return res.status(200).json({ message: "User blocked successfully." });
 });
 
 // Unblock user (admin only)
 router.put('/admin/:id/unblock', authenticateToken, isAdmin, async (req, res) => {
   await User.update({ isBlocked: false }, { where: { id: req.params.id } });
-  // Usuario desbloqueado
   return res.status(200).json({ message: "User unblocked successfully." });
 });
 
