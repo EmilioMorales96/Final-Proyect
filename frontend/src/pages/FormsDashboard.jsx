@@ -88,7 +88,9 @@ export default function FormsDashboard() {
     if (!Array.isArray(templates) || templates.length === 0) return;
     Promise.all(
       templates.map(t =>
-        fetch(`${API_URL}/api/comments/template/${t.id}`)
+        fetch(`${API_URL}/api/comments/template/${t.id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
           .then(res => res.json())
           .then(data => [t.id, Array.isArray(data) ? data.length : 0])
           .catch(() => [t.id, 0])
@@ -98,7 +100,7 @@ export default function FormsDashboard() {
       results.forEach(([id, count]) => { counts[id] = count; });
       setCommentCounts(counts);
     });
-  }, [templates]);
+  }, [templates, token]);
 
   // Actualiza el contador de comentarios para un template
   const updateCommentCount = (templateId, delta) => {
