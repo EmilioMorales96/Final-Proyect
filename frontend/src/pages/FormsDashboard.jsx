@@ -320,12 +320,12 @@ export default function FormsDashboard() {
                     </button>
                     {/* Mark as favorite */}
                     <button
-                      className={`p-2 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-yellow-100 dark:hover:bg-yellow-800 transition ${favorites && Array.isArray(favorites) && favorites.includes(template.id) ? "ring-2 ring-yellow-400" : ""}`}
-                      title={favorites && Array.isArray(favorites) && favorites.includes(template.id) ? "Remove from favorites" : "Mark as favorite"}
+                      className={`p-2 rounded-full bg-white border shadow hover:bg-yellow-100 transition ${favorites.includes(template.id) ? "ring-2 ring-yellow-400" : ""}`}
+                      title={favorites.includes(template.id) ? "Remove from favorites" : "Mark as favorite"}
                       onClick={() => toggleFavorite(template.id)}
                       type="button"
                     >
-                      <span role="img" aria-label="star" className={`text-yellow-500 ${favorites && Array.isArray(favorites) && favorites.includes(template.id) ? "font-bold scale-125" : ""}`}>⭐</span>
+                      <span role="img" aria-label="star" className={`text-yellow-500 ${favorites.includes(template.id) ? "font-bold scale-125" : ""}`}>⭐</span>
                     </button>
                     {/* Share */}
                     <button
