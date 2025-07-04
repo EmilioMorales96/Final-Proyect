@@ -28,7 +28,7 @@ console.log("Mounting routes...");
 
 // Mount routes
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes); 
 app.use('/api/forms', formRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/questions', questionRoutes);
@@ -51,10 +51,6 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Internal server error', error: err.message });
 });
-
-
-import tagsRouter from './routes/tag.routes.js';
-app.use('/api/tags', tagsRouter);
 
 await db.sequelize.sync();
 
