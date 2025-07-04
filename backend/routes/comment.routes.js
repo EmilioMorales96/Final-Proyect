@@ -3,7 +3,7 @@ import db from '../models/index.js';
 import authenticateToken from '../middleware/auth.middleware.js';
 
 const router = express.Router();
-const { Comment, User } = db;
+const { Comment, User, Template } = db;
 
 // Obtener comentarios de un template
 router.get('/template/:templateId', authenticateToken, async (req, res) => {
@@ -33,12 +33,28 @@ router.post('/', authenticateToken, async (req, res) => {
     if (!templateId || !content || !content.trim()) {
       return res.status(400).json({ message: "Template and content are required." });
     }
+    // Verifica que el template exista
+    const template = await Template.findByPk(templateId);
+    if (!template) {
+      return res.status(404).json({ message: "Template not found." });
+    }
+    // Crea el comentario
     const comment = await Comment.create({
       templateId,
       userId: req.user.id,
       content: content.trim()
     });
-    res.status(201).json(comment);
+    // Incluye los datos del usuario en la respuesta
+    const commentWithUser = await Comment.findByPk(comment.id, {
+      include: [
+        {
+          model: User,
+          as: "User",
+          attributes: ['id', 'username', 'avatar']
+        }
+      ]
+    });
+    res.status(201).json(commentWithUser);
   } catch (err) {
     res.status(500).json({ message: "Error creating comment", error: err.message });
   }

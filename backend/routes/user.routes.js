@@ -5,7 +5,6 @@ const { User } = db;
 import authenticateToken from '../middleware/auth.middleware.js';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { Op } from 'sequelize';
 
 // Multer configuration for avatar upload
@@ -103,6 +102,20 @@ router.get('/admin', authenticateToken, isAdmin, async (req, res) => {
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching users.', error: err.message });
+  }
+});
+
+// Obtener todos los usuarios admin
+router.get('/admin', authenticateToken, async (req, res) => {
+  try {
+    // Opcional: solo permitir acceso a usuarios admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    const admins = await User.findAll({ where: { role: 'admin' } });
+    res.json(admins);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching admins', error: err.message });
   }
 });
 
