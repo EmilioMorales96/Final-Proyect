@@ -1,8 +1,5 @@
-// Comment model definition
-const { DataTypes } = require('sequelize');
-
-module.exports = (sequelize) => {
-  const Comment = sequelize.define('Comment', {
+export default (sequelize, DataTypes) => {
+  return sequelize.define('Like', {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -15,12 +12,7 @@ module.exports = (sequelize) => {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-    },
-    content: {
-      type: DataTypes.TEXT,
-      allowNull: false,
+      unique: 'user_template_unique'
     }
-  });
-
-  return Comment;
+  }, { timestamps: false });
 };
