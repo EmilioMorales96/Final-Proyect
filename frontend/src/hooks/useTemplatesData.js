@@ -2,20 +2,10 @@ import { useCallback, useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-/**
- * Custom hook to fetch and manage template data from the API.
- * @param {string} token - The user's authentication token.
- * @returns {object} - { templates, loading, fetchTemplates }
- */
 export function useTemplatesData(token) {
-  // State for the list of templates
   const [templates, setTemplates] = useState([]);
-  // State for loading status
   const [loading, setLoading] = useState(true);
 
-  /**
-   * Fetch templates from the API and update state.
-   */
   const fetchTemplates = useCallback(() => {
     setLoading(true);
     fetch(`${API_URL}/api/templates`, {
@@ -24,10 +14,19 @@ export function useTemplatesData(token) {
       },
     })
       .then(res => res.json())
-      .then(data => setTemplates(Array.isArray(data) ? data : []))
-      .catch(() => setTemplates([]))
+      .then(data => {
+        console.log("Fetched templates:", data);
+        setTemplates(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error("Error fetching templates:", err);
+        setTemplates([]);
+      })
       .finally(() => setLoading(false));
   }, [token]);
+
+  // Puedes loguear aquí para ver el estado de templates
+  console.log("Templates in hook:", templates);
 
   return { templates, loading, fetchTemplates };
 }

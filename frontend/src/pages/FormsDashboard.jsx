@@ -47,9 +47,13 @@ export default function FormsDashboard() {
     })
       .then(res => res.json())
       .then(data => {
+        console.log("Fetched favorites:", data);
         setFavorites(Array.isArray(data) ? data : []);
       })
-      .catch(() => setFavorites([]));
+      .catch((err) => {
+        console.error("Error fetching favorites:", err);
+        setFavorites([]);
+      });
   }, [token]);
 
   // Open the modal and store the template id to delete
@@ -111,8 +115,10 @@ export default function FormsDashboard() {
 
   // Filtra los templates por tag si hay filtro activo
   const filteredTemplates = tagFilter
-    ? templates.filter(t => t.Tags?.some(tag => tag.name === tagFilter))
-    : templates;
+    ? (Array.isArray(templates) ? templates.filter(t => t.Tags?.some(tag => tag.name === tagFilter)) : [])
+    : (Array.isArray(templates) ? templates : []);
+
+  console.log("Filtered templates:", filteredTemplates);
 
   const displayedTemplates = showOnlyFavorites
     ? filteredTemplates.filter(t => favorites.includes(t.id))
@@ -139,6 +145,17 @@ export default function FormsDashboard() {
     // Confetti solo al agregar favorito
     if (!isFav) confetti({ particleCount: 40, spread: 70, origin: { y: 0.7 } });
   };
+
+  // Log de estados principales
+  console.log("FormsDashboard render", {
+    templates,
+    loading,
+    favorites,
+    tagFilter,
+    showOnlyFavorites,
+    commentCounts,
+    user,
+  });
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-4">
