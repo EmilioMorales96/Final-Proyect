@@ -93,16 +93,15 @@ router.put('/avatar', authenticateToken, upload.single('avatar'), async (req, re
   }
 });
 
-// Obtener todos los usuarios admin (solo admins pueden ver)
-router.get('/admin', authenticateToken, isAdmin, async (req, res) => {
+// Obtener todos los usuarios (solo admins pueden ver)
+router.get('/', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const admins = await User.findAll({
-      where: { role: 'admin' },
+    const users = await User.findAll({
       attributes: ['id', 'username', 'email', 'role', 'isBlocked', 'createdAt', 'avatar']
     });
-    res.json(admins);
+    res.json(users);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching admins', error: err.message });
+    res.status(500).json({ message: 'Error fetching users', error: err.message });
   }
 });
 
