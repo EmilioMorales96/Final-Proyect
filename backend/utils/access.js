@@ -18,12 +18,4 @@ export const isAdmin = (req, res, next) => {
   next();
 };
 
-export function userHasAccess(template, userId, userRole) {
-  if (userRole === 'admin') return true;
-  if (template.isPublic) return true;
-  if (template.authorId === userId) return true;
-  if (Array.isArray(template.allowedUsers) && template.allowedUsers.includes(userId)) return true;
-  return false;
-}
-
 export { userHasAccess, canAccessTemplate };
