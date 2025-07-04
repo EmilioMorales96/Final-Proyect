@@ -46,7 +46,7 @@ db.Template.belongsToMany(db.User, {
   otherKey: "userId"
 });
 
-// Relación muchos a muchos para tags
+// Relation for forms 
 db.Template.belongsToMany(db.Tag, {
   through: db.TemplateTag,
   as: "Tags",

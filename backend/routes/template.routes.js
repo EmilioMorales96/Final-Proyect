@@ -55,17 +55,18 @@ router.get('/', authenticateToken, async (req, res) => {
       include: [
         {
           model: db.User,
-          as: "FavoredBy", // Debe coincidir con el alias en models/index.js
+          as: "FavoredBy",
           attributes: ["id"],
           through: { attributes: [] }
         },
         {
           model: db.Tag,
+          as: "Tags", 
           through: { attributes: [] }
         },
         {
           model: db.User,
-          as: "author", // Debe coincidir con el alias en la relación Template.belongsTo(User, { as: "author", ... })
+          as: "author", 
           attributes: ["id", "username", "avatar"]
         }
       ],
@@ -82,7 +83,24 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const template = await Template.findByPk(req.params.id, {
-      include: [{ model: Tag }]
+      include: [
+        {
+          model: Tag,
+          as: "Tags",
+          through: { attributes: [] }
+        },
+        {
+          model: db.User,
+          as: "FavoredBy",
+          attributes: ["id"],
+          through: { attributes: [] }
+        },
+        {
+          model: db.User,
+          as: "author",
+          attributes: ["id", "username", "avatar"]
+        }
+      ]
     });
     if (!template) return res.status(404).json({ message: 'Template not found' });
 

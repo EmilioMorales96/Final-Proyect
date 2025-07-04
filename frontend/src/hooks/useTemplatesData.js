@@ -15,7 +15,7 @@ export function useTemplatesData(token) {
     })
       .then(res => res.json())
       .then(data => {
-        // Si la respuesta es un array, úsala. Si es un objeto con 'message', es un error.
+        
         if (Array.isArray(data)) {
           setTemplates(data);
         } else {
@@ -31,7 +31,7 @@ export function useTemplatesData(token) {
   }, [token]);
 
   // Log para depuración
-  // console.log("Templates in hook:", templates);
+   console.log("Templates in hook:", templates);
 
   return { templates, loading, fetchTemplates };
 }
