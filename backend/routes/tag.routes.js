@@ -26,6 +26,7 @@ router.get('/cloud', async (req, res) => {
     const tags = await db.Tag.findAll({
       include: [{
         model: db.Template,
+        as: "Templates", 
         attributes: [],
         through: { attributes: [] }
       }],
