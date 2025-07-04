@@ -14,7 +14,6 @@ import confetti from "canvas-confetti";
 const API_URL = import.meta.env.VITE_API_URL;
 
 function tagColor(name) {
-  // Simple hash to color
   const colors = ["from-pink-200", "from-blue-200", "from-green-200", "from-yellow-100", "from-purple-200"];
   return colors[name.charCodeAt(0) % colors.length];
 }
@@ -47,13 +46,9 @@ export default function FormsDashboard() {
     })
       .then(res => res.json())
       .then(data => {
-        console.log("Fetched favorites:", data);
         setFavorites(Array.isArray(data) ? data : []);
       })
-      .catch((err) => {
-        console.error("Error fetching favorites:", err);
-        setFavorites([]);
-      });
+      .catch(() => setFavorites([]));
   }, [token]);
 
   // Open the modal and store the template id to delete
@@ -90,12 +85,12 @@ export default function FormsDashboard() {
 
   // Fetch comment counts para todos los templates
   useEffect(() => {
-    if (!templates || templates.length === 0) return;
+    if (!Array.isArray(templates) || templates.length === 0) return;
     Promise.all(
       templates.map(t =>
         fetch(`${API_URL}/api/comments/template/${t.id}`)
           .then(res => res.json())
-          .then(data => [t.id, data.length])
+          .then(data => [t.id, Array.isArray(data) ? data.length : 0])
           .catch(() => [t.id, 0])
       )
     ).then(results => {
@@ -113,12 +108,11 @@ export default function FormsDashboard() {
     }));
   };
 
-  // Filtra los templates por tag si hay filtro activo
+  // Siempre asegura que templates es un array
+  const safeTemplates = Array.isArray(templates) ? templates : [];
   const filteredTemplates = tagFilter
-    ? (Array.isArray(templates) ? templates.filter(t => t.Tags?.some(tag => tag.name === tagFilter)) : [])
-    : (Array.isArray(templates) ? templates : []);
-
-  console.log("Filtered templates:", filteredTemplates);
+    ? safeTemplates.filter(t => Array.isArray(t.Tags) && t.Tags.some(tag => tag.name === tagFilter))
+    : safeTemplates;
 
   const displayedTemplates = showOnlyFavorites
     ? filteredTemplates.filter(t => favorites.includes(t.id))
@@ -142,13 +136,15 @@ export default function FormsDashboard() {
     setFavAnimation(anim => ({ ...anim, [templateId]: true }));
     setTimeout(() => setFavAnimation(anim => ({ ...anim, [templateId]: false })), 700);
 
-    // Confetti solo al agregar favorito
     if (!isFav) confetti({ particleCount: 40, spread: 70, origin: { y: 0.7 } });
   };
 
-  // Log de estados principales
+  // Log de depuración
   console.log("FormsDashboard render", {
     templates,
+    safeTemplates,
+    filteredTemplates,
+    displayedTemplates,
     loading,
     favorites,
     tagFilter,
@@ -211,7 +207,7 @@ export default function FormsDashboard() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {Array.isArray(displayedTemplates) && displayedTemplates.map((template) => (
+              {displayedTemplates.map((template) => (
                 <div
                   key={template.id}
                   className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg hover:shadow-xl transition-all flex flex-col h-full p-0 overflow-hidden ${template.id === mostAnsweredId ? "ring-4 ring-indigo-400 animate-pulse" : ""}`}
@@ -228,7 +224,7 @@ export default function FormsDashboard() {
                       {template.description}
                     </p>
                     {/* Tags */}
-                    {template.Tags && template.Tags.length > 0 && (
+                    {Array.isArray(template.Tags) && template.Tags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-2">
                         {template.Tags.map(tag => (
                           <button
@@ -320,7 +316,7 @@ export default function FormsDashboard() {
                     >
                       <FiClipboard className="text-purple-700 dark:text-purple-300" />
                     </button>
-                    {/* Mark as favorite (example, you can implement logic as needed) */}
+                    {/* Mark as favorite */}
                     <button
                       className={`p-2 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-yellow-100 dark:hover:bg-yellow-800 transition ${favorites && Array.isArray(favorites) && favorites.includes(template.id) ? "ring-2 ring-yellow-400" : ""}`}
                       title={favorites && Array.isArray(favorites) && favorites.includes(template.id) ? "Remove from favorites" : "Mark as favorite"}
@@ -329,7 +325,7 @@ export default function FormsDashboard() {
                     >
                       <span role="img" aria-label="star" className={`text-yellow-500 ${favorites && Array.isArray(favorites) && favorites.includes(template.id) ? "font-bold scale-125" : ""}`}>⭐</span>
                     </button>
-                    {/* Share (example, you can implement logic as needed) */}
+                    {/* Share */}
                     <button
                       className="p-2 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow hover:bg-blue-100 dark:hover:bg-blue-800 transition"
                       title="Share"
@@ -361,7 +357,7 @@ export default function FormsDashboard() {
                     className={`ml-1 text-yellow-600 font-bold text-sm transition-transform duration-300 inline-block
     ${favAnimation[template.id] ? "animate-pop-fav drop-shadow-lg" : ""}`}
                   >
-                    {template.FavoredBy ? template.FavoredBy.length : 0}
+                    {Array.isArray(template.FavoredBy) ? template.FavoredBy.length : 0}
                   </span>
                 </div>
               ))}

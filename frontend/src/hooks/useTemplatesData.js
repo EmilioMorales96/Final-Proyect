@@ -15,8 +15,13 @@ export function useTemplatesData(token) {
     })
       .then(res => res.json())
       .then(data => {
-        console.log("Fetched templates:", data);
-        setTemplates(Array.isArray(data) ? data : []);
+        // Si la respuesta es un array, úsala. Si es un objeto con 'message', es un error.
+        if (Array.isArray(data)) {
+          setTemplates(data);
+        } else {
+          console.warn("API returned non-array data:", data);
+          setTemplates([]);
+        }
       })
       .catch((err) => {
         console.error("Error fetching templates:", err);
@@ -25,8 +30,8 @@ export function useTemplatesData(token) {
       .finally(() => setLoading(false));
   }, [token]);
 
-  // Puedes loguear aquí para ver el estado de templates
-  console.log("Templates in hook:", templates);
+  // Log para depuración
+  // console.log("Templates in hook:", templates);
 
   return { templates, loading, fetchTemplates };
 }
