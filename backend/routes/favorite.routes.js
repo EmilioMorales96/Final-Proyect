@@ -6,6 +6,7 @@ const router = express.Router();
 
 // Get all favorite template IDs for the current user
 router.get("/", authenticateToken, async (req, res) => {
+  console.log("GET /api/favorites called by user:", req.user?.id);
   try {
     const user = await db.User.findByPk(req.user.id, {
       include: [{ model: db.Template, as: "Favorites", attributes: ["id"] }]
@@ -13,7 +14,8 @@ router.get("/", authenticateToken, async (req, res) => {
     const favs = user && Array.isArray(user.Favorites) ? user.Favorites.map(t => t.id) : [];
     res.json(favs);
   } catch (err) {
-    res.json([]); // Siempre responde un array aunque haya error
+    console.error("Error in /api/favorites:", err);
+    res.json([]);
   }
 });
 
