@@ -6,10 +6,15 @@ const router = express.Router();
 
 // Get all favorite template IDs for the current user
 router.get("/", authenticateToken, async (req, res) => {
-  const user = await db.User.findByPk(req.user.id, {
-    include: [{ model: db.Template, as: "Favorites", attributes: ["id"] }]
-  });
-  res.json(user.Favorites.map(t => t.id));
+  try {
+    const user = await db.User.findByPk(req.user.id, {
+      include: [{ model: db.Template, as: "Favorites", attributes: ["id"] }]
+    });
+    const favs = user && Array.isArray(user.Favorites) ? user.Favorites.map(t => t.id) : [];
+    res.json(favs);
+  } catch (err) {
+    res.json([]); // Siempre responde un array aunque haya error
+  }
 });
 
 // Add a template to favorites
