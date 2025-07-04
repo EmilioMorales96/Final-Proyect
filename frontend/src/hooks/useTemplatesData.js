@@ -25,6 +25,7 @@ export function useTemplatesData(token) {
     })
       .then(res => res.json())
       .then(data => setTemplates(Array.isArray(data) ? data : []))
+      .catch(() => setTemplates([]))
       .finally(() => setLoading(false));
   }, [token]);
 
