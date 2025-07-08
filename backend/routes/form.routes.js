@@ -39,6 +39,19 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Listar todas las respuestas del usuario autenticado (must come before /:id)
+router.get('/mine', authenticateToken, async (req, res) => {
+  try {
+    const forms = await Form.findAll({
+      where: { userId: req.user.id },
+      order: [['createdAt', 'DESC']],
+    });
+    res.json(forms);
+  } catch (err) {
+    res.status(500).json({ message: 'Error al obtener respuestas.', error: err.message });
+  }
+});
+
 // Obtener formulario por id (protegido)
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
@@ -103,19 +116,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Form deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting form', error: err.message });
-  }
-});
-
-// Listar todas las respuestas del usuario autenticado
-router.get('/mine', authenticateToken, async (req, res) => {
-  try {
-    const forms = await Form.findAll({
-      where: { userId: req.user.id },
-      order: [['createdAt', 'DESC']],
-    });
-    res.json(forms);
-  } catch (err) {
-    res.status(500).json({ message: 'Error al obtener respuestas.', error: err.message });
   }
 });
 
