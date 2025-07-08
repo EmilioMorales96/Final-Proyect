@@ -28,14 +28,31 @@ app.options('*', cors());
 console.log("Mounting routes...");
 
 // Mount routes
+console.log("Mounting /api/auth");
 app.use('/api/auth', authRoutes);
+
+console.log("Mounting /api/users");
 app.use('/api/users', userRoutes); 
+
+console.log("Mounting /api/forms");
 app.use('/api/forms', formRoutes);
+
+console.log("Mounting /api/templates");
 app.use('/api/templates', templateRoutes);
+
+console.log("Mounting /api/questions");
 app.use('/api/questions', questionRoutes);
+
+console.log("Mounting /api/comments");
 app.use('/api/comments', commentRoutes);
+
+console.log("Mounting /api/likes");
 app.use('/api/likes', likeRoutes);
+
+console.log("Mounting /api/tags");
 app.use('/api/tags', tagRoutes);
+
+console.log("Mounting /api/favorites");
 app.use('/api/favorites', favoriteRoutes);
 
 // Serve static files from the "uploads" folder
