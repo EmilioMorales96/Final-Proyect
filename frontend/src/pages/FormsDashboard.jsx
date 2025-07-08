@@ -156,20 +156,89 @@ export default function FormsDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-10 gap-4">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-            My Forms
-          </h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        {/* Hero Header Section */}
+        <div className="text-center mb-12">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 sm:p-12">
+              <div className="flex items-center justify-center mb-6">
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+              </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+                Forms Dashboard
+              </h1>
+              <p className="text-lg sm:text-xl text-indigo-100 max-w-2xl mx-auto leading-relaxed">
+                Create, manage, and analyze your forms with powerful tools and insights
+              </p>
+            </div>
+            
+            {/* Stats Section */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 p-6 sm:p-8">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-xl mb-3">
+                    <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    {Array.isArray(templates) ? templates.length : 0}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Templates</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-xl mb-3">
+                    <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    {favorites.length}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Favorites</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl mb-3">
+                    <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                    {Array.isArray(templates) ? templates.filter(t => 
+                      (t.likes?.length || 0) >= 5 || Object.values(commentCounts)[t.id] >= 3
+                    ).length : 0}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Trending</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Header with Create Button */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+              My Templates
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage and organize your form templates
+            </p>
+          </div>
           {user && (
             <Link
               to="/forms/new"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-semibold shadow hover:from-purple-800 hover:to-indigo-900 transition-all text-lg"
+              className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold shadow-xl hover:shadow-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105"
             >
-              <FiPlus className="text-xl" />
-              Create form
+              <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
+              Create Template
             </Link>
           )}
         </div>

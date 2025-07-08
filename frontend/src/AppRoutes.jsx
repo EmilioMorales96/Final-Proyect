@@ -13,6 +13,7 @@ import AdminUsersPage from "./pages/admin/AdminUsersPage.jsx";
 import AdminFormsPage from "./pages/admin/AdminFormsPage.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
+import TemplateAnswersPage from "./pages/TemplateAnswersPage.jsx";
 
 export default function AppRoutes() {
   return (
@@ -27,6 +28,7 @@ export default function AppRoutes() {
         <Route path="/forms/:id/fill" element={<FormsPage />} />
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/templates/new" element={<TemplateEditor />} />
+        <Route path="answers/:id" element={<TemplateAnswersPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />
         </Route>
