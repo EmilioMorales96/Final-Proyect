@@ -212,17 +212,13 @@ export default function FormsDashboard() {
               {displayedTemplates.map((template) => (
                 <div
                   key={template.id}
-                  className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg hover:shadow-xl transition-all flex flex-col h-full p-0 overflow-hidden ${template.id === mostAnsweredId ? "ring-4 ring-indigo-400 animate-pulse" : ""}`}
-                  style={{
-                    background: `linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%)`,
-                    backgroundPosition: `${template.id * 13 % 100}% ${template.id * 29 % 100}%`
-                  }}
+                  className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg hover:shadow-xl dark:hover:shadow-2xl transition-all flex flex-col h-full p-0 overflow-hidden ${template.id === mostAnsweredId ? "ring-4 ring-indigo-400 dark:ring-indigo-500 animate-pulse" : ""} group relative`}
                 >
-                  <div className="flex-1 flex flex-col gap-2 p-6 pb-4">
-                    <h3 className="font-bold text-2xl text-purple-700 dark:text-purple-400 mb-1 truncate">
+                  <div className="flex-1 flex flex-col gap-2 p-6 pb-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+                    <h3 className="font-bold text-2xl text-purple-700 dark:text-purple-300 mb-1 truncate">
                       {template.title}
                     </h3>
-                    <p className="text-gray-700 dark:text-gray-200 text-base mb-1 line-clamp-2">
+                    <p className="text-gray-700 dark:text-gray-300 text-base mb-1 line-clamp-2">
                       {template.description}
                     </p>
                     {/* Tags */}
@@ -232,7 +228,7 @@ export default function FormsDashboard() {
                           <button
                             key={tag.id}
                             onClick={() => setTagFilter(tag.name)}
-                            className={`px-2 py-0.5 rounded-full bg-gradient-to-r ${tagColor(tag.name)} to-white dark:from-purple-900 dark:via-indigo-800 dark:to-purple-900 text-purple-700 dark:text-purple-200 text-xs font-semibold border border-purple-200 dark:border-purple-700 transition`}
+                            className={`px-2 py-0.5 rounded-full bg-gradient-to-r ${tagColor(tag.name)} to-white dark:from-purple-800 dark:via-indigo-700 dark:to-purple-800 text-purple-700 dark:text-purple-200 text-xs font-semibold border border-purple-200 dark:border-purple-600 hover:border-purple-300 dark:hover:border-purple-500 transition`}
                             style={{ cursor: "pointer" }}
                             title={`Show templates with #${tag.name} (${tag.count || ""} uses)`}
                             type="button"
@@ -246,12 +242,12 @@ export default function FormsDashboard() {
                       Updated: {new Date(template.updatedAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2 mt-2 min-w-0">
+                  <div className="flex flex-col gap-2 mt-2 min-w-0 p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
                     {user ? (
                       <>
                         <Link
                           to={`/forms/${template.id}/edit`}
-                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition w-full sm:w-auto"
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-semibold transition w-full sm:w-auto"
                           title="Edit"
                         >
                           <FiEdit2 />
@@ -259,7 +255,7 @@ export default function FormsDashboard() {
                         </Link>
                         <Link
                           to={`/forms/${template.id}/fill`}
-                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition w-full sm:w-auto"
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white font-semibold transition w-full sm:w-auto"
                           title="Fill"
                         >
                           <FiClipboard />
@@ -267,31 +263,33 @@ export default function FormsDashboard() {
                         </Link>
                         <Link
                           to={`/forms/${template.id}/answers`}
-                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition w-full sm:w-auto"
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-semibold transition w-full sm:w-auto"
                           title="View answers"
                         >
                           <FiClipboard />
                           View answers
                         </Link>
-                        <button
-                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition w-full sm:w-auto"
-                          title="Delete"
-                          onClick={() => openDeleteModal(template.id)}
-                        >
-                          <FiTrash2 />
-                          Delete
-                        </button>
+                        {user && (user.role === "admin" || user.id === template.userId) && (
+                          <button
+                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white font-semibold transition w-full sm:w-auto"
+                            title="Delete"
+                            onClick={() => openDeleteModal(template.id)}
+                          >
+                            <FiTrash2 />
+                            Delete
+                          </button>
+                        )}
                       </>
                     ) : (
-                      <div className="text-center text-gray-400 text-sm py-2">
+                      <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
                         Log in to edit, fill, or delete forms.
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 mt-2">
+                  <div className="flex items-center gap-3 mt-2 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                     <LikeButton templateId={template.id} />
                     <button
-                      className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 transition"
+                      className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition"
                       onClick={() => { setCommentTemplateId(template.id); setCommentModalOpen(true); }}
                       title="View comments"
                       type="button"
@@ -300,8 +298,10 @@ export default function FormsDashboard() {
                       <span className="font-semibold">{commentCounts[template.id] || 0}</span>
                     </button>
                   </div>
-                  {template.isTrending && (
-                    <span className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow">
+                  {/* Trending badge - se muestra si tiene muchos likes o comentarios */}
+                  {((Array.isArray(template.FavoredBy) && template.FavoredBy.length > 2) || 
+                    (commentCounts[template.id] && commentCounts[template.id] > 3)) && (
+                    <span className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg animate-pulse">
                       🔥 Trending
                     </span>
                   )}
@@ -320,12 +320,12 @@ export default function FormsDashboard() {
                     </button>
                     {/* Mark as favorite */}
                     <button
-                      className={`p-2 rounded-full bg-white border shadow hover:bg-yellow-100 transition ${favorites.includes(template.id) ? "ring-2 ring-yellow-400" : ""}`}
+                      className={`p-2 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow hover:bg-yellow-100 dark:hover:bg-yellow-900 transition ${favorites.includes(template.id) ? "ring-2 ring-yellow-400 dark:ring-yellow-500" : ""}`}
                       title={favorites.includes(template.id) ? "Remove from favorites" : "Mark as favorite"}
                       onClick={() => toggleFavorite(template.id)}
                       type="button"
                     >
-                      <span role="img" aria-label="star" className={`text-yellow-500 ${favorites.includes(template.id) ? "font-bold scale-125" : ""}`}>⭐</span>
+                      <span role="img" aria-label="star" className={`text-yellow-500 dark:text-yellow-400 ${favorites.includes(template.id) ? "font-bold scale-125" : ""}`}>⭐</span>
                     </button>
                     {/* Share */}
                     <button
@@ -351,23 +351,23 @@ export default function FormsDashboard() {
                       </svg>
                     </button>
                   </div>
-                  <div className="flex items-center gap-2 mt-4">
-                    <img src={template.author?.avatar || "/avatar.png"} alt="" className="w-7 h-7 rounded-full border-2 border-white shadow" />
-                    <span className="text-xs text-gray-600 dark:text-gray-300 font-semibold">{template.author?.username}</span>
-                  </div>
-                  <span
-                    className={`ml-1 text-yellow-600 font-bold text-sm transition-transform duration-300 inline-block
+                  <div className="flex items-center gap-2 mt-4 px-4 pb-4 bg-gray-50 dark:bg-gray-900">
+                    <img src={template.author?.avatar || "/avatar.png"} alt="" className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-700 shadow" />
+                    <span className="text-xs text-gray-600 dark:text-gray-400 font-semibold">{template.author?.username}</span>
+                    <span
+                      className={`ml-1 text-yellow-600 dark:text-yellow-400 font-bold text-sm transition-transform duration-300 inline-block
     ${favAnimation[template.id] ? "animate-pop-fav drop-shadow-lg" : ""}`}
-                  >
-                    {Array.isArray(template.FavoredBy) ? template.FavoredBy.length : 0}
-                  </span>
+                    >
+                      {Array.isArray(template.FavoredBy) ? template.FavoredBy.length : 0}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
         <button
-          className="mb-4 px-3 py-1 rounded bg-yellow-100 text-yellow-800 font-semibold"
+          className="mb-4 px-3 py-1 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 font-semibold hover:bg-yellow-200 dark:hover:bg-yellow-800 transition"
           onClick={() => setShowOnlyFavorites(fav => !fav)}
         >
           {showOnlyFavorites ? "Show All" : "Show Only Favorites"}
@@ -402,11 +402,11 @@ export default function FormsDashboard() {
       <TagCloud onTagClick={setTagFilter} />
       {tagFilter && (
         <div className="mb-4">
-          <span className="text-indigo-700 font-semibold">
+          <span className="text-indigo-700 dark:text-indigo-300 font-semibold">
             Filtering by tag: #{tagFilter}
           </span>
           <button
-            className="ml-2 text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+            className="ml-2 text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition"
             onClick={() => setTagFilter(null)}
           >
             Clear
