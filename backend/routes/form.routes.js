@@ -1,7 +1,6 @@
 import express from 'express';
 import db from '../models/index.js';
 import authenticateToken from '../middleware/auth.middleware.js';
-import { userHasAccess } from '../utils/access.js';
 
 const { Form, User, Template } = db;
 const router = express.Router();
@@ -153,6 +152,7 @@ router.get('/admin/all', authenticateToken, async (req, res) => {
     });
     res.json(forms);
   } catch (err) {
+    console.error('Error en /admin/all:', err);
     res.status(500).json({ message: 'Error fetching forms', error: err.message });
   }
 });
