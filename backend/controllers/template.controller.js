@@ -11,7 +11,7 @@ export const getAllTemplates = async (req, res) => {
           attributes: [],
           through: { attributes: [] }
         },
-        // Incluye tags, autor, etc. si lo necesitas
+     
       ],
       attributes: {
         include: [
