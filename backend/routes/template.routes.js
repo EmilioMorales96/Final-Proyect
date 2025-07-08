@@ -74,8 +74,9 @@ router.get('/', authenticateToken, async (req, res) => {
     });
 
     // Filter templates based on user access
+    // Show all public templates + private templates the user has access to
     const accessibleTemplates = templates.filter(template => {
-      return userHasAccess(template, req.user.id, req.user.role);
+      return template.isPublic || userHasAccess(template, req.user.id, req.user.role);
     });
 
     res.json(accessibleTemplates);

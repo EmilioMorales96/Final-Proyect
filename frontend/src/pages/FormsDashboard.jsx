@@ -378,9 +378,7 @@ export default function FormsDashboard() {
                         <div className="flex items-center gap-1">
                           <LikeButton
                             templateId={template.id}
-                            likes={template.likes || []}
-                            user={user}
-                            onUpdate={() => fetchTemplates()}
+                            updateLikeCount={() => fetchTemplates()}
                           />
                           <span>{template.likes?.length || 0}</span>
                         </div>
