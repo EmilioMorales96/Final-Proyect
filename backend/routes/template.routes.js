@@ -47,7 +47,7 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-// Get all public templates
+// Get all accessible templates
 router.get('/', authenticateToken, async (req, res) => {
   console.log("User in /api/templates:", req.user);
   try {
@@ -72,7 +72,13 @@ router.get('/', authenticateToken, async (req, res) => {
       ],
       order: [["updatedAt", "DESC"]]
     });
-    res.json(templates);
+
+    // Filter templates based on user access
+    const accessibleTemplates = templates.filter(template => {
+      return userHasAccess(template, req.user.id, req.user.role);
+    });
+
+    res.json(accessibleTemplates);
   } catch (err) {
     console.error("Error fetching templates:", err);
     res.status(500).json({ message: 'Error fetching templates', error: err.message });

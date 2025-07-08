@@ -123,6 +123,18 @@ router.get('/mine', authenticateToken, async (req, res) => {
 router.get('/template/:templateId', authenticateToken, async (req, res) => {
   try {
     const { templateId } = req.params;
+    
+    // First, check if the user has access to this template's answers
+    const template = await Template.findByPk(templateId);
+    if (!template) {
+      return res.status(404).json({ message: 'Template not found' });
+    }
+    
+    // Only template owner or admin can view answers
+    if (template.authorId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'You do not have permission to view these answers.' });
+    }
+    
     const forms = await Form.findAll({
       where: { templateId: Number(templateId) },
       order: [['createdAt', 'DESC']],

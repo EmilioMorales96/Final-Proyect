@@ -23,12 +23,12 @@ export default function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forms" element={<FormsDashboard />} />
-        <Route path="/forms/new" element={<FormsPage />} />
-        <Route path="/forms/:id/edit" element={<FormsPage />} />
+        <Route path="/forms/new" element={<TemplateEditor />} />
+        <Route path="/forms/edit/:id" element={<TemplateEditor />} />
+        <Route path="/forms/:id" element={<FormsPage />} />
         <Route path="/forms/:id/fill" element={<FormsPage />} />
         <Route path="/welcome" element={<Welcome />} />
-        <Route path="/templates/new" element={<TemplateEditor />} />
-        <Route path="answers/:id" element={<TemplateAnswersPage />} />
+        <Route path="/templates/:id/answers" element={<TemplateAnswersPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Profile />} />
         </Route>

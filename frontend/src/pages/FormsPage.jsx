@@ -36,8 +36,8 @@ export default function FormsPage() {
 
   // Detect mode based on the route
   let mode = "create";
-  if (location.pathname.endsWith("/edit")) mode = "builder";
-  if (location.pathname.endsWith("/fill")) mode = "fill";
+  if (location.pathname.includes("/edit")) mode = "builder";
+  if (location.pathname.includes("/fill") || (id && !location.pathname.includes("/edit") && !location.pathname.includes("/new"))) mode = "fill";
 
   // Form state
   const [title, setTitle] = useState("");
