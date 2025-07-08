@@ -1,0 +1,28 @@
+import express from 'express';
+import db from '../models/index.js';
+
+const router = express.Router();
+const { Tag } = db;
+
+router.get('/', async (req, res) => {
+  try {
+    const { search } = req.query;
+    let where = {};
+    if (search) {
+      where = {
+        name: { [db.Sequelize.Op.iLike]: `%${search}%` }
+      };
+    }
+    const tags = await Tag.findAll({
+      where,
+      order: [['name', 'ASC']],
+      limit: 10,
+      attributes: ['id', 'name'] 
+    });
+    res.json(tags);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching tags', error: err.message });
+  }
+});
+
+export default router;
