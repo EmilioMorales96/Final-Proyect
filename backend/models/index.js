@@ -74,4 +74,10 @@ db.Like.belongsTo(db.Template, { foreignKey: "templateId" });
 db.Comment.belongsTo(db.User, { as: "User", foreignKey: "userId" });
 db.Comment.belongsTo(db.Template, { foreignKey: "templateId" });
 
+// Form associations
+db.Form.belongsTo(db.User, { foreignKey: "userId" });
+db.Form.belongsTo(db.Template, { foreignKey: "templateId" });
+db.User.hasMany(db.Form, { foreignKey: "userId" });
+db.Template.hasMany(db.Form, { foreignKey: "templateId" });
+
 export default db;

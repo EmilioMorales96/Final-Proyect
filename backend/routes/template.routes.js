@@ -88,6 +88,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // Get a template by ID (with access control)
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
+    console.log(`[TEMPLATE] GET /:id - User ${req.user.id} requesting template ${req.params.id}`);
     const template = await Template.findByPk(req.params.id, {
       include: [
         {
@@ -108,13 +109,23 @@ router.get('/:id', authenticateToken, async (req, res) => {
         }
       ]
     });
-    if (!template) return res.status(404).json({ message: 'Template not found' });
+    
+    if (!template) {
+      console.log(`[TEMPLATE] Template ${req.params.id} not found`);
+      return res.status(404).json({ message: 'Template not found' });
+    }
 
+    console.log(`[TEMPLATE] Template found: ${template.title}, isPublic: ${template.isPublic}, authorId: ${template.authorId}`);
+    
     if (template.isPublic || userHasAccess(template, req.user.id, req.user.role)) {
+      console.log(`[TEMPLATE] Access granted to template ${req.params.id}`);
       return res.json(template);
     }
+    
+    console.log(`[TEMPLATE] Access denied to template ${req.params.id}`);
     return res.status(403).json({ message: 'You do not have access to this template.' });
   } catch (err) {
+    console.error(`[TEMPLATE] Error fetching template ${req.params.id}:`, err);
     res.status(500).json({ message: 'Error fetching template.', error: err.message });
   }
 });
@@ -163,6 +174,31 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Template deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting template', error: err.message });
+  }
+});
+
+// Debug route - temporary
+router.get('/debug/template/:id', authenticateToken, async (req, res) => {
+  try {
+    const template = await Template.findByPk(req.params.id);
+    const forms = await db.Form.findAll({ where: { templateId: req.params.id } });
+    
+    res.json({
+      template: template ? {
+        id: template.id,
+        title: template.title,
+        isPublic: template.isPublic,
+        authorId: template.authorId
+      } : null,
+      formsCount: forms.length,
+      user: {
+        id: req.user.id,
+        role: req.user.role
+      },
+      hasAccess: template ? userHasAccess(template, req.user.id, req.user.role) : false
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
