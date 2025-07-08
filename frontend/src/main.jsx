@@ -7,9 +7,9 @@ import "./index.css";
 import "./App.css";
 import { Toaster } from "react-hot-toast";
 import AppRoutes from "./AppRoutes.jsx";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsersPage from "./pages/AdminUsersPage";
-import AdminFormsPage from "./pages/AdminFormsPage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminFormsPage from "./pages/admin/AdminFormsPage";
 
 console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
 
