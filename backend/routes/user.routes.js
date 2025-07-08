@@ -180,15 +180,6 @@ router.get('/autocomplete', authenticateToken, async (req, res) => {
   }
 });
 
-// Check if user is admin or the owner of the resource
-router.use('/:id', authenticateToken, async (req, res, next) => {
-  const form = await User.findByPk(req.params.id);
-  if (!form) return res.status(404).json({ message: 'User not found.' });
-  // If not admin, check if the user is the owner of the resource
-  if (form.userId !== req.user.id && req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Forbidden.' });
-  }
-  next();
-});
+
 
 export default router;

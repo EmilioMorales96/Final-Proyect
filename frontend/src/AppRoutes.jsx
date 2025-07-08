@@ -9,7 +9,9 @@ import FormsDashboard from "./pages/FormsDashboard";
 import FormsPage from "./pages/FormsPage";
 import Welcome from "./pages/Welcome";
 import TemplateEditor from "./pages/TemplateEditor.jsx";
-import AdminUsersPage from "./pages/AdminUsersPage.jsx";
+import AdminUsersPage from "./pages/admin/AdminUsersPage.jsx";
+import AdminFormsPage from "./pages/admin/AdminFormsPage.jsx";
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 
 export default function AppRoutes() {
@@ -29,7 +31,9 @@ export default function AppRoutes() {
           <Route path="/profile" element={<Profile />} />
         </Route>
         <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/forms" element={<AdminFormsPage />} />
         </Route>
       </Route>
     </Routes>
