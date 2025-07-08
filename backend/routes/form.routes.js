@@ -146,7 +146,7 @@ router.get('/template/:templateId', authenticateToken, async (req, res) => {
       order: [['createdAt', 'DESC']],
       include: [
         {
-          model: db.User,
+          model: User,
           attributes: ['id', 'username', 'email'],
           required: false
         },
@@ -176,6 +176,43 @@ router.get('/admin/all', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Error en /admin/all:', err);
     res.status(500).json({ message: 'Error fetching forms', error: err.message });
+  }
+});
+
+// Debug route (temporary)
+router.get('/debug/template/:templateId', authenticateToken, async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    
+    // Get template info
+    const template = await Template.findByPk(templateId);
+    
+    // Get forms count
+    const formsCount = await Form.count({ where: { templateId: Number(templateId) } });
+    
+    // Get forms without include to test basic query
+    const basicForms = await Form.findAll({ 
+      where: { templateId: Number(templateId) },
+      limit: 5 
+    });
+    
+    res.json({
+      template: template ? {
+        id: template.id,
+        title: template.title,
+        authorId: template.authorId,
+        isPublic: template.isPublic
+      } : null,
+      formsCount,
+      basicForms,
+      requestUser: {
+        id: req.user.id,
+        role: req.user.role
+      }
+    });
+  } catch (err) {
+    console.error('Debug route error:', err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 
