@@ -140,4 +140,21 @@ router.get('/template/:templateId', authenticateToken, async (req, res) => {
   }
 });
 
+// Obtener todos los forms (solo admin)
+router.get('/admin/all', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Admin only.' });
+  }
+  try {
+    const forms = await db.Form.findAll({
+      include: [
+        { model: db.User, as: 'author', attributes: ['id', 'username', 'email', 'avatar'] }
+      ]
+    });
+    res.json(forms);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching forms', error: err.message });
+  }
+});
+
 export default router;
