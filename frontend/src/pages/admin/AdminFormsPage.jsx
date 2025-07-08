@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../utils/api";
+import api from "../../utils/api";
 
 export default function AdminFormsPage() {
   const [forms, setForms] = useState([]);
