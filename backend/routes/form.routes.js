@@ -52,7 +52,67 @@ router.get('/mine', authenticateToken, async (req, res) => {
   }
 });
 
-// Obtener formulario por id (protegido)
+// Obtener todos los forms (solo admin) - must come before /:id
+router.get('/admin/all', authenticateToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Admin only.' });
+  }
+  try {
+    const forms = await db.Form.findAll({
+      include: [
+        { model: db.User, as: 'author', attributes: ['id', 'username', 'email', 'avatar'] }
+      ]
+    });
+    res.json(forms);
+  } catch (err) {
+    console.error('Error en /admin/all:', err);
+    res.status(500).json({ message: 'Error fetching forms', error: err.message });
+  }
+});
+
+// Listar todas las respuestas de una plantilla específica (must come before /:id)
+router.get('/template/:templateId', authenticateToken, async (req, res) => {
+  console.log(`[FORMS] GET /template/${req.params.templateId} - User:`, req.user?.id, req.user?.role);
+  try {
+    const { templateId } = req.params;
+    
+    // First, check if the user has access to this template's answers
+    const template = await Template.findByPk(templateId);
+    if (!template) {
+      console.log(`[FORMS] Template ${templateId} not found`);
+      return res.status(404).json({ message: 'Template not found' });
+    }
+    
+    console.log(`[FORMS] Template found: ${template.title}, authorId: ${template.authorId}, user: ${req.user.id}`);
+    
+    // Only template owner or admin can view answers
+    if (template.authorId !== req.user.id && req.user.role !== 'admin') {
+      console.log(`[FORMS] Access denied - user ${req.user.id} cannot access template ${templateId}`);
+      return res.status(403).json({ message: 'You do not have permission to view these answers.' });
+    }
+    
+    console.log(`[FORMS] Fetching forms for template ${templateId}`);
+    const forms = await Form.findAll({
+      where: { templateId: Number(templateId) },
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'username', 'email'],
+          required: false
+        },
+      ],
+    });
+    
+    console.log(`[FORMS] Found ${forms.length} forms for template ${templateId}`);
+    res.json(forms);
+  } catch (err) {
+    console.error('Error in /template/:templateId route:', err);
+    res.status(500).json({ message: 'Error al obtener respuestas.', error: err.message });
+  }
+});
+
+// Obtener formulario por id (protegido) - must come after specific routes
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const form = await Form.findByPk(req.params.id);
@@ -116,66 +176,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Form deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting form', error: err.message });
-  }
-});
-
-// Listar todas las respuestas de una plantilla específica (con usuario)
-router.get('/template/:templateId', authenticateToken, async (req, res) => {
-  console.log(`[FORMS] GET /template/${req.params.templateId} - User:`, req.user?.id, req.user?.role);
-  try {
-    const { templateId } = req.params;
-    
-    // First, check if the user has access to this template's answers
-    const template = await Template.findByPk(templateId);
-    if (!template) {
-      console.log(`[FORMS] Template ${templateId} not found`);
-      return res.status(404).json({ message: 'Template not found' });
-    }
-    
-    console.log(`[FORMS] Template found: ${template.title}, authorId: ${template.authorId}, user: ${req.user.id}`);
-    
-    // Only template owner or admin can view answers
-    if (template.authorId !== req.user.id && req.user.role !== 'admin') {
-      console.log(`[FORMS] Access denied - user ${req.user.id} cannot access template ${templateId}`);
-      return res.status(403).json({ message: 'You do not have permission to view these answers.' });
-    }
-    
-    console.log(`[FORMS] Fetching forms for template ${templateId}`);
-    const forms = await Form.findAll({
-      where: { templateId: Number(templateId) },
-      order: [['createdAt', 'DESC']],
-      include: [
-        {
-          model: User,
-          attributes: ['id', 'username', 'email'],
-          required: false
-        },
-      ],
-    });
-    
-    console.log(`[FORMS] Found ${forms.length} forms for template ${templateId}`);
-    res.json(forms);
-  } catch (err) {
-    console.error('Error in /template/:templateId route:', err);
-    res.status(500).json({ message: 'Error al obtener respuestas.', error: err.message });
-  }
-});
-
-// Obtener todos los forms (solo admin)
-router.get('/admin/all', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Admin only.' });
-  }
-  try {
-    const forms = await db.Form.findAll({
-      include: [
-        { model: db.User, as: 'author', attributes: ['id', 'username', 'email', 'avatar'] }
-      ]
-    });
-    res.json(forms);
-  } catch (err) {
-    console.error('Error en /admin/all:', err);
-    res.status(500).json({ message: 'Error fetching forms', error: err.message });
   }
 });
 
