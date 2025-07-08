@@ -129,7 +129,7 @@ router.get('/template/:templateId', authenticateToken, async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ['id', 'name', 'email'], // ajusta según tus campos
+          attributes: ['id', 'name', 'email'],
         },
       ],
     });
