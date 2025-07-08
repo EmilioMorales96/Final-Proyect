@@ -177,29 +177,4 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Debug route - temporary
-router.get('/debug/template/:id', authenticateToken, async (req, res) => {
-  try {
-    const template = await Template.findByPk(req.params.id);
-    const forms = await db.Form.findAll({ where: { templateId: req.params.id } });
-    
-    res.json({
-      template: template ? {
-        id: template.id,
-        title: template.title,
-        isPublic: template.isPublic,
-        authorId: template.authorId
-      } : null,
-      formsCount: forms.length,
-      user: {
-        id: req.user.id,
-        role: req.user.role
-      },
-      hasAccess: template ? userHasAccess(template, req.user.id, req.user.role) : false
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 export default router;
