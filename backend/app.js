@@ -2,15 +2,31 @@ import express from 'express';
 import cors from 'cors';
 import db from './models/index.js';
 
-// Import all routes
+console.log("Importing user.routes.js");
 import userRoutes from './routes/user.routes.js';
+
+console.log("Importing auth.routes.js");
 import authRoutes from './routes/auth.routes.js';
+
+console.log("Importing question.routes.js");
 import questionRoutes from './routes/question.routes.js';
+
+console.log("Importing form.routes.js");
 import formRoutes from './routes/form.routes.js';
+
+console.log("Importing template.routes.js");
 import templateRoutes from './routes/template.routes.js';
+
+console.log("Importing comment.routes.js");
 import commentRoutes from './routes/comment.routes.js';
+
+console.log("Importing like.routes.js");
 import likeRoutes from './routes/like.routes.js';
+
+console.log("Importing tag.routes.js");
 import tagRoutes from './routes/tag.routes.js';
+
+console.log("Importing favorite.routes.js");
 import favoriteRoutes from './routes/favorite.routes.js';
 
 const app = express();
