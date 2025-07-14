@@ -12,7 +12,7 @@
 1. Connect your GitHub repository to Render
 2. Create new Web Service
 3. Set build command: `npm install`
-4. Set start command: `npm run dev` or `node server.js`
+4. Set start command: `npm start`
 5. Add environment variables in Render dashboard:
 
 #### Required Environment Variables for Render:
@@ -80,7 +80,25 @@ DROPBOX_ACCESS_TOKEN=<your-dropbox-token>
 - [ ] All three integrations are accessible from UI
 
 ## Troubleshooting
+
+### Common Deployment Issues
+
+#### 1. Cloudinary Dependency Conflict ✅ SOLVED
+**Error:** `ERESOLVE unable to resolve dependency tree - peer cloudinary@"^1.21.0" from multer-storage-cloudinary@4.0.0`
+
+**Solution:** The project includes a `.npmrc` file in the backend directory with `legacy-peer-deps=true` to automatically handle this conflict. No manual intervention needed.
+
+If you still encounter issues, you can manually add `--legacy-peer-deps` to the build command in Render dashboard.
+
+#### 2. General Troubleshooting
 - Check Render logs for startup errors
 - Verify all environment variables are set
 - Ensure DATABASE_URL includes `?sslmode=require`
 - Check CORS settings for frontend domain
+- Verify Node.js version compatibility (recommended: 18.x or 20.x)
+
+#### 3. Build Command Issues
+If the build fails, try these build commands in order:
+1. `npm install` (default, should work with .npmrc)
+2. `npm install --legacy-peer-deps` (if .npmrc is ignored)
+3. `npm ci --legacy-peer-deps` (for clean install)
