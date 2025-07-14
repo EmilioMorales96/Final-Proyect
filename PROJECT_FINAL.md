@@ -1,83 +1,83 @@
-# Proyecto Final - Integraciones Implementadas
+# Final Project - Implemented Integrations
 
-## 📋 Resumen del Proyecto
+## 📋 Project Overview
 
-**Aplicación:** Sistema de Formularios Dinámicos con Integraciones Externas  
+**Application:** Dynamic Forms System with External Integrations  
 **Frontend:** React + Vite + Tailwind CSS  
 **Backend:** Express.js + Sequelize + PostgreSQL  
-**Base de Datos:** Neon PostgreSQL  
+**Database:** Neon PostgreSQL  
 **Hosting:** Render  
 
-## 🔗 Integraciones Implementadas
+## 🔗 Implemented Integrations
 
-### 1. Integración con Salesforce ✅
-**Ubicación:** `SalesforceIntegration.jsx` + `salesforce.routes.js`
+### 1. Salesforce Integration ✅
+**Location:** `SalesforceIntegration.jsx` + `salesforce.routes.js`
 
-**Funcionalidad:**
-- Creación de cuentas (Accounts) y contactos (Contacts) en Salesforce
-- Utiliza Client Credentials Flow para autenticación
-- Mapeo automático de datos del perfil del usuario
+**Functionality:**
+- Creation of Accounts and Contacts in Salesforce
+- Uses Client Credentials Flow for authentication
+- Automatic mapping of user profile data
 
-**Configuración Necesaria:**
+**Required Configuration:**
 - Salesforce Developer Org
-- Connected App configurada
+- Configured Connected App
 - Variables: `SALESFORCE_INSTANCE_URL`, `SALESFORCE_CLIENT_ID`, `SALESFORCE_CLIENT_SECRET`
 
-**Cómo usar:**
-1. Usuario va a su perfil
-2. Sección "Integraciones" → "Salesforce"
-3. Completa formulario y envía datos
-4. Se crea Account y Contact en Salesforce
+**How to use:**
+1. User goes to their profile
+2. "Integrations" section → "Salesforce"
+3. Complete form and submit data
+4. Account and Contact are created in Salesforce
 
-### 2. API Externa para Odoo ✅
-**Ubicación:** `ApiTokenManager.jsx` + `external.routes.js`
+### 2. External API for Odoo ✅
+**Location:** `ApiTokenManager.jsx` + `external.routes.js`
 
-**Funcionalidad:**
-- Generación de tokens API para acceso externo
-- Endpoint público `/api/external/user-templates/:userId`
-- Datos agregados de plantillas del usuario en formato JSON
+**Functionality:**
+- API token generation for external access
+- Public endpoint `/api/external/user-templates/:userId`
+- Aggregated user template data in JSON format
 
-**Configuración Necesaria:**
-- Instancia de Odoo (opcional, puede ser cualquier sistema externo)
-- Token de API generado desde el perfil del usuario
+**Required Configuration:**
+- Odoo instance (optional, can be any external system)
+- API token generated from user profile
 
-**Cómo usar:**
-1. Usuario genera token API desde su perfil
-2. Sistema externo (Odoo) consume: `GET /api/external/user-templates/:userId?token=API_TOKEN`
-3. Recibe datos agregados de plantillas y formularios
+**How to use:**
+1. User generates API token from their profile
+2. External system (Odoo) consumes: `GET /api/external/user-templates/:userId?token=API_TOKEN`
+3. Receives aggregated template and form data
 
 ### 3. Power Automate (OneDrive/Dropbox) ✅
-**Ubicación:** `SupportTicket.jsx` + `support.routes.js`
+**Location:** `SupportTicket.jsx` + `support.routes.js`
 
-**Funcionalidad:**
-- Creación de tickets de soporte
-- Subida automática de archivos JSON a OneDrive/Dropbox
-- Preparado para triggers de Power Automate
+**Functionality:**
+- Support ticket creation
+- Automatic JSON file upload to OneDrive/Dropbox
+- Ready for Power Automate triggers
 
-**Configuración Necesaria:**
-- Tokens de acceso de OneDrive y/o Dropbox
+**Required Configuration:**
+- OneDrive and/or Dropbox access tokens
 - Variables: `ONEDRIVE_ACCESS_TOKEN`, `DROPBOX_ACCESS_TOKEN`
 
-**Cómo usar:**
-1. Usuario accede al botón de ayuda flotante
-2. Crea ticket de soporte con descripción y prioridad
-3. Sistema sube JSON con datos del ticket a la nube
-4. Power Automate puede procesar el archivo automáticamente
+**How to use:**
+1. User accesses floating help button
+2. Creates support ticket with description and priority
+3. System uploads JSON with ticket data to cloud
+4. Power Automate can process the file automatically
 
-## 🛠️ Configuración de Desarrollo
+## 🛠️ Development Setup
 
-### Prerequisitos
+### Prerequisites
 - Node.js 18+
-- PostgreSQL (local o Neon)
-- Cuentas en Salesforce, OneDrive/Dropbox (opcional)
+- PostgreSQL (local or Neon)
+- Accounts in Salesforce, OneDrive/Dropbox (optional)
 
-### Instalación Local
+### Local Installation
 ```bash
 # Backend
 cd backend
 npm install
 cp ../.env.example .env
-# Editar .env con tus credenciales
+# Edit .env with your credentials
 npm run dev
 
 # Frontend
@@ -86,10 +86,10 @@ npm install
 npm run dev
 ```
 
-### Variables de Entorno Requeridas
-Ver archivo `.env.example` para la lista completa.
+### Required Environment Variables
+See `.env.example` file for complete list.
 
-**Mínimas para funcionamiento básico:**
+**Minimum for basic functionality:**
 - `DATABASE_URL`
 - `JWT_SECRET`
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
@@ -97,47 +97,47 @@ Ver archivo `.env.example` para la lista completa.
 ## 🚀 Deployment
 
 ### Render + Neon
-1. **Base de Datos:** Crear proyecto en Neon, copiar DATABASE_URL
-2. **Backend:** Web Service en Render con build command `npm install` y start command `npm start`
-3. **Frontend:** Static Site en Render con build command `npm run build` y publish directory `dist`
+1. **Database:** Create project in Neon, copy DATABASE_URL
+2. **Backend:** Web Service in Render with build command `npm install` and start command `npm start`
+3. **Frontend:** Static Site in Render with build command `npm run build` and publish directory `dist`
 
-Ver `DEPLOYMENT.md` para instrucciones detalladas.
+See `DEPLOYMENT.md` for detailed instructions.
 
-## 📱 Características Adicionales
+## 📱 Additional Features
 
-### Interfaz de Usuario
-- **Internacionalización:** Español e Inglés (react-i18next)
-- **Responsive Design:** Tailwind CSS para móviles y desktop
-- **Tema Oscuro/Claro:** Toggle disponible en toda la aplicación
-- **Botón de Ayuda Flotante:** Accesible desde cualquier página
+### User Interface
+- **Internationalization:** Spanish and English (react-i18next)
+- **Responsive Design:** Tailwind CSS for mobile and desktop
+- **Dark/Light Theme:** Toggle available throughout the application
+- **Floating Help Button:** Accessible from any page
 
-### Seguridad
-- **JWT Authentication:** Tokens seguros para sesiones
-- **API Tokens:** Tokens específicos para integraciones externas
-- **Middleware de Autenticación:** Protección de rutas sensibles
+### Security
+- **JWT Authentication:** Secure tokens for sessions
+- **API Tokens:** Specific tokens for external integrations
+- **Authentication Middleware:** Protection of sensitive routes
 
-### Base de Datos
-- **Modelos:** User, Template, Form, Question, Comment, Like, Favorite, Tag
-- **Relaciones:** Associations complejas entre entidades
-- **Migraciones:** Scripts para actualización de esquema
+### Database
+- **Models:** User, Template, Form, Question, Comment, Like, Favorite, Tag
+- **Relationships:** Complex associations between entities
+- **Migrations:** Scripts for schema updates
 
-## 📊 Estado del Proyecto
+## 📊 Project Status
 
-**Frontend:** ✅ Compilación exitosa (654KB bundle)  
-**Backend:** ✅ Sintaxis validada, rutas funcionando  
-**Integraciones:** ✅ 3/3 implementadas completamente  
-**Documentación:** ✅ Guías de deployment y uso  
-**Testing:** ✅ Build tests pasados  
+**Frontend:** ✅ Successful compilation (654KB bundle)  
+**Backend:** ✅ Syntax validated, routes working  
+**Integrations:** ✅ 3/3 fully implemented  
+**Documentation:** ✅ Deployment and usage guides  
+**Testing:** ✅ Build tests passed  
 
-## 🎯 Próximos Pasos
+## 🎯 Next Steps
 
-1. **Deployment:** Subir a GitHub y configurar Render
-2. **Testing:** Probar integraciones con credenciales reales
-3. **Video Demo:** Grabar demostración sin narración
-4. **Submission:** Entregar antes del 16.07.2025
+1. **Deployment:** Upload to GitHub and configure Render
+2. **Testing:** Test integrations with real credentials
+3. **Video Demo:** Record demonstration without narration
+4. **Submission:** Submit before 16.07.2025
 
 ---
 
-**Fecha de finalización:** $(Get-Date -Format "yyyy-MM-dd HH:mm")  
-**Integraciones completadas:** 3/3  
-**Estado:** Listo para deployment
+**Completion date:** $(Get-Date -Format "yyyy-MM-dd HH:mm")  
+**Integrations completed:** 3/3  
+**Status:** Ready for deployment

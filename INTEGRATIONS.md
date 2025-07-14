@@ -1,53 +1,192 @@
-# Forms App - External Integrations
+# External Integrations Documentation
 
-This application includes three major external integrations as requested for the final project submission.
+## Overview
+This project implements three external integrations as required for the final submission. All integrations are fully functional and ready for demonstration.
 
-## Integration Status: ✅ COMPLETED
+## 1. Salesforce Integration
 
-All three integrations have been fully implemented and are ready for testing and demonstration.
+### Purpose
+Create Salesforce Accounts and Contacts directly from user profiles in the application.
 
-## 1. Salesforce Integration ✅
-
-### Features
-- Create Salesforce Account and Contact from user profile
-- Collects additional business information (company, industry, revenue, etc.)
-- Uses Salesforce REST API v57.0 with client credentials flow
-- Available only to authenticated users from their profile page
-
-### Setup
-1. Create a Salesforce Developer Org at https://developer.salesforce.com/signup
-2. Create a Connected App in Salesforce:
-   - Go to Setup → App Manager → New Connected App
-   - Enable OAuth Settings
-   - Select "Client Credentials Flow" 
-   - Add required OAuth scopes
-3. Configure environment variables:
-   ```
-   SALESFORCE_INSTANCE_URL=https://your-domain.salesforce.com
-   SALESFORCE_CLIENT_ID=your_client_id
-   SALESFORCE_CLIENT_SECRET=your_client_secret
-   ```
-
-### Usage
-- Go to Profile page
-- Find "Salesforce Integration" section
-- Click "Create Salesforce Account"
-- Fill in company information
-- Submit to create Account and Contact in Salesforce
-
-## 2. Odoo Integration (API for External Access)
+### Implementation
+- **Frontend Component:** `SalesforceIntegration.jsx`
+- **Backend Route:** `salesforce.routes.js`
+- **Authentication:** Client Credentials Flow (OAuth 2.0)
 
 ### Features
-- Generate API tokens for external access
-- Provides aggregated form data via REST API
-- Returns template information and response statistics
+- Modal form accessible from user profile
+- Company information collection
+- Automatic Account creation in Salesforce
+- Contact creation linked to the Account
+- Error handling and success notifications
+- Internationalization support (EN/ES)
+
+### Configuration Required
+```env
+SALESFORCE_INSTANCE_URL=https://your-domain.salesforce.com
+SALESFORCE_CLIENT_ID=your_client_id
+SALESFORCE_CLIENT_SECRET=your_client_secret
+```
 
 ### API Endpoints
-- `POST /api/users/generate-token` - Generate API token
-- `GET /api/external/templates` - Get user's templates with aggregated data
-- `GET /api/external/templates/:id` - Get detailed template data
+- `POST /api/salesforce/create-account` - Creates Account and Contact
 
-### API Usage
+### How It Works
+1. User clicks "Create Salesforce Account" in their profile
+2. Modal opens with company information form
+3. On submit, data is sent to backend
+4. Backend authenticates with Salesforce using Client Credentials
+5. Creates Account with company data
+6. Creates Contact linked to the Account with user data
+7. Returns success/error response to frontend
+
+## 2. Odoo Integration (External API)
+
+### Purpose
+Provide external systems (like Odoo) access to aggregated template and form data.
+
+### Implementation
+- **Frontend Component:** `ApiTokenManager.jsx`
+- **Backend Route:** `external.routes.js`
+- **Database:** Added `apiToken` field to User model
+- **Authentication:** Token-based API access
+
+### Features
+- API token generation from user profile
+- External endpoint for template data access
+- Aggregated statistics and analytics
+- Secure token-based authentication
+- Ready for Odoo module integration
+
+### API Endpoints
+- `POST /api/users/generate-token` - Generates API token for user
+- `GET /api/external/user-templates/:userId?token=API_TOKEN` - Returns aggregated data
+
+### Data Structure
+```json
+{
+  "user": {
+    "id": 1,
+    "username": "user@example.com",
+    "name": "User Name"
+  },
+  "templates": [
+    {
+      "id": 1,
+      "title": "Template Title",
+      "description": "Description",
+      "topic": "Education",
+      "forms_count": 5,
+      "average_responses": 12.4,
+      "questions": [...]
+    }
+  ],
+  "statistics": {
+    "total_templates": 3,
+    "total_forms": 15,
+    "total_responses": 187
+  }
+}
+```
+
+### How It Works
+1. User generates API token from their profile
+2. External system (Odoo) makes authenticated requests
+3. Backend validates token and returns aggregated data
+4. Odoo can import this data for business intelligence
+
+## 3. Power Automate Integration
+
+### Purpose
+Create support tickets that trigger automated workflows in Microsoft Power Automate.
+
+### Implementation
+- **Frontend Components:** `SupportTicket.jsx`, `FloatingHelpButton.jsx`
+- **Backend Route:** `support.routes.js`
+- **Cloud Integration:** OneDrive and Dropbox file upload
+
+### Features
+- Floating help button available on all pages
+- Support ticket creation modal
+- Priority selection (Low, Medium, High, Critical)
+- Context-aware ticket data (current page, template)
+- JSON file generation and cloud upload
+- Ready for Power Automate triggers
+
+### Configuration Required
+```env
+ONEDRIVE_ACCESS_TOKEN=your_onedrive_token
+DROPBOX_ACCESS_TOKEN=your_dropbox_token
+```
+
+### API Endpoints
+- `POST /api/support/create-ticket` - Creates ticket and uploads to cloud
+
+### Ticket Data Structure
+```json
+{
+  "ticket": {
+    "id": "ticket_12345",
+    "user_id": 1,
+    "user_email": "user@example.com",
+    "subject": "Issue with template creation",
+    "description": "Detailed description of the issue",
+    "priority": "High",
+    "status": "Open",
+    "created_at": "2025-07-14T10:30:00Z"
+  },
+  "context": {
+    "page": "/templates/create",
+    "template_id": 5,
+    "user_agent": "Mozilla/5.0...",
+    "timestamp": "2025-07-14T10:30:00Z"
+  }
+}
+```
+
+### Power Automate Flow Setup
+1. **Trigger:** When file is created in OneDrive/Dropbox
+2. **Parse JSON:** Extract ticket information
+3. **Send Email:** Notify support team
+4. **Create Task:** Add to project management system
+5. **Send Notification:** Mobile/Teams notification
+
+### How It Works
+1. User clicks floating help button (available on all pages)
+2. Modal opens with support ticket form
+3. User fills description and selects priority
+4. On submit, JSON file is created with ticket data
+5. File is uploaded to OneDrive and/or Dropbox
+6. Power Automate flow is triggered by file creation
+7. Automated workflow processes the ticket
+
+## Integration Testing
+
+### Local Testing
+1. Set up environment variables for all three integrations
+2. Test each integration independently
+3. Verify data flow and error handling
+4. Check internationalization
+
+### Production Testing
+1. Configure real credentials in Render
+2. Test with actual Salesforce Developer Org
+3. Verify external API access with real tokens
+4. Test Power Automate flow with real file uploads
+
+## Security Considerations
+- All API tokens are stored securely in environment variables
+- No hardcoded credentials in source code
+- Token-based authentication for external access
+- Proper error handling without exposing sensitive data
+- CORS configuration for frontend-backend communication
+
+## Future Enhancements
+- Rate limiting for API endpoints
+- Advanced analytics for Odoo integration
+- More complex Power Automate workflows
+- Additional cloud storage providers
+- Webhook support for real-time notifications
 ```bash
 # Generate token (authenticated)
 curl -X POST http://localhost:3000/api/users/generate-token \
