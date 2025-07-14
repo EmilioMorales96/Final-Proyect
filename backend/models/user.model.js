@@ -35,6 +35,11 @@ export default (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    apiToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+    },
   });
 
   return User;

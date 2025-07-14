@@ -30,6 +30,9 @@ console.log("Importing favorite.routes.js");
 import favoriteRoutes from './routes/favorite.routes.js';
 import searchRoutes from './routes/search.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
+import salesforceRoutes from './routes/salesforce.routes.js';
+import externalRoutes from './routes/external.routes.js';
+import supportRoutes from './routes/support.routes.js';
 
 const app = express();
 
@@ -58,6 +61,9 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/salesforce', salesforceRoutes);
+app.use('/api/external', externalRoutes);
+app.use('/api/support', supportRoutes);
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));

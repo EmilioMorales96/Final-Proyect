@@ -3,7 +3,8 @@ import { useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import UserMenu from '../UserMenu'; 
-import LanguageSelector from '../LanguageSelector'; 
+import LanguageSelector from '../LanguageSelector';
+import FloatingHelpButton from '../FloatingHelpButton';
 
 /**
  * Main layout component that provides navigation and search functionality
@@ -159,6 +160,9 @@ export const MainLayout = () => {
           © 2025 FormsApp - {t('footer.rights')}
         </div>
       </footer>
+
+      {/* Floating Help Button */}
+      <FloatingHelpButton />
     </div>
-  );  
+  );
 };

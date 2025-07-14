@@ -6,6 +6,7 @@ import authenticateToken from '../middleware/auth.middleware.js';
 import multer from 'multer';
 import path from 'path';
 import { Op } from 'sequelize';
+import crypto from 'crypto';
 
 // Multer configuration for avatar upload
 const storage = multer.diskStorage({
@@ -177,6 +178,30 @@ router.get('/autocomplete', authenticateToken, async (req, res) => {
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Error in autocomplete.', error: err.message });
+  }
+});
+
+/**
+ * Generate API token for external integrations
+ * POST /api/users/generate-token
+ */
+router.post('/generate-token', authenticateToken, async (req, res) => {
+  try {
+    // Generate a secure random token
+    const apiToken = crypto.randomBytes(32).toString('hex');
+    
+    // Update user with the new API token
+    await User.update(
+      { apiToken },
+      { where: { id: req.user.id } }
+    );
+
+    res.json({ 
+      message: 'API token generated successfully',
+      apiToken 
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error generating API token.', error: err.message });
   }
 });
 

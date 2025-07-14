@@ -88,6 +88,36 @@ const resources = {
       "topic.quiz": "Quiz", 
       "topic.other": "Other",
       
+      // Salesforce Integration
+      "salesforce.title": "Salesforce Integration",
+      "salesforce.description": "Connect your profile to Salesforce CRM",
+      "salesforce.company": "Company",
+      "salesforce.phone": "Phone",
+      "salesforce.website": "Website",
+      "salesforce.industry": "Industry",
+      "salesforce.annual_revenue": "Annual Revenue",
+      "salesforce.employees": "Number of Employees",
+      "salesforce.create_account": "Create Salesforce Account",
+      "salesforce.success": "Successfully created Salesforce account!",
+      "salesforce.error": "Error creating Salesforce account",
+      
+      // API Token
+      "api.token_title": "API Access Token",
+      "api.token_description": "Generate token for external integrations",
+      "api.generate_token": "Generate New Token",
+      "api.token_generated": "Token generated successfully!",
+      "api.token_copied": "Token copied to clipboard!",
+      
+      // Support Ticket
+      "support.title": "Create Support Ticket",
+      "support.summary": "Issue Summary",
+      "support.priority": "Priority",
+      "support.priority_high": "High",
+      "support.priority_average": "Average", 
+      "support.priority_low": "Low",
+      "support.create_ticket": "Create Ticket",
+      "support.ticket_created": "Support ticket created successfully!",
+      
       // Footer
       "footer.rights": "All rights reserved"
     }
@@ -169,6 +199,36 @@ const resources = {
       "topic.education": "Educación",
       "topic.quiz": "Quiz",
       "topic.other": "Otro",
+      
+      // Salesforce Integration
+      "salesforce.title": "Integración con Salesforce",
+      "salesforce.description": "Conecta tu perfil con Salesforce CRM",
+      "salesforce.company": "Empresa",
+      "salesforce.phone": "Teléfono",
+      "salesforce.website": "Sitio Web",
+      "salesforce.industry": "Industria",
+      "salesforce.annual_revenue": "Ingresos Anuales",
+      "salesforce.employees": "Número de Empleados",
+      "salesforce.create_account": "Crear Cuenta en Salesforce",
+      "salesforce.success": "¡Cuenta de Salesforce creada exitosamente!",
+      "salesforce.error": "Error al crear cuenta en Salesforce",
+      
+      // API Token
+      "api.token_title": "Token de Acceso API",
+      "api.token_description": "Generar token para integraciones externas",
+      "api.generate_token": "Generar Nuevo Token",
+      "api.token_generated": "¡Token generado exitosamente!",
+      "api.token_copied": "¡Token copiado al portapapeles!",
+      
+      // Support Ticket
+      "support.title": "Crear Ticket de Soporte",
+      "support.summary": "Resumen del Problema",
+      "support.priority": "Prioridad",
+      "support.priority_high": "Alta",
+      "support.priority_average": "Media",
+      "support.priority_low": "Baja",
+      "support.create_ticket": "Crear Ticket",
+      "support.ticket_created": "¡Ticket de soporte creado exitosamente!",
       
       // Footer
       "footer.rights": "Todos los derechos reservados"
