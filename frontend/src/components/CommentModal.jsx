@@ -35,7 +35,17 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
 
   // Refetch comments when modal opens or template changes
   useEffect(() => {
-    if (open) fetchComments();
+    if (open) {
+      fetchComments();
+      
+      // Set up auto-refresh every 3 seconds when modal is open
+      const interval = setInterval(() => {
+        fetchComments();
+      }, 3000);
+      
+      // Cleanup interval when modal closes
+      return () => clearInterval(interval);
+    }
     // eslint-disable-next-line
   }, [open, templateId, user]);
 
@@ -126,7 +136,13 @@ export default function CommentModal({ open, onClose, templateId, user, updateCo
       <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl max-w-lg w-full p-6 relative">
         {/* Close modal button */}
         <button className="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700" onClick={onClose}>&times;</button>
-        <h3 className="text-lg font-bold mb-4">Comments</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold">Comments</h3>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span>Auto-refreshing</span>
+          </div>
+        </div>
         {loading ? (
           <div className="text-gray-500">Loading...</div>
         ) : !user ? (

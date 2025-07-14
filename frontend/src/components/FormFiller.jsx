@@ -3,6 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Button from './Button';
 
+/**
+ * FormFiller component for filling out forms based on templates
+ * @param {Object} formState - Current form state
+ * @param {Function} setFormState - Function to update form state
+ * @param {Array} templates - Available templates
+ * @param {Function} onSubmit - Form submission handler
+ */
 export default function FormFiller({ 
   formState,
   setFormState,
@@ -12,30 +19,37 @@ export default function FormFiller({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // Protection against non-array templates
+  // Ensure templates is always an array for safety
   const safeTemplates = Array.isArray(templates) ? templates : [];
   if (!Array.isArray(templates)) {
     console.warn('[FormFiller] templates is not an array:', templates);
   }
 
+  /**
+   * Handle input changes for form fields
+   */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormState(prev => ({
       ...prev,
       [name]: value,
-      // Secures that answers is always an array
+      // Ensure answers is always an array
       answers: Array.isArray(prev.answers) ? prev.answers : [],
     }));
   };
 
+  /**
+   * Handle form submission with validation
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submit presionado", formState, onSubmit);
-    // Extra validation to ensure title and templateId are set
+    
+    // Validate required fields
     if (!formState.title || !formState.templateId) {
       toast.error('The title and template are required.');
       return;
     }
+    
     setLoading(true);
     try {
       // Secure that answers is always an array before sending

@@ -28,53 +28,41 @@ import tagRoutes from './routes/tag.routes.js';
 
 console.log("Importing favorite.routes.js");
 import favoriteRoutes from './routes/favorite.routes.js';
+import searchRoutes from './routes/search.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 
 const app = express();
 
+// Enable JSON parsing middleware
 app.use(express.json());
+
+// Configure CORS for frontend communication
 app.use(cors({
   origin: [
-    'http://localhost:5173', // desarrollo local
-    'https://frontend-9ajm.onrender.com' // production URL
+    'http://localhost:5173', // Local development
+    'https://frontend-9ajm.onrender.com' // Production URL
   ],
   credentials: true
 }));
 app.options('*', cors());
 
-console.log("Mounting routes...");
-
-// Mount routes
-console.log("Mounting /api/auth");
+// Mount API routes
 app.use('/api/auth', authRoutes);
-
-console.log("Mounting /api/users");
 app.use('/api/users', userRoutes); 
-
-console.log("Mounting /api/forms");
 app.use('/api/forms', formRoutes);
-
-console.log("Mounting /api/templates");
 app.use('/api/templates', templateRoutes);
-
-console.log("Mounting /api/questions");
 app.use('/api/questions', questionRoutes);
-
-console.log("Mounting /api/comments");
 app.use('/api/comments', commentRoutes);
-
-console.log("Mounting /api/likes");
 app.use('/api/likes', likeRoutes);
-
-console.log("Mounting /api/tags");
 app.use('/api/tags', tagRoutes);
-
-console.log("Mounting /api/favorites");
 app.use('/api/favorites', favoriteRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/upload', uploadRoutes);
 
-// Serve static files from the "uploads" folder
+// Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));
 
-// Handle not found routes
+// Handle 404 errors for unknown routes
 app.use((req, res, next) => {
   console.warn(`[404] Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ message: 'Route not found' });
@@ -86,6 +74,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
+// Synchronize database models
 await db.sequelize.sync();
 
 export default app;

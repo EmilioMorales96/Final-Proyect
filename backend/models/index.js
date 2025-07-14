@@ -1,19 +1,7 @@
-import { Sequelize, DataTypes } from 'sequelize';
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/db.js';
 
-const sequelize = new Sequelize(
-  process.env.DATABASE_URL, 
-  {
-    dialect: "postgres",
-    logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
-    },
-  }
-);
-
+// Import model definitions
 import UserModel from './user.model.js';
 import FormModel from './form.model.js';
 import TemplateModel from './template.model.js';
@@ -23,10 +11,11 @@ import FavoriteModel from './Favorite.js';
 import LikeModel from './Like.js';
 import CommentModel from './Comment.js';
 
+// Database object to hold sequelize instance and models
 const db = {};
 db.sequelize = sequelize;
 
-// Definición de modelos
+// Initialize models
 db.User = UserModel(sequelize, DataTypes);
 db.Form = FormModel(sequelize, DataTypes);
 db.Template = TemplateModel(sequelize, DataTypes);
@@ -36,7 +25,9 @@ db.Favorite = FavoriteModel(sequelize, DataTypes);
 db.Like = LikeModel(sequelize, DataTypes);
 db.Comment = CommentModel(sequelize, DataTypes);
 
-// Relación muchos a muchos para favoritos
+// Define model associations
+
+// Many-to-many relationship for favorites
 db.User.belongsToMany(db.Template, {
   through: db.Favorite,
   as: "Favorites",
@@ -50,7 +41,7 @@ db.Template.belongsToMany(db.User, {
   otherKey: "userId"
 });
 
-// Relation for forms 
+// Many-to-many relationship for template tags
 db.Template.belongsToMany(db.Tag, {
   through: db.TemplateTag,
   as: "Tags",
@@ -64,17 +55,19 @@ db.Tag.belongsToMany(db.Template, {
   otherKey: "templateId"
 });
 
-// Relación de autor
+// Template author relationship
 db.Template.belongsTo(db.User, { as: "author", foreignKey: "authorId" });
 db.User.hasMany(db.Template, { as: "authoredTemplates", foreignKey: "authorId" });
 
+// Like relationships
 db.Like.belongsTo(db.User, { foreignKey: "userId" });
 db.Like.belongsTo(db.Template, { foreignKey: "templateId" });
 
+// Comment relationships
 db.Comment.belongsTo(db.User, { as: "User", foreignKey: "userId" });
 db.Comment.belongsTo(db.Template, { foreignKey: "templateId" });
 
-// Form associations
+// Form relationships
 db.Form.belongsTo(db.User, { foreignKey: "userId" });
 db.Form.belongsTo(db.Template, { foreignKey: "templateId" });
 db.User.hasMany(db.Form, { foreignKey: "userId" });

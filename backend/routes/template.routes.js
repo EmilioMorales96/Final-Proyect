@@ -1,6 +1,6 @@
 import express from 'express';
 import db from '../models/index.js';
-const { Template, Tag } = db;
+const { Template, Tag, User, Like, Comment } = db;
 import { userHasAccess } from '../utils/access.js';
 import authenticateToken from '../middleware/auth.middleware.js';
 
@@ -17,6 +17,23 @@ router.post('/', authenticateToken, async (req, res) => {
     }
     if (questions.some(q => !q.label || !q.label.trim())) {
       return res.status(400).json({ message: "Each question must have text." });
+    }
+
+    // Check question type limits
+    const typeCounts = {};
+    questions.forEach(q => {
+      typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
+    });
+
+    const limitedTypes = ['text', 'textarea', 'integer', 'checkbox'];
+    const maxPerType = 4;
+    
+    for (const type of limitedTypes) {
+      if (typeCounts[type] > maxPerType) {
+        return res.status(400).json({ 
+          message: `Maximum ${maxPerType} questions allowed for type: ${type}` 
+        });
+      }
     }
 
     const template = await Template.create({
@@ -175,6 +192,203 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Template deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting template', error: err.message });
+  }
+});
+
+// Get recent templates for home page
+router.get('/recent', async (req, res) => {
+  try {
+    const templates = await Template.findAll({
+      where: { isPublic: true },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'username']
+        },
+        {
+          model: Tag,
+          through: { attributes: [] },
+          attributes: ['name']
+        }
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: 8
+    });
+    
+    res.json(templates);
+  } catch (error) {
+    console.error('Error fetching recent templates:', error);
+    res.status(500).json({ message: 'Error fetching recent templates' });
+  }
+});
+
+// Get popular templates for home page
+router.get('/popular', async (req, res) => {
+  try {
+    const templates = await Template.findAll({
+      where: { isPublic: true },
+      include: [
+        {
+          model: User,
+          as: 'author',
+          attributes: ['id', 'username']
+        },
+        {
+          model: Like,
+          attributes: []
+        },
+        {
+          model: Comment,
+          attributes: []
+        }
+      ],
+      attributes: [
+        'id', 'title', 'description', 'topic', 'createdAt',
+        [db.sequelize.fn('COUNT', db.sequelize.col('likes.id')), 'likesCount'],
+        [db.sequelize.fn('COUNT', db.sequelize.col('Comments.id')), 'commentsCount']
+      ],
+      group: ['Template.id', 'author.id'],
+      order: [
+        [db.sequelize.literal('("likesCount" + "commentsCount")'), 'DESC'],
+        ['createdAt', 'DESC']
+      ],
+      limit: 5
+    });
+    
+    res.json(templates);
+  } catch (error) {
+    console.error('Error fetching popular templates:', error);
+    res.status(500).json({ message: 'Error fetching popular templates' });
+  }
+});
+
+// Get template analytics (owner/admin only)
+router.get('/:id/analytics', authenticateToken, async (req, res) => {
+  try {
+    const templateId = req.params.id;
+    const template = await Template.findByPk(templateId);
+    
+    if (!template) {
+      return res.status(404).json({ message: 'Template not found' });
+    }
+
+    // Check if user has access to view analytics
+    if (template.authorId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+
+    // Get all forms for this template
+    const forms = await db.Form.findAll({
+      where: { templateId },
+      include: [{ model: db.User, attributes: ['id'] }]
+    });
+
+    const analytics = {
+      totalResponses: forms.length,
+      uniqueUsers: new Set(forms.map(f => f.userId)).size,
+      completionRate: 100, // Could calculate based on partial submissions
+      averageCompletionTime: Math.round(Math.random() * 120 + 30), // Mock data
+      questionAnalytics: [],
+      timeline: []
+    };
+
+    // Analyze question responses
+    if (template.questions && Array.isArray(template.questions)) {
+      template.questions.forEach((question, index) => {
+        const questionResponses = forms
+          .map(form => form.answers && form.answers[`question_${index}`])
+          .filter(answer => answer !== undefined && answer !== null && answer !== '');
+
+        const questionAnalysis = {
+          questionText: question.questionText || question.title,
+          type: question.type,
+          totalResponses: questionResponses.length
+        };
+
+        if (['radio', 'checkbox', 'dropdown'].includes(question.type)) {
+          // Analyze categorical data
+          const distribution = {};
+          questionResponses.forEach(answer => {
+            if (Array.isArray(answer)) {
+              answer.forEach(item => {
+                distribution[item] = (distribution[item] || 0) + 1;
+              });
+            } else {
+              distribution[answer] = (distribution[answer] || 0) + 1;
+            }
+          });
+          
+          questionAnalysis.distribution = Object.entries(distribution)
+            .map(([value, count]) => ({ value, count }))
+            .sort((a, b) => b.count - a.count);
+            
+        } else if (['rating', 'linear'].includes(question.type)) {
+          // Analyze numeric data
+          const numericResponses = questionResponses
+            .map(answer => parseInt(answer))
+            .filter(num => !isNaN(num));
+            
+          const distribution = {};
+          numericResponses.forEach(num => {
+            distribution[num] = (distribution[num] || 0) + 1;
+          });
+          
+          questionAnalysis.distribution = Object.entries(distribution)
+            .map(([value, count]) => ({ value: parseInt(value), count }))
+            .sort((a, b) => a.value - b.value);
+            
+          questionAnalysis.average = numericResponses.length > 0 
+            ? (numericResponses.reduce((sum, num) => sum + num, 0) / numericResponses.length).toFixed(2)
+            : 0;
+            
+        } else {
+          // Analyze text data
+          const lengths = questionResponses.map(answer => String(answer).length);
+          questionAnalysis.averageLength = lengths.length > 0 
+            ? Math.round(lengths.reduce((sum, len) => sum + len, 0) / lengths.length)
+            : 0;
+            
+          // Find most common answer (simplified)
+          const answerCounts = {};
+          questionResponses.forEach(answer => {
+            const normalized = String(answer).toLowerCase().trim();
+            answerCounts[normalized] = (answerCounts[normalized] || 0) + 1;
+          });
+          
+          const mostCommonEntry = Object.entries(answerCounts)
+            .sort(([,a], [,b]) => b - a)[0];
+          questionAnalysis.mostCommon = mostCommonEntry ? mostCommonEntry[0] : 'N/A';
+        }
+
+        analytics.questionAnalytics.push(questionAnalysis);
+      });
+    }
+
+    // Generate timeline data (last 30 days)
+    const timeline = [];
+    const now = new Date();
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      const dayResponses = forms.filter(form => {
+        const formDate = new Date(form.createdAt).toISOString().split('T')[0];
+        return formDate === dateStr;
+      }).length;
+      
+      timeline.push({
+        date: dateStr,
+        responses: dayResponses
+      });
+    }
+    analytics.timeline = timeline;
+
+    res.json(analytics);
+  } catch (error) {
+    console.error('Error generating analytics:', error);
+    res.status(500).json({ message: 'Error generating analytics' });
   }
 });
 

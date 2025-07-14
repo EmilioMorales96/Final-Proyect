@@ -7,9 +7,9 @@ import "./index.css";
 import "./App.css";
 import { Toaster } from "react-hot-toast";
 import AppRoutes from "./AppRoutes.jsx";
+import "./i18n";
 
-console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
-
+// Initialize React application
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>

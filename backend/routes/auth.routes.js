@@ -6,25 +6,42 @@ import jwt from "jsonwebtoken";
 const router = express.Router();
 const { User } = db;
 
-// Register
-// Endpoint to register a new user
+/**
+ * Register a new user
+ * POST /api/auth/register
+ */
 router.post("/register", async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    
+    // Validate required fields
     if (!username || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
+    
+    // Check if email is already registered
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(409).json({ message: "Email is already registered" });
     }
+    
+    // Hash password and create user
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
     });
-    res.status(201).json({ message: "User registered successfully", user: { id: user.id, username: user.username, email: user.email } });
+    
+    // Return success response
+    res.status(201).json({ 
+      message: "User registered successfully", 
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email 
+      } 
+    });
   } catch (err) {
     res.status(500).json({ message: "Error registering user", error: err.message });
   }

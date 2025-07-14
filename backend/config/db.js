@@ -1,8 +1,7 @@
 import 'dotenv/config';
 import { Sequelize } from 'sequelize';
 
-console.log('DB config:', process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, process.env.DB_HOST);
-
+// Create Sequelize instance with database configuration
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
@@ -10,11 +9,11 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT, 
-    logging: false,
+    logging: false, // Disable SQL query logging in production
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: false,
+        rejectUnauthorized: false, // Required for cloud database connections
       },
     },
   }

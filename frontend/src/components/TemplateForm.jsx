@@ -145,6 +145,22 @@ export default function TemplateForm({ onSubmit }) {
       return;
     }
 
+    // Check question type limits
+    const typeCounts = {};
+    questions.forEach(q => {
+      typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
+    });
+
+    const limitedTypes = ['text', 'textarea', 'integer', 'checkbox'];
+    const maxPerType = 4;
+    
+    for (const type of limitedTypes) {
+      if (typeCounts[type] > maxPerType) {
+        toast.error(`Maximum ${maxPerType} questions allowed for type: ${type}`);
+        return;
+      }
+    }
+
     if (onSubmit) {
       onSubmit({
         title,
@@ -213,13 +229,17 @@ export default function TemplateForm({ onSubmit }) {
         value={description}
         onChange={e => setDescription(e.target.value)}
       />
-      <input
-        type="text"
-        placeholder="Topic"
-        className="w-full mb-6 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
+      <select
+        className="w-full mb-6 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
         value={topic}
         onChange={e => setTopic(e.target.value)}
-      />
+        required
+      >
+        <option value="">Select a topic</option>
+        <option value="Education">Education</option>
+        <option value="Quiz">Quiz</option>
+        <option value="Other">Other</option>
+      </select>
 
       <div className="mb-6">
         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">Tags</label>

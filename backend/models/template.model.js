@@ -16,7 +16,7 @@ export default (sequelize) => {
       allowNull: false,
     },
     topic: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM('Education', 'Quiz', 'Other'),
       allowNull: false,
     },
     imageUrl: {
