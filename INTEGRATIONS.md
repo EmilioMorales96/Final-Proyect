@@ -1,13 +1,18 @@
 # Forms App - External Integrations
 
-This application now includes three major external integrations as requested:
+This application includes three major external integrations as requested for the final project submission.
 
-## 1. Salesforce Integration
+## Integration Status: ✅ COMPLETED
+
+All three integrations have been fully implemented and are ready for testing and demonstration.
+
+## 1. Salesforce Integration ✅
 
 ### Features
 - Create Salesforce Account and Contact from user profile
 - Collects additional business information (company, industry, revenue, etc.)
-- Uses Salesforce REST API v57.0
+- Uses Salesforce REST API v57.0 with client credentials flow
+- Available only to authenticated users from their profile page
 
 ### Setup
 1. Create a Salesforce Developer Org at https://developer.salesforce.com/signup

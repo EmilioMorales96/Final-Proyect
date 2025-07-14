@@ -10,6 +10,29 @@ frontend/node_modules/
 backend/.env
 frontend/.env
 
+# Archivos de configuración sensibles
+backend/config/config.json
+config.json
+credentials.json
+keys.json
+
+# Archivos de certificados y claves
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+private_key.json
+service-account-key.json
+
+# Uploads y archivos de usuario
+uploads/
+backend/uploads/
+frontend/public/uploads/
+temp/
+tmp/
+
 # Archivos de lock
 package-lock.json
 yarn.lock
@@ -31,7 +54,9 @@ pnpm-debug.log*
 # Archivos temporales del sistema/IDE
 .DS_Store
 Thumbs.db
-.vscode/
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
 .idea/
 *.suo
 *.ntvs*
@@ -64,6 +89,23 @@ out/
 # SQLite
 *.sqlite
 *.sqlite3
+*.db
+
+# Bases de datos de desarrollo local
+database.sqlite
+dev.db
+test.db
+
+# Archivos de sesión y tokens
+sessions/
+tokens/
+auth_tokens.json
+
+# Archivos de backup y dumps
+*.sql
+*.dump
+backup/
+backups/
 
 # Snapshots de tests
 __snapshots__/
@@ -78,3 +120,27 @@ docker-compose.override.yml
 # Papelera de Mac/Windows
 .Trashes
 $RECYCLE.BIN/
+
+# Archivos específicos de integraciones
+salesforce_credentials.json
+onedrive_tokens.json
+dropbox_tokens.json
+oauth_tokens.json
+api_keys.json
+
+# Archivos de configuración de producción
+production.env
+staging.env
+local.env
+
+# Archivos de debug y testing
+debug.log
+test_output.json
+integration_test.json
+*.test.json
+
+# Archivos temporales de desarrollo
+.tmp/
+.temp/
+scratch/
+playground/

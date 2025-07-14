@@ -1,6 +1,6 @@
 import express from 'express';
 import db from '../models/index.js';
-import { authenticateToken } from '../middleware/auth.middleware.js';
+import authenticateToken from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 const { Template, Question, Comment, User, Tag } = db;
