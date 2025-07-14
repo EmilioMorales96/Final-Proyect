@@ -9,14 +9,28 @@ const router = express.Router();
 // Create template (authenticated only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
+    console.log('Creating template with data:', req.body);
     const { title, description, topic, imageUrl, tags, isPublic, accessUsers, questions } = req.body;
+
+    // Basic validation
+    if (!title || !title.trim()) {
+      return res.status(400).json({ message: 'Title is required.' });
+    }
+    
+    if (!description || !description.trim()) {
+      return res.status(400).json({ message: 'Description is required.' });
+    }
+
+    if (!topic) {
+      return res.status(400).json({ message: 'Topic is required.' });
+    }
 
     // Questions validation
     if (!Array.isArray(questions) || questions.length === 0) {
       return res.status(400).json({ message: 'You must add at least one question.' });
     }
-    if (questions.some(q => !q.label || !q.label.trim())) {
-      return res.status(400).json({ message: "Each question must have text." });
+    if (questions.some(q => !q.title || !q.title.trim() || !q.questionText || !q.questionText.trim())) {
+      return res.status(400).json({ message: "Each question must have a title and question text." });
     }
 
     // Check question type limits
@@ -36,16 +50,19 @@ router.post('/', authenticateToken, async (req, res) => {
       }
     }
 
+    console.log('Creating template object...');
     const template = await Template.create({
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       topic,
-      imageUrl,
-      isPublic,
-      allowedUsers: Array.isArray(accessUsers) ? accessUsers : [],
+      imageUrl: imageUrl || null,
+      isPublic: isPublic !== undefined ? isPublic : true,
+      accessUsers: Array.isArray(accessUsers) ? JSON.stringify(accessUsers) : null,
       authorId: req.user.id,
       questions,
     });
+
+    console.log('Template created successfully:', template.id);
 
     // Associate tags (create if not exist)
     if (Array.isArray(tags)) {
@@ -60,6 +77,17 @@ router.post('/', authenticateToken, async (req, res) => {
     res.status(201).json(template);
   } catch (err) {
     console.error("Error creating template:", err);
+    console.error("Error details:", err.message);
+    if (err.name === 'SequelizeValidationError') {
+      const validationErrors = err.errors.map(error => ({
+        field: error.path,
+        message: error.message
+      }));
+      return res.status(400).json({ 
+        message: 'Validation error', 
+        errors: validationErrors 
+      });
+    }
     res.status(500).json({ message: 'Error creating template.', error: err.message });
   }
 });

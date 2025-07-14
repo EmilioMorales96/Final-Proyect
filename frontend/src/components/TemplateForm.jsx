@@ -168,7 +168,7 @@ export default function TemplateForm({ onSubmit }) {
         topic,
         questions,
         tags: tags.map(t => t.value),
-        allowedUsers: allowedUsers.map(u => u.value) // solo IDs
+        accessUsers: allowedUsers.map(u => u.value) // Changed from allowedUsers to accessUsers
       });
       setTitle("");
       setDescription("");
