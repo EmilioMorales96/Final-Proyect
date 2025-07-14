@@ -25,6 +25,7 @@ export const useTemplateActions = (userToken, fetchTemplates) => {
 
     try {
       console.log("[handleCreateTemplate] Sending to:", `${API_URL}/api/templates`);
+      console.log("[handleCreateTemplate] Template data being sent:", JSON.stringify(templateData, null, 2));
       const res = await fetch(`${API_URL}/api/templates`, {
         method: "POST",
         headers: {
@@ -35,7 +36,8 @@ export const useTemplateActions = (userToken, fetchTemplates) => {
       });
 
       const data = await res.json();
-      console.log("[handleCreateTemplate] Response:", data);
+      console.log("[handleCreateTemplate] Response status:", res.status);
+      console.log("[handleCreateTemplate] Response data:", data);
       if (!res.ok) throw new Error(data.message || "Error creating template.");
 
       toast.success("Template created!");

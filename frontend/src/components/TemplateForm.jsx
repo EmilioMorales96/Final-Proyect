@@ -67,6 +67,7 @@ export default function TemplateForm({ onSubmit }) {
   const [lastDroppedIdx, setLastDroppedIdx] = useState(null);
   const [tags, setTags] = useState([]);
   const [allowedUsers, setAllowedUsers] = useState([]);
+  const [isPublic, setIsPublic] = useState(true);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -168,13 +169,15 @@ export default function TemplateForm({ onSubmit }) {
         topic,
         questions,
         tags: tags.map(t => t.value),
-        accessUsers: allowedUsers.map(u => u.value) // Changed from allowedUsers to accessUsers
+        accessUsers: allowedUsers.map(u => u.value),
+        isPublic
       });
       setTitle("");
       setDescription("");
       setTopic("");
       setQuestions([]);
       setTags([]);
+      setIsPublic(true);
     }
   };
 
@@ -281,8 +284,49 @@ export default function TemplateForm({ onSubmit }) {
 
       <div className="mb-6">
         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">
+          Template Visibility
+        </label>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="visibility"
+              checked={isPublic}
+              onChange={() => {
+                setIsPublic(true);
+                setAllowedUsers([]); // Clear allowed users when making public
+              }}
+              className="mr-2"
+            />
+            <span className="text-gray-700 dark:text-gray-200">Public</span>
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="visibility"
+              checked={!isPublic}
+              onChange={() => setIsPublic(false)}
+              className="mr-2"
+            />
+            <span className="text-gray-700 dark:text-gray-200">Private</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">
           Allowed users (for restricted templates)
         </label>
+        {!isPublic && (
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+            Select specific users who can access this private template
+          </p>
+        )}
+        {isPublic && (
+          <p className="text-sm text-green-600 dark:text-green-400 mb-2">
+            This template will be publicly accessible to all users
+          </p>
+        )}
         <AsyncSelect
           isMulti
           cacheOptions
@@ -294,6 +338,7 @@ export default function TemplateForm({ onSubmit }) {
           className="react-select-container"
           classNamePrefix="react-select"
           noOptionsMessage={() => "No users found"}
+          isDisabled={isPublic}
         />
       </div>
 
