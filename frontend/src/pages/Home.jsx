@@ -23,17 +23,28 @@ export default function Home() {
       const recentResponse = await fetch(`${API_URL}/api/templates/recent`);
       if (recentResponse.ok) {
         const recentData = await recentResponse.json();
-        setRecentTemplates(recentData);
+        // Ensure we always set an array
+        setRecentTemplates(Array.isArray(recentData) ? recentData : []);
+      } else {
+        console.error("Failed to fetch recent templates:", recentResponse.status);
+        setRecentTemplates([]);
       }
 
       // Fetch popular templates
       const popularResponse = await fetch(`${API_URL}/api/templates/popular`);
       if (popularResponse.ok) {
         const popularData = await popularResponse.json();
-        setPopularTemplates(popularData);
+        // Ensure we always set an array
+        setPopularTemplates(Array.isArray(popularData) ? popularData : []);
+      } else {
+        console.error("Failed to fetch popular templates:", popularResponse.status);
+        setPopularTemplates([]);
       }
     } catch (error) {
       console.error("Error fetching home data:", error);
+      // Set empty arrays on error
+      setRecentTemplates([]);
+      setPopularTemplates([]);
     } finally {
       setLoading(false);
     }
@@ -90,7 +101,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recentTemplates.slice(0, 6).map((template) => (
+                {(recentTemplates || []).slice(0, 6).map((template) => (
                   <Link
                     key={template.id}
                     to={`/forms/${template.id}`}
@@ -138,7 +149,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {popularTemplates.slice(0, 5).map((template, index) => (
+                {(popularTemplates || []).slice(0, 5).map((template, index) => (
                   <Link
                     key={template.id}
                     to={`/forms/${template.id}`}

@@ -130,7 +130,7 @@ function renderAnswer(question, answer) {
   }
   
   if (question.type === "file") {
-    const files = Array.isArray(answer) ? answer : [answer];
+    const files = Array.isArray(answer) ? answer : (answer ? [answer] : []);
     return (
       <div className="space-y-2">
         {files.map((file, i) => (
