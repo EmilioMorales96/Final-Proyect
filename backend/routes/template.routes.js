@@ -7,6 +7,36 @@ import { requireAdmin, requireResourceOwnershipOrAdmin } from '../middleware/aut
 
 const router = express.Router();
 
+// Debug route to check user authentication status
+router.get('/debug/user', authenticateToken, async (req, res) => {
+  try {
+    console.log('Debug route - User info:', req.user);
+    
+    // Get full user details from database
+    const fullUser = await User.findByPk(req.user.id);
+    
+    res.json({
+      message: 'User authentication working',
+      userFromToken: req.user,
+      userFromDatabase: {
+        id: fullUser.id,
+        username: fullUser.username,
+        role: fullUser.role,
+        isBlocked: fullUser.isBlocked,
+        createdAt: fullUser.createdAt,
+        updatedAt: fullUser.updatedAt
+      }
+    });
+  } catch (error) {
+    console.error('Debug route error:', error);
+    res.status(500).json({ 
+      message: 'Error in debug route', 
+      error: error.message,
+      userInfo: req.user 
+    });
+  }
+});
+
 // Create template (authenticated only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
