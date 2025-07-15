@@ -10,6 +10,7 @@ import TemplateTagModel from './TemplateTag.js';
 import FavoriteModel from './Favorite.js';
 import LikeModel from './Like.js';
 import CommentModel from './Comment.js';
+import QuestionModel from './question.model.js';
 
 // Database object to hold sequelize instance and models
 const db = {};
@@ -24,6 +25,7 @@ db.TemplateTag = TemplateTagModel(sequelize, DataTypes);
 db.Favorite = FavoriteModel(sequelize, DataTypes);
 db.Like = LikeModel(sequelize, DataTypes);
 db.Comment = CommentModel(sequelize, DataTypes);
+db.Question = QuestionModel(sequelize, DataTypes);
 
 // Define model associations
 
@@ -72,5 +74,9 @@ db.Form.belongsTo(db.User, { foreignKey: "userId" });
 db.Form.belongsTo(db.Template, { foreignKey: "templateId" });
 db.User.hasMany(db.Form, { foreignKey: "userId" });
 db.Template.hasMany(db.Form, { foreignKey: "templateId" });
+
+// Question relationships
+db.Question.belongsTo(db.Template, { foreignKey: "templateId" });
+db.Template.hasMany(db.Question, { foreignKey: "templateId" });
 
 export default db;

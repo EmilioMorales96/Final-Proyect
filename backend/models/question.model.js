@@ -1,7 +1,4 @@
-const { DataTypes } = require('sequelize');
-const QuestionModel = require('./question.model');
-
-module.exports = (sequelize) => {
+export default (sequelize, DataTypes) => {
   const Question = sequelize.define('Question', {
     id: {
       type: DataTypes.INTEGER,
@@ -13,14 +10,19 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     type: {
-      type: DataTypes.ENUM('short_text', 'long_text', 'integer', 'checkbox'),
+      type: DataTypes.ENUM('text', 'textarea', 'integer', 'checkbox', 'radio', 'select'),
       allowNull: false,
+      defaultValue: 'text'
     },
     title: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    questionText: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
@@ -33,6 +35,17 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: 0,
     },
+    isRequired: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    options: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    }
+  }, { 
+    timestamps: true,
+    tableName: 'Questions'
   });
 
   return Question;

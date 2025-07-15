@@ -18,6 +18,7 @@ import commentRoutes from './routes/comment.routes.js';
 import favoriteRoutes from './routes/favorite.routes.js';
 import searchRoutes from './routes/search.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
+import questionRoutes from './routes/question.routes.js';
 console.log('✅ All routes loaded successfully');
 
 const app = express();
@@ -72,6 +73,7 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/questions', questionRoutes);
 console.log('✅ All routes mounted successfully');
 
 // Serve static files
@@ -127,6 +129,7 @@ const startServer = async () => {
       console.log(`⭐ Favorite endpoints: http://localhost:${PORT}/api/favorites`);
       console.log(`🔍 Search endpoints: http://localhost:${PORT}/api/search`);
       console.log(`📁 Upload endpoints: http://localhost:${PORT}/api/upload`);
+      console.log(`❓ Question endpoints: http://localhost:${PORT}/api/questions`);
       console.log('\n💡 Tip: This server will work without database for testing routes');
     });
   } catch (error) {
