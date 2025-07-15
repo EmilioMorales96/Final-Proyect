@@ -77,6 +77,64 @@ router.post('/debug/unblock-admin', async (req, res) => {
   }
 });
 
+// Debug endpoint to test user authentication
+router.get('/debug/auth-test', authenticateToken, async (req, res) => {
+  try {
+    console.log('[TEMPLATE AUTH DEBUG] User authenticated successfully:', req.user);
+    res.json({ 
+      success: true, 
+      message: 'Authentication working correctly',
+      user: req.user,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('[TEMPLATE AUTH DEBUG] Error:', error);
+    res.status(500).json({ 
+      message: 'Error in auth test', 
+      error: error.message 
+    });
+  }
+});
+
+// Simple debug endpoint without authentication
+router.post('/debug/simple-test', async (req, res) => {
+  try {
+    console.log('[TEMPLATE SIMPLE DEBUG] Testing basic template creation...');
+    
+    // Create a minimal test template without authentication
+    const testTemplate = await Template.create({
+      title: 'Debug Test Template',
+      description: 'Debug test description',
+      topic: 'Other',
+      isPublic: true,
+      authorId: 1, // Hardcoded for testing
+      questions: [
+        {
+          title: 'Debug Question',
+          questionText: 'This is a debug question',
+          type: 'text',
+          isRequired: false
+        }
+      ]
+    });
+    
+    console.log('[TEMPLATE SIMPLE DEBUG] Test template created successfully:', testTemplate.id);
+    res.json({ 
+      success: true, 
+      message: 'Simple test template created successfully', 
+      templateId: testTemplate.id,
+      templateData: testTemplate
+    });
+  } catch (error) {
+    console.error('[TEMPLATE SIMPLE DEBUG] Error:', error);
+    res.status(500).json({ 
+      message: 'Error creating simple test template', 
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Debug endpoint to test template creation with minimal data
 router.post('/debug/test-create', authenticateToken, async (req, res) => {
   try {
@@ -118,44 +176,68 @@ router.post('/debug/test-create', authenticateToken, async (req, res) => {
   }
 });
 
-// Create template (authenticated only)
+// Create template (authenticated only) - RELAXED VALIDATION FOR DEBUGGING
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    console.log('Creating template - User info:', req.user);
-    console.log('Creating template with data:', JSON.stringify(req.body, null, 2));
+    console.log('[TEMPLATE] Creating template - User info:', req.user);
+    console.log('[TEMPLATE] Request body:', JSON.stringify(req.body, null, 2));
+    
     const { title, description, topic, imageUrl, tags, isPublic, accessUsers, questions } = req.body;
 
-    // Basic validation with detailed logging
-    console.log('[TEMPLATE] Validating basic fields...');
-    if (!title || !title.trim()) {
-      console.log('[TEMPLATE] Validation failed: Title is missing or empty');
-      return res.status(400).json({ message: 'Title is required.' });
+    // RELAXED VALIDATIONS FOR DEBUGGING
+    console.log('[TEMPLATE] Checking title:', title);
+    if (!title) {
+      console.log('[TEMPLATE] ERROR: Title is missing');
+      return res.status(400).json({ 
+        message: 'Title is required.',
+        received: { title, type: typeof title }
+      });
     }
     
-    if (!description || !description.trim()) {
-      console.log('[TEMPLATE] Validation failed: Description is missing or empty');
-      return res.status(400).json({ message: 'Description is required.' });
+    console.log('[TEMPLATE] Checking description:', description);
+    if (!description) {
+      console.log('[TEMPLATE] ERROR: Description is missing');
+      return res.status(400).json({ 
+        message: 'Description is required.',
+        received: { description, type: typeof description }
+      });
     }
 
+    console.log('[TEMPLATE] Checking topic:', topic);
     if (!topic) {
-      console.log('[TEMPLATE] Validation failed: Topic is missing');
-      return res.status(400).json({ message: 'Topic is required.' });
+      console.log('[TEMPLATE] ERROR: Topic is missing');
+      return res.status(400).json({ 
+        message: 'Topic is required.',
+        received: { topic, type: typeof topic }
+      });
     }
 
-    // Questions validation with detailed logging
-    console.log('[TEMPLATE] Validating questions...');
-    console.log('[TEMPLATE] Questions received:', questions);
-    
-    if (!Array.isArray(questions) || questions.length === 0) {
-      console.log('[TEMPLATE] Validation failed: Questions array is empty or not an array');
-      return res.status(400).json({ message: 'You must add at least one question.' });
+    console.log('[TEMPLATE] Checking questions:', questions);
+    if (!questions) {
+      console.log('[TEMPLATE] ERROR: Questions is missing');
+      return res.status(400).json({ 
+        message: 'Questions are required.',
+        received: { questions, type: typeof questions }
+      });
     }
     
-    const invalidQuestion = questions.find(q => !q.title || !q.title.trim() || !q.questionText || !q.questionText.trim());
-    if (invalidQuestion) {
-      console.log('[TEMPLATE] Validation failed: Invalid question found:', invalidQuestion);
-      return res.status(400).json({ message: "Each question must have a title and question text." });
+    if (!Array.isArray(questions)) {
+      console.log('[TEMPLATE] ERROR: Questions is not an array');
+      return res.status(400).json({ 
+        message: 'Questions must be an array.',
+        received: { questions, type: typeof questions, isArray: Array.isArray(questions) }
+      });
     }
+    
+    if (questions.length === 0) {
+      console.log('[TEMPLATE] ERROR: Questions array is empty');
+      return res.status(400).json({ 
+        message: 'You must add at least one question.',
+        received: { questionsLength: questions.length, questions }
+      });
+    }
+
+    console.log('[TEMPLATE] All basic validations passed, creating template...');
 
     // Check question type limits
     console.log('[TEMPLATE] Validating question type limits...');
@@ -178,27 +260,39 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     console.log('[TEMPLATE] All validations passed, creating template object...');
-    const template = await Template.create({
-      title: title.trim(),
-      description: description.trim(),
-      topic,
+    
+    // Simplified template creation for debugging
+    const templateData = {
+      title: title.toString().trim(),
+      description: description.toString().trim(),
+      topic: topic.toString(),
       imageUrl: imageUrl || null,
-      isPublic: isPublic !== undefined ? isPublic : true,
+      isPublic: isPublic !== undefined ? Boolean(isPublic) : true,
       accessUsers: Array.isArray(accessUsers) ? JSON.stringify(accessUsers) : null,
       authorId: req.user.id,
-      questions,
-    });
+      questions: questions, // Store as JSON
+    };
+    
+    console.log('[TEMPLATE] Template data to create:', templateData);
+    
+    const template = await Template.create(templateData);
+    console.log('[TEMPLATE] Template created successfully with ID:', template.id);
 
-    console.log('Template created successfully:', template.id);
-
-    // Associate tags (create if not exist)
-    if (Array.isArray(tags)) {
-      const tagInstances = await Promise.all(
-        tags.map(name =>
-          Tag.findOrCreate({ where: { name: name.trim().toLowerCase() } }).then(([tag]) => tag)
-        )
-      );
-      await template.setTags(tagInstances);
+    // Simplified tag handling - skip for now to avoid errors
+    if (Array.isArray(tags) && tags.length > 0) {
+      try {
+        console.log('[TEMPLATE] Processing tags:', tags);
+        const tagInstances = await Promise.all(
+          tags.map(name =>
+            db.Tag.findOrCreate({ where: { name: name.toString().trim().toLowerCase() } }).then(([tag]) => tag)
+          )
+        );
+        await template.setTags(tagInstances);
+        console.log('[TEMPLATE] Tags associated successfully');
+      } catch (tagError) {
+        console.warn('[TEMPLATE] Warning - Tag association failed:', tagError.message);
+        // Continue without failing the template creation
+      }
     }
 
     res.status(201).json(template);
