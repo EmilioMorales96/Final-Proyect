@@ -300,7 +300,25 @@ router.post('/', authenticateToken, async (req, res) => {
       }
     }
 
-    res.status(201).json(template);
+    // Return success response with template data and next steps
+    res.status(201).json({
+      success: true,
+      message: 'Template created successfully! You can now add questions to your template.',
+      template: {
+        id: template.id,
+        title: template.title,
+        description: template.description,
+        topic: template.topic,
+        isPublic: template.isPublic,
+        authorId: template.authorId,
+        createdAt: template.createdAt
+      },
+      nextSteps: {
+        addQuestions: `/api/questions`,
+        viewTemplate: `/api/templates/${template.id}`,
+        getQuestions: `/api/questions/template/${template.id}`
+      }
+    });
   } catch (err) {
     console.error("Error creating template:", err);
     console.error("Error details:", err.message);

@@ -60,6 +60,82 @@
   animation: pop-fav 0.7s;
 }
 
+/* Nuevas animaciones para el template form */
+@keyframes slideInFromTop {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.animate-in {
+  animation: slideInFromTop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Mejoras para el drag and drop */
+.sortable-ghost {
+  opacity: 0.5;
+  transform: rotate(2deg);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.sortable-chosen {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para checkboxes personalizados */
+.custom-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.custom-checkbox:checked {
+  border-color: #8b5cf6;
+  background: #8b5cf6;
+}
+
+.custom-checkbox:checked::before {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.custom-checkbox:hover {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
 body {
   @apply bg-gray-100 dark:bg-gray-900;
 }

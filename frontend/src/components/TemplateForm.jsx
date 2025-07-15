@@ -125,7 +125,7 @@ export default function TemplateForm({ onSubmit }) {
   };
 
   // VALIDATION before calling onSubmit
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
     if (!title.trim() || !description.trim() || !topic.trim()) {
@@ -162,22 +162,42 @@ export default function TemplateForm({ onSubmit }) {
       }
     }
 
-    if (onSubmit) {
-      onSubmit({
-        title,
-        description,
-        topic,
-        questions,
-        tags: tags.map(t => t.value),
-        accessUsers: allowedUsers.map(u => u.value),
-        isPublic
-      });
-      setTitle("");
-      setDescription("");
-      setTopic("");
-      setQuestions([]);
-      setTags([]);
-      setIsPublic(true);
+    try {
+      if (onSubmit) {
+        await onSubmit({
+          title,
+          description,
+          topic,
+          questions,
+          tags: tags.map(t => t.value),
+          accessUsers: allowedUsers.map(u => u.value),
+          isPublic
+        });
+        
+        // Show success message
+        toast.success("🎉 Template created successfully!", {
+          duration: 4000,
+          style: {
+            background: '#10B981',
+            color: '#ffffff',
+            fontWeight: '600',
+            padding: '16px 24px',
+            borderRadius: '12px',
+          },
+        });
+        
+        // Clear form
+        setTitle("");
+        setDescription("");
+        setTopic("");
+        setQuestions([]);
+        setTags([]);
+        setAllowedUsers([]);
+        setIsPublic(true);
+      }
+    } catch (error) {
+      toast.error("Failed to create template. Please try again.");
+      console.error("Template creation error:", error);
     }
   };
 
@@ -212,192 +232,302 @@ export default function TemplateForm({ onSubmit }) {
   useEffect(() => {
   }, []);
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-4 sm:p-8 max-w-2xl mx-auto mb-8 w-full"
-    >
-      <h2 className="text-2xl font-bold mb-6 text-violet-700 dark:text-violet-400">Create new template</h2>
-      <input
-        type="text"
-        placeholder="Template title"
-        className="w-full mb-3 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        required
-      />
-      <input
-        type="text"
-        placeholder="Description"
-        className="w-full mb-3 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-      />
-      <select
-        className="w-full mb-6 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-400 transition"
-        value={topic}
-        onChange={e => setTopic(e.target.value)}
-        required
-      >
-        <option value="">Select a topic</option>
-        <option value="Education">Education</option>
-        <option value="Quiz">Quiz</option>
-        <option value="Other">Other</option>
-      </select>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-violet-900 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl shadow-2xl overflow-hidden"
+        >
+          {/* Header */}
+          <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-8 text-white">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold">Create New Template</h2>
+                <p className="text-violet-100 mt-1">Build engaging forms with questions and interactive elements</p>
+              </div>
+            </div>
+          </div>
 
-      <div className="mb-6">
-        <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">Tags</label>
-        <CreatableSelect
-          isMulti
-          value={tags}
-          onChange={setTags}
-          loadOptions={fetchTagOptions}
-          onCreateOption={async (inputValue) => {
-            const newTag = inputValue.trim().toLowerCase();
-            if (newTag.length < 2 || newTag.length > 64) {
-              toast.error("Tag must be between 2 and 64 characters.");
-              return;
-            }
-            if (tags.some(t => t.value === newTag)) {
-              toast.error("Tag already added.");
-              return;
-            }
-            // POST al backend
-            const res = await fetch(`${API_URL}/api/tags`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ name: newTag })
-            });
-            if (res.ok) {
-              setTags([...tags, { label: newTag, value: newTag }]);
-            } else {
-              toast.error("Could not create tag.");
-            }
-          }}
-          placeholder="Type to search or create tags..."
-          className="react-select-container"
-          classNamePrefix="react-select"
-          noOptionsMessage={() => "No matches found"}
-          isClearable={false}
-          formatCreateLabel={inputValue => `Create tag: "${inputValue}"`}
-        />
-      </div>
-
-      <div className="mb-6">
-        <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">
-          Template Visibility
-        </label>
-        <div className="flex items-center gap-4">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="visibility"
-              checked={isPublic}
-              onChange={() => {
-                setIsPublic(true);
-                setAllowedUsers([]); // Clear allowed users when making public
-              }}
-              className="mr-2"
-            />
-            <span className="text-gray-700 dark:text-gray-200">Public</span>
-          </label>
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="visibility"
-              checked={!isPublic}
-              onChange={() => setIsPublic(false)}
-              className="mr-2"
-            />
-            <span className="text-gray-700 dark:text-gray-200">Private</span>
-          </label>
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <label className="block font-medium mb-1 text-gray-700 dark:text-gray-200">
-          Allowed users (for restricted templates)
-        </label>
-        {!isPublic && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            Select specific users who can access this private template
-          </p>
-        )}
-        {isPublic && (
-          <p className="text-sm text-green-600 dark:text-green-400 mb-2">
-            This template will be publicly accessible to all users
-          </p>
-        )}
-        <AsyncSelect
-          isMulti
-          cacheOptions
-          loadOptions={fetchUserOptions}
-          defaultOptions={false}
-          value={allowedUsers}
-          onChange={setAllowedUsers}
-          placeholder="Type name or email to add users..."
-          className="react-select-container"
-          classNamePrefix="react-select"
-          noOptionsMessage={() => "No users found"}
-          isDisabled={isPublic}
-        />
-      </div>
-
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Questions</h3>
-        <div className="relative">
-          <button
-            type="button"
-            className="flex items-center px-4 py-2 bg-violet-600 text-white rounded-lg shadow hover:bg-violet-700 transition"
-            onClick={() => setShowMenu(m => !m)}
-          >
-            + Add question
-          </button>
-          {showMenu && (
-            <QuestionTypeMenu
-              onSelect={handleAddQuestion}
-              onClose={() => setShowMenu(false)}
-            />
-          )}
-        </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext
-            items={questions.map((_, i) => i.toString())}
-            strategy={verticalListSortingStrategy}
-          >
-            {questions.length === 0 && (
-              <div className="text-gray-400 dark:text-gray-500 italic mb-6">No questions yet.</div>
-            )}
-
-            {questions.map((q, idx) => (
-              <DraggableQuestion key={idx} id={idx.toString()}>
-                {({ dragHandleProps }) => (
-                  <QuestionCard
-                    question={q}
-                    idx={idx}
-                    onChange={handleQuestionChange}
-                    onOptionChange={handleOptionChange}
-                    onAddOption={handleAddOption}
-                    onDeleteOption={handleDeleteOption}
-                    onDelete={handleDeleteQuestion}
-                    dragHandleProps={dragHandleProps}
-                    flash={lastDroppedIdx === idx}
+          {/* Form Content */}
+          <div className="p-8 space-y-8">
+            {/* Basic Information */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2">
+                Basic Information
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Template Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter a compelling title"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all duration-200"
+                    value={title}
+                    onChange={e => setTitle(e.target.value)}
+                    required
                   />
-                )}
-              </DraggableQuestion>
-            ))}
-          </SortableContext>
-        </DndContext>
-      </div>
+                </div>
 
-      <button
-        type="submit"
-        className="mt-4 w-full py-2 bg-violet-600 text-white rounded-lg font-semibold hover:bg-violet-700 transition"
-      >
-        Create template
-      </button>
-    </form>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    Topic *
+                  </label>
+                  <select
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all duration-200"
+                    value={topic}
+                    onChange={e => setTopic(e.target.value)}
+                    required
+                  >
+                    <option value="">Select a topic</option>
+                    <option value="Education">📚 Education</option>
+                    <option value="Quiz">🧩 Quiz</option>
+                    <option value="Other">🔧 Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  placeholder="Describe what this template is for..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all duration-200 resize-none"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Tags */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2">
+                Tags & Organization
+              </h3>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Tags (helps others find your template)
+                </label>
+                <CreatableSelect
+                  isMulti
+                  value={tags}
+                  onChange={setTags}
+                  loadOptions={fetchTagOptions}
+                  onCreateOption={async (inputValue) => {
+                    const newTag = inputValue.trim().toLowerCase();
+                    if (newTag.length < 2 || newTag.length > 64) {
+                      toast.error("Tag must be between 2 and 64 characters.");
+                      return;
+                    }
+                    if (tags.some(t => t.value === newTag)) {
+                      toast.error("Tag already added.");
+                      return;
+                    }
+                    const res = await fetch(`${API_URL}/api/tags`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ name: newTag })
+                    });
+                    if (res.ok) {
+                      setTags([...tags, { label: newTag, value: newTag }]);
+                      toast.success(`Tag "${newTag}" created!`);
+                    } else {
+                      toast.error("Could not create tag.");
+                    }
+                  }}
+                  placeholder="Type to search or create tags..."
+                  className="react-select-container"
+                  classNamePrefix="react-select"
+                  noOptionsMessage={() => "No matches found"}
+                  isClearable={false}
+                  formatCreateLabel={inputValue => `Create tag: "${inputValue}"`}
+                />
+              </div>
+            </div>
+
+            {/* Visibility */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 pb-2">
+                Access Settings
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    Template Visibility
+                  </label>
+                  <div className="space-y-3">
+                    <label className="flex items-center p-4 rounded-xl border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <input
+                        type="radio"
+                        name="visibility"
+                        checked={isPublic}
+                        onChange={() => {
+                          setIsPublic(true);
+                          setAllowedUsers([]);
+                        }}
+                        className="mr-3 text-violet-600 focus:ring-violet-500"
+                      />
+                      <div>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">🌍 Public</span>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Anyone can access this template</p>
+                      </div>
+                    </label>
+                    <label className="flex items-center p-4 rounded-xl border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <input
+                        type="radio"
+                        name="visibility"
+                        checked={!isPublic}
+                        onChange={() => setIsPublic(false)}
+                        className="mr-3 text-violet-600 focus:ring-violet-500"
+                      />
+                      <div>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">🔒 Private</span>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Only selected users can access</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                    Allowed Users {!isPublic && <span className="text-red-500">*</span>}
+                  </label>
+                  <AsyncSelect
+                    isMulti
+                    cacheOptions
+                    loadOptions={fetchUserOptions}
+                    defaultOptions={false}
+                    value={allowedUsers}
+                    onChange={setAllowedUsers}
+                    placeholder={isPublic ? "Not needed for public templates" : "Type name or email to add users..."}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    noOptionsMessage={() => "No users found"}
+                    isDisabled={isPublic}
+                  />
+                  {isPublic && (
+                    <p className="text-sm text-green-600 dark:text-green-400 mt-2 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      This template will be publicly accessible to all users
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Questions Section */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Questions</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Add questions to collect information from users ({questions.length} question{questions.length !== 1 ? 's' : ''} added)
+                  </p>
+                </div>
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-violet-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                    onClick={() => setShowMenu(m => !m)}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Add Question
+                  </button>
+                  {showMenu && (
+                    <QuestionTypeMenu
+                      onSelect={handleAddQuestion}
+                      onClose={() => setShowMenu(false)}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Questions List */}
+              <div className="space-y-6">
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext
+                    items={questions.map((_, i) => i.toString())}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {questions.length === 0 ? (
+                      <div className="text-center py-16 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+                        <div className="mx-auto w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-4">
+                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">No questions yet</h4>
+                        <p className="text-gray-500 dark:text-gray-500 mb-4">Start building your form by adding questions above</p>
+                        <button
+                          type="button"
+                          onClick={() => setShowMenu(true)}
+                          className="inline-flex items-center gap-2 px-4 py-2 text-violet-600 hover:text-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                          Add your first question
+                        </button>
+                      </div>
+                    ) : (
+                      questions.map((q, idx) => (
+                        <DraggableQuestion key={idx} id={idx.toString()}>
+                          {({ dragHandleProps }) => (
+                            <QuestionCard
+                              question={q}
+                              idx={idx}
+                              onChange={handleQuestionChange}
+                              onOptionChange={handleOptionChange}
+                              onAddOption={handleAddOption}
+                              onDeleteOption={handleDeleteOption}
+                              onDelete={handleDeleteQuestion}
+                              dragHandleProps={dragHandleProps}
+                              flash={lastDroppedIdx === idx}
+                            />
+                          )}
+                        </DraggableQuestion>
+                      ))
+                    )}
+                  </SortableContext>
+                </DndContext>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-8 border-t border-gray-200 dark:border-gray-700">
+              <button
+                type="submit"
+                className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:from-violet-700 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                disabled={questions.length === 0}
+              >
+                {questions.length === 0 ? (
+                  "Add at least one question to create template"
+                ) : (
+                  `Create Template with ${questions.length} Question${questions.length !== 1 ? 's' : ''}`
+                )}
+              </button>
+              {questions.length > 0 && (
+                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
+                  Your template will be saved and ready for others to use
+                </p>
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
