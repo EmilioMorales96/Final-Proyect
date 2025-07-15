@@ -37,6 +37,46 @@ router.get('/debug/user', authenticateToken, async (req, res) => {
   }
 });
 
+// Emergency route to unblock admin user (only use in emergency)
+router.post('/debug/unblock-admin', async (req, res) => {
+  try {
+    const { email, adminKey } = req.body;
+    
+    // Simple admin key check (change this to something secure)
+    if (adminKey !== 'emergency-unblock-2024') {
+      return res.status(403).json({ message: 'Invalid admin key' });
+    }
+    
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    if (user.role !== 'admin') {
+      return res.status(403).json({ message: 'User is not an admin' });
+    }
+    
+    await user.update({ isBlocked: false });
+    
+    res.json({ 
+      message: 'Admin user unblocked successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        isBlocked: user.isBlocked
+      }
+    });
+  } catch (error) {
+    console.error('Unblock admin error:', error);
+    res.status(500).json({ 
+      message: 'Error unblocking admin', 
+      error: error.message 
+    });
+  }
+});
+
 // Create template (authenticated only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
