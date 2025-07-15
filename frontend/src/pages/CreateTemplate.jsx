@@ -17,6 +17,8 @@ export default function CreateTemplate() {
     setIsSubmitting(true);
     
     try {
+      console.log("Creating template with data:", templateData);
+      
       const response = await fetch(`${API_URL}/api/templates`, {
         method: "POST",
         headers: {
@@ -32,27 +34,15 @@ export default function CreateTemplate() {
       }
 
       const templateResult = await response.json();
-      console.log("Template created:", templateResult);
+      console.log("✅ Template created successfully:", templateResult);
       
-      // Show success message and redirect
-      toast.success("🎉 Template created successfully!", {
-        duration: 4000,
-        style: {
-          background: '#10B981',
-          color: '#ffffff',
-          fontWeight: '600',
-          padding: '16px 24px',
-          borderRadius: '12px',
-        },
-      });
-
       // Navigate to the forms dashboard
       setTimeout(() => {
         navigate("/forms");
-      }, 1500);
+      }, 2000);
 
     } catch (error) {
-      console.error("Template creation error:", error);
+      console.error("❌ Template creation error:", error);
       toast.error(error.message || "Failed to create template. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -60,11 +50,9 @@ export default function CreateTemplate() {
   };
 
   return (
-    <div className="min-h-screen">
-      <TemplateForm 
-        onSubmit={handleCreateTemplate}
-        isSubmitting={isSubmitting}
-      />
-    </div>
+    <TemplateForm 
+      onSubmit={handleCreateTemplate}
+      isSubmitting={isSubmitting}
+    />
   );
 }

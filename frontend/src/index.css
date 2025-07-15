@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import custom animations */
+@import './styles/animations.css';
+
 /* Animaciones personalizadas */
 @keyframes pulse {
   0%, 100% { opacity: 0.6; }

@@ -25,7 +25,9 @@ export default function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/forms" element={<FormsDashboard />} />
         <Route path="/forms/new" element={<CreateTemplate />} />
+        <Route path="/templates/new" element={<CreateTemplate />} />
         <Route path="/forms/edit/:id" element={<TemplateEditor />} />
+        <Route path="/templates/edit/:id" element={<TemplateEditor />} />
         <Route path="/forms/:id" element={<FormsPage />} />
         <Route path="/forms/:id/fill" element={<FormsPage />} />
         <Route path="/welcome" element={<Welcome />} />
