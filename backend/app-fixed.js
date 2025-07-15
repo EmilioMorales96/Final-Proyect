@@ -80,52 +80,6 @@ app.get('/debug/likes', async (req, res) => {
   }
 });
 
-// Migration endpoint to fix topic enum
-app.post('/debug/migrate-topic-enum', async (req, res) => {
-  try {
-    console.log('🔧 Starting topic enum migration...');
-    
-    // Step 1: Update all "General" values to "Other"
-    const [updateResult] = await db.sequelize.query(`
-      UPDATE "Templates" 
-      SET "topic" = 'Other' 
-      WHERE "topic" = 'General'
-      RETURNING id;
-    `);
-    
-    console.log(`Updated ${updateResult.length} templates from General to Other`);
-    
-    // Step 2: Update any other non-conforming values
-    const [updateResult2] = await db.sequelize.query(`
-      UPDATE "Templates" 
-      SET "topic" = 'Other' 
-      WHERE "topic" NOT IN ('Education', 'Quiz', 'Other')
-      RETURNING id;
-    `);
-    
-    console.log(`Updated ${updateResult2.length} templates with non-conforming values`);
-    
-    // Step 3: Try to sync the database now
-    await db.sequelize.sync({ alter: true });
-    
-    res.json({
-      status: 'success',
-      message: 'Topic enum migration completed successfully',
-      updatedRecords: updateResult.length + updateResult2.length,
-      timestamp: new Date().toISOString()
-    });
-    
-  } catch (error) {
-    console.error('Migration error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Migration failed',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
 // Mount essential API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
