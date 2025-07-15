@@ -12,6 +12,10 @@ import userRoutes from './routes/user.routes.js';
 import templateRoutes from './routes/template.routes.js';
 import formRoutes from './routes/form.routes.js';
 import tagRoutes from './routes/tag.routes.js';
+import likeRoutes from './routes/like.routes.js';
+import commentRoutes from './routes/comment.routes.js';
+import favoriteRoutes from './routes/favorite.routes.js';
+import searchRoutes from './routes/search.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,6 +63,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/tags', tagRoutes);
+app.use('/api/likes', likeRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/favorites', favoriteRoutes);
+app.use('/api/search', searchRoutes);
 
 // Serve static files
 app.use('/uploads', express.static('uploads'));
@@ -108,6 +116,10 @@ const startServer = async () => {
       console.log(`📝 Template endpoints: http://localhost:${PORT}/api/templates`);
       console.log(`📋 Form endpoints: http://localhost:${PORT}/api/forms`);
       console.log(`🏷️  Tag endpoints: http://localhost:${PORT}/api/tags`);
+      console.log(`❤️  Like endpoints: http://localhost:${PORT}/api/likes`);
+      console.log(`💬 Comment endpoints: http://localhost:${PORT}/api/comments`);
+      console.log(`⭐ Favorite endpoints: http://localhost:${PORT}/api/favorites`);
+      console.log(`🔍 Search endpoints: http://localhost:${PORT}/api/search`);
       console.log('\n💡 Tip: This server will work without database for testing routes');
     });
   } catch (error) {
