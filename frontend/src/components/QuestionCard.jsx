@@ -8,8 +8,8 @@ const questionTypeIcons = {
   textarea: BsTextareaResize,
   integer: AiOutlineNumber,
   checkbox: FaRegCheckSquare,
-  multiple: FaListUl,
-  dropdown: FaListUl,
+  radio: FaListUl,
+  select: FaListUl,
 };
 
 const questionTypeColors = {
@@ -17,8 +17,8 @@ const questionTypeColors = {
   textarea: "bg-green-100 text-green-700 border-green-200",
   integer: "bg-orange-100 text-orange-700 border-orange-200",
   checkbox: "bg-purple-100 text-purple-700 border-purple-200",
-  multiple: "bg-pink-100 text-pink-700 border-pink-200",
-  dropdown: "bg-indigo-100 text-indigo-700 border-indigo-200",
+  radio: "bg-pink-100 text-pink-700 border-pink-200",
+  select: "bg-indigo-100 text-indigo-700 border-indigo-200",
 };
 
 export default function QuestionCard({
@@ -117,7 +117,7 @@ export default function QuestionCard({
         </div>
 
         {/* Options for multiple choice questions */}
-        {(question.type === "multiple" || question.type === "checkbox" || question.type === "dropdown") && (
+        {(question.type === "radio" || question.type === "checkbox" || question.type === "select") && (
           <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
             <div className="flex items-center justify-between mb-3">
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">

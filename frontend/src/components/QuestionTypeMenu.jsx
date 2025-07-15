@@ -34,14 +34,14 @@ const QUESTION_TYPES = [
     color: "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
   },
   { 
-    type: "multiple", 
+    type: "radio", 
     label: "Multiple Choice", 
     icon: FaListUl, 
     description: "Single selection from options",
     color: "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100"
   },
   { 
-    type: "dropdown", 
+    type: "select", 
     label: "Dropdown", 
     icon: FaChevronDown, 
     description: "Dropdown selection menu",

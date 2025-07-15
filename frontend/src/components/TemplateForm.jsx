@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import QuestionTypeMenu from "./QuestionTypeMenu";
 import QuestionCard from "./QuestionCard";
+import QuestionRenderer from "./QuestionRenderer";
 import {
   DndContext,
   closestCenter,
@@ -73,6 +74,7 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
     username: user.username 
   })) || []);
   const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true);
+  const [previewMode, setPreviewMode] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -175,7 +177,7 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
       typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
     });
 
-    const limitedTypes = ['text', 'textarea', 'integer', 'checkbox'];
+    const limitedTypes = ['text', 'textarea', 'integer', 'checkbox', 'radio', 'select'];
     const maxPerType = 4;
     
     for (const type of limitedTypes) {
@@ -460,55 +462,110 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
                     Add questions to collect information from users ({questions.length} question{questions.length !== 1 ? 's' : ''} added)
                   </p>
                 </div>
-                <div className="relative">
-                  <button
-                    type="button"
-                    className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-violet-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
-                    onClick={() => setShowMenu(m => !m)}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Add Question
-                  </button>
-                  {showMenu && (
-                    <QuestionTypeMenu
-                      onSelect={handleAddQuestion}
-                      onClose={() => setShowMenu(false)}
-                    />
+                <div className="flex items-center gap-3">
+                  {questions.length > 0 && (
+                    <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          !previewMode 
+                            ? "bg-white dark:bg-gray-600 text-violet-600 dark:text-violet-400 shadow-sm" 
+                            : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        }`}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode(true)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          previewMode 
+                            ? "bg-white dark:bg-gray-600 text-violet-600 dark:text-violet-400 shadow-sm" 
+                            : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        }`}
+                      >
+                        Preview
+                      </button>
+                    </div>
                   )}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-violet-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                      onClick={() => setShowMenu(m => !m)}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Add Question
+                    </button>
+                    {showMenu && (
+                      <QuestionTypeMenu
+                        onSelect={handleAddQuestion}
+                        onClose={() => setShowMenu(false)}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Questions List */}
               <div className="space-y-6">
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext
-                    items={questions.map((_, i) => i.toString())}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {questions.length === 0 ? (
-                      <div className="text-center py-16 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600">
-                        <div className="mx-auto w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-4">
-                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                {questions.length === 0 ? (
+                  <div className="text-center py-16 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+                    <div className="mx-auto w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">No questions yet</h4>
+                    <p className="text-gray-500 dark:text-gray-500 mb-4">Start building your form by adding questions above</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowMenu(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-violet-600 hover:text-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Add your first question
+                    </button>
+                  </div>
+                ) : previewMode ? (
+                  /* Preview Mode */
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+                          <svg className="w-5 h-5 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </div>
-                        <h4 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">No questions yet</h4>
-                        <p className="text-gray-500 dark:text-gray-500 mb-4">Start building your form by adding questions above</p>
-                        <button
-                          type="button"
-                          onClick={() => setShowMenu(true)}
-                          className="inline-flex items-center gap-2 px-4 py-2 text-violet-600 hover:text-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-colors"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                          Add your first question
-                        </button>
+                        <div>
+                          <h4 className="font-semibold text-blue-800 dark:text-blue-200">Preview Mode</h4>
+                          <p className="text-sm text-blue-600 dark:text-blue-300">This is how your questions will appear to users</p>
+                        </div>
                       </div>
-                    ) : (
-                      questions.map((q, idx) => (
+                    </div>
+                    
+                    {questions.map((question, idx) => (
+                      <QuestionRenderer
+                        key={idx}
+                        question={question}
+                        mode="preview"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  /* Edit Mode */
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext
+                      items={questions.map((_, i) => i.toString())}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {questions.map((q, idx) => (
                         <DraggableQuestion key={idx} id={idx.toString()}>
                           {({ dragHandleProps }) => (
                             <QuestionCard
@@ -524,10 +581,10 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
                             />
                           )}
                         </DraggableQuestion>
-                      ))
-                    )}
-                  </SortableContext>
-                </DndContext>
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                )}
               </div>
             </div>
 
