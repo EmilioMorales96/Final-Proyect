@@ -1,94 +1,150 @@
-import React, { useState } from "react";
-import UserAutocomplete from "../components/UserAutocomplete";
-import TagSelector from "../components/TagSelector";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import TemplateForm from "../components/TemplateForm";
+import { useAuth } from "../hooks/useAuth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function TemplateEditor() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [accessType, setAccessType] = useState("public");
-  const [selectedUsers, setSelectedUsers] = useState([]);
-  const [tags, setTags] = useState([]); // Estado para los tags seleccionados
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const [templateData, setTemplateData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const data = {
-      title,
-      description,
-      accessType,
-      allowedUsers: accessType === "restricted" ? selectedUsers.map(u => u.id) : [],
-      tags, // <-- envía los tags seleccionados al backend
+  // Load template data on mount
+  useEffect(() => {
+    if (!id) {
+      setError("Template ID is required");
+      setLoading(false);
+      return;
+    }
+
+    const fetchTemplate = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/api/templates/${id}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Template not found");
+          } else if (response.status === 403) {
+            throw new Error("You don't have permission to edit this template");
+          } else {
+            throw new Error("Failed to load template");
+          }
+        }
+
+        const data = await response.json();
+        console.log("Loaded template data:", data);
+        setTemplateData(data);
+      } catch (error) {
+        console.error("Error loading template:", error);
+        setError(error.message);
+        toast.error(`Error: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
     };
+
+    fetchTemplate();
+  }, [id, token]);
+
+  // Handle template update
+  const handleSubmit = async (formData) => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/api/templates`, {
-        method: "POST",
+      console.log("Updating template with data:", formData);
+      
+      const response = await fetch(`${API_URL}/api/templates/${id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          topic: formData.topic,
+          questions: formData.questions,
+          tags: formData.tags,
+          isPublic: formData.isPublic,
+          accessUsers: formData.accessUsers,
+        }),
       });
-      if (!res.ok) {
-        // Maneja el error aquí si lo deseas
-        console.error("Error saving template");
-      } else {
-        // Maneja el éxito aquí si lo deseas
-        console.log("Template saved!");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update template");
       }
-    } catch (err) {
-      console.error("Network error:", err);
+
+      const updatedTemplate = await response.json();
+      console.log("Template updated:", updatedTemplate);
+      
+      // Navigate back to forms dashboard after successful update
+      setTimeout(() => {
+        navigate("/forms");
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Error updating template:", error);
+      toast.error(`Failed to update template: ${error.message}`);
+      throw error; // Re-throw to be handled by TemplateForm
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-violet-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Loading Template</h2>
+          <p className="text-gray-500 dark:text-gray-400">Please wait while we fetch the template data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-800 dark:to-violet-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center">
+          <div className="bg-red-100 dark:bg-red-900/20 rounded-full p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Error Loading Template</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate("/forms")}
+              className="w-full px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+            >
+              Back to Templates
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mt-10">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">Create/Edit Template</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block font-semibold mb-1">Title</label>
-          <input
-            className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">Description</label>
-          <textarea
-            className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            rows={3}
-          />
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">Visibility</label>
-          <select
-            className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700"
-            value={accessType}
-            onChange={e => setAccessType(e.target.value)}
-          >
-            <option value="public">Public (all authenticated users)</option>
-            <option value="restricted">Restricted (only selected users)</option>
-          </select>
-        </div>
-        {accessType === "restricted" && (
-          <UserAutocomplete selectedUsers={selectedUsers} setSelectedUsers={setSelectedUsers} />
-        )}
-        <div>
-          <label className="block font-semibold mb-1">Tags</label>
-          <TagSelector value={tags} onChange={setTags} />
-        </div>
-        <button
-          type="submit"
-          className="w-full py-3 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-bold text-lg shadow hover:from-purple-800 hover:to-indigo-900 transition-all"
-        >
-          Save template
-        </button>
-      </form>
-    </div>
+    <TemplateForm 
+      onSubmit={handleSubmit} 
+      initialData={templateData} 
+      isEditing={true}
+    />
   );
 }

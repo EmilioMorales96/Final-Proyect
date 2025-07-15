@@ -58,18 +58,41 @@ function DraggableQuestion({ id, children }) {
   );
 }
 
-export default function TemplateForm({ onSubmit }) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [topic, setTopic] = useState("");
-  const [questions, setQuestions] = useState([]);
+export default function TemplateForm({ onSubmit, initialData = null, isEditing = false }) {
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [description, setDescription] = useState(initialData?.description || "");
+  const [topic, setTopic] = useState(initialData?.topic || "");
+  const [questions, setQuestions] = useState(initialData?.questions || []);
   const [showMenu, setShowMenu] = useState(false);
   const [lastDroppedIdx, setLastDroppedIdx] = useState(null);
-  const [tags, setTags] = useState([]);
-  const [allowedUsers, setAllowedUsers] = useState([]);
-  const [isPublic, setIsPublic] = useState(true);
+  const [tags, setTags] = useState(initialData?.tags?.map(tag => ({ label: tag.name || tag, value: tag.name || tag })) || []);
+  const [allowedUsers, setAllowedUsers] = useState(initialData?.allowedUsers?.map(user => ({ 
+    label: `${user.username} (${user.email})`, 
+    value: user.id, 
+    email: user.email, 
+    username: user.username 
+  })) || []);
+  const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true);
 
   const sensors = useSensors(useSensor(PointerSensor));
+
+  // Update state when initialData changes (for editing mode)
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title || "");
+      setDescription(initialData.description || "");
+      setTopic(initialData.topic || "");
+      setQuestions(initialData.questions || []);
+      setTags(initialData.tags?.map(tag => ({ label: tag.name || tag, value: tag.name || tag })) || []);
+      setAllowedUsers(initialData.allowedUsers?.map(user => ({ 
+        label: `${user.username} (${user.email})`, 
+        value: user.id, 
+        email: user.email, 
+        username: user.username 
+      })) || []);
+      setIsPublic(initialData.isPublic ?? true);
+    }
+  }, [initialData]);
 
   const handleAddQuestion = type => {
     setQuestions(qs => [...qs, DEFAULT_QUESTION(type)]);
@@ -175,7 +198,7 @@ export default function TemplateForm({ onSubmit }) {
         });
         
         // Show success message
-        toast.success("🎉 Template created successfully!", {
+        toast.success(isEditing ? "🎉 Template updated successfully!" : "🎉 Template created successfully!", {
           duration: 4000,
           style: {
             background: '#10B981',
@@ -186,14 +209,16 @@ export default function TemplateForm({ onSubmit }) {
           },
         });
         
-        // Clear form
-        setTitle("");
-        setDescription("");
-        setTopic("");
-        setQuestions([]);
-        setTags([]);
-        setAllowedUsers([]);
-        setIsPublic(true);
+        // Clear form only if creating (not editing)
+        if (!isEditing) {
+          setTitle("");
+          setDescription("");
+          setTopic("");
+          setQuestions([]);
+          setTags([]);
+          setAllowedUsers([]);
+          setIsPublic(true);
+        }
       }
     } catch (error) {
       toast.error("Failed to create template. Please try again.");
@@ -247,8 +272,8 @@ export default function TemplateForm({ onSubmit }) {
                 </svg>
               </div>
               <div>
-                <h2 className="text-3xl font-bold">Create New Template</h2>
-                <p className="text-violet-100 mt-1">Build engaging forms with questions and interactive elements</p>
+                <h2 className="text-3xl font-bold">{isEditing ? "Edit Template" : "Create New Template"}</h2>
+                <p className="text-violet-100 mt-1">{isEditing ? "Update your template with new questions and settings" : "Build engaging forms with questions and interactive elements"}</p>
               </div>
             </div>
           </div>
@@ -515,13 +540,15 @@ export default function TemplateForm({ onSubmit }) {
               >
                 {questions.length === 0 ? (
                   "Add at least one question to create template"
+                ) : isEditing ? (
+                  `Update Template with ${questions.length} Question${questions.length !== 1 ? 's' : ''}`
                 ) : (
                   `Create Template with ${questions.length} Question${questions.length !== 1 ? 's' : ''}`
                 )}
               </button>
               {questions.length > 0 && (
                 <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
-                  Your template will be saved and ready for others to use
+                  {isEditing ? "Your changes will be saved and the template updated" : "Your template will be saved and ready for others to use"}
                 </p>
               )}
             </div>
