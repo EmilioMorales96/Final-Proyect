@@ -6,6 +6,8 @@ import db from './models/index.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import likeRoutes from './routes/like.routes.js';
+import templateRoutes from './routes/template.routes.js';
+import tagRoutes from './routes/tag.routes.js';
 
 const app = express();
 
@@ -130,6 +132,8 @@ app.post('/debug/migrate-topic-enum', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/likes', likeRoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/tags', tagRoutes);
 
 // Serve static files
 app.use('/uploads', express.static('uploads'));
