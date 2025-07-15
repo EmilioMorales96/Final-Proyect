@@ -176,15 +176,31 @@ router.post('/debug/test-create', authenticateToken, async (req, res) => {
   }
 });
 
-// Create template (authenticated only) - RELAXED VALIDATION FOR DEBUGGING
+// Create template (authenticated only) - COMPATIBLE WITH FRONTEND
 router.post('/', authenticateToken, async (req, res) => {
   try {
     console.log('[TEMPLATE] Creating template - User info:', req.user);
     console.log('[TEMPLATE] Request body:', JSON.stringify(req.body, null, 2));
     
-    const { title, description, topic, imageUrl, tags, isPublic, accessUsers, questions } = req.body;
+    // Extract fields with frontend compatibility
+    const { 
+      title, 
+      description, 
+      topic,
+      accessType,    // Frontend sends this instead of isPublic
+      allowedUsers,  // Frontend sends this instead of accessUsers
+      imageUrl, 
+      tags, 
+      questions,
+      // Backwards compatibility
+      isPublic,
+      accessUsers
+    } = req.body;
 
-    // RELAXED VALIDATIONS FOR DEBUGGING
+    // Convert frontend format to backend format
+    const isPublicTemplate = accessType === 'public' || isPublic === true || isPublic === undefined;
+    const accessUsersList = allowedUsers || accessUsers || [];
+
     console.log('[TEMPLATE] Checking title:', title);
     if (!title) {
       console.log('[TEMPLATE] ERROR: Title is missing');
@@ -203,74 +219,63 @@ router.post('/', authenticateToken, async (req, res) => {
       });
     }
 
-    console.log('[TEMPLATE] Checking topic:', topic);
-    if (!topic) {
-      console.log('[TEMPLATE] ERROR: Topic is missing');
-      return res.status(400).json({ 
-        message: 'Topic is required.',
-        received: { topic, type: typeof topic }
+    // Make topic optional with default value
+    const templateTopic = topic || 'Other';
+    console.log('[TEMPLATE] Topic:', templateTopic);
+
+    // Make questions optional with default empty array
+    const templateQuestions = questions || [];
+    console.log('[TEMPLATE] Questions:', templateQuestions);
+
+    // If no questions provided, create a default one
+    if (templateQuestions.length === 0) {
+      templateQuestions.push({
+        title: 'Default Question',
+        questionText: 'Please provide your feedback',
+        type: 'text',
+        isRequired: false
       });
+      console.log('[TEMPLATE] Added default question since none provided');
     }
 
-    console.log('[TEMPLATE] Checking questions:', questions);
-    if (!questions) {
-      console.log('[TEMPLATE] ERROR: Questions is missing');
-      return res.status(400).json({ 
-        message: 'Questions are required.',
-        received: { questions, type: typeof questions }
-      });
-    }
-    
-    if (!Array.isArray(questions)) {
-      console.log('[TEMPLATE] ERROR: Questions is not an array');
-      return res.status(400).json({ 
-        message: 'Questions must be an array.',
-        received: { questions, type: typeof questions, isArray: Array.isArray(questions) }
-      });
-    }
-    
-    if (questions.length === 0) {
-      console.log('[TEMPLATE] ERROR: Questions array is empty');
-      return res.status(400).json({ 
-        message: 'You must add at least one question.',
-        received: { questionsLength: questions.length, questions }
-      });
-    }
+    console.log('[TEMPLATE] All validations passed, creating template...');
 
-    console.log('[TEMPLATE] All basic validations passed, creating template...');
+    // Optional: Check question type limits (only if questions are provided)
+    if (templateQuestions.length > 1) {
+      console.log('[TEMPLATE] Validating question type limits...');
+      const typeCounts = {};
+      templateQuestions.forEach(q => {
+        if (q.type) {
+          typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
+        }
+      });
+      console.log('[TEMPLATE] Question type counts:', typeCounts);
 
-    // Check question type limits
-    console.log('[TEMPLATE] Validating question type limits...');
-    const typeCounts = {};
-    questions.forEach(q => {
-      typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
-    });
-    console.log('[TEMPLATE] Question type counts:', typeCounts);
-
-    const limitedTypes = ['text', 'textarea', 'integer', 'checkbox'];
-    const maxPerType = 4;
-    
-    for (const type of limitedTypes) {
-      if (typeCounts[type] > maxPerType) {
-        console.log(`[TEMPLATE] Validation failed: Too many questions of type ${type}: ${typeCounts[type]} > ${maxPerType}`);
-        return res.status(400).json({ 
-          message: `Maximum ${maxPerType} questions allowed for type: ${type}` 
-        });
+      const limitedTypes = ['text', 'textarea', 'integer', 'checkbox'];
+      const maxPerType = 4;
+      
+      for (const type of limitedTypes) {
+        if (typeCounts[type] > maxPerType) {
+          console.log(`[TEMPLATE] Validation failed: Too many questions of type ${type}: ${typeCounts[type]} > ${maxPerType}`);
+          return res.status(400).json({ 
+            message: `Maximum ${maxPerType} questions allowed for type: ${type}` 
+          });
+        }
       }
     }
 
     console.log('[TEMPLATE] All validations passed, creating template object...');
     
-    // Simplified template creation for debugging
+    // Template creation compatible with frontend format
     const templateData = {
       title: title.toString().trim(),
       description: description.toString().trim(),
-      topic: topic.toString(),
+      topic: templateTopic,
       imageUrl: imageUrl || null,
-      isPublic: isPublic !== undefined ? Boolean(isPublic) : true,
-      accessUsers: Array.isArray(accessUsers) ? JSON.stringify(accessUsers) : null,
+      isPublic: isPublicTemplate,
+      accessUsers: Array.isArray(accessUsersList) ? JSON.stringify(accessUsersList) : null,
       authorId: req.user.id,
-      questions: questions, // Store as JSON
+      questions: templateQuestions, // Store as JSON
     };
     
     console.log('[TEMPLATE] Template data to create:', templateData);
