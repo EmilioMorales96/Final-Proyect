@@ -7,6 +7,7 @@ import db from './models/index.js';
 dotenv.config();
 
 // Import essential routes
+console.log('🔄 Loading routes...');
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import templateRoutes from './routes/template.routes.js';
@@ -17,6 +18,7 @@ import commentRoutes from './routes/comment.routes.js';
 import favoriteRoutes from './routes/favorite.routes.js';
 import searchRoutes from './routes/search.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
+console.log('✅ All routes loaded successfully');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,6 +61,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Mount routes
+console.log('🔄 Mounting routes...');
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/templates', templateRoutes);
@@ -69,6 +72,7 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/upload', uploadRoutes);
+console.log('✅ All routes mounted successfully');
 
 // Serve static files
 app.use('/uploads', express.static('uploads'));

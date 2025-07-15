@@ -5,10 +5,25 @@ import authenticateToken from '../middleware/auth.middleware.js';
 const router = express.Router();
 const { Comment, User, Template } = db;
 
+// Debug route to test comments endpoint
+router.get('/debug/test', (req, res) => {
+  res.json({ 
+    message: 'Comments routes are working',
+    timestamp: new Date().toISOString(),
+    availableRoutes: [
+      'GET /api/comments/template/:templateId',
+      'POST /api/comments',
+      'DELETE /api/comments/:id'
+    ]
+  });
+});
+
 // Obtener comentarios de un template
 router.get('/template/:templateId', authenticateToken, async (req, res) => {
   try {
     const templateId = req.params.templateId;
+    console.log(`[COMMENTS] Getting comments for template ${templateId}`);
+    
     const comments = await Comment.findAll({
       where: { templateId },
       include: [
@@ -20,8 +35,11 @@ router.get('/template/:templateId', authenticateToken, async (req, res) => {
       ],
       order: [['createdAt', 'DESC']]
     });
+    
+    console.log(`[COMMENTS] Found ${comments.length} comments for template ${templateId}`);
     res.json(comments);
   } catch (err) {
+    console.error(`[COMMENTS] Error fetching comments:`, err);
     res.status(500).json({ message: 'Error fetching comments', error: err.message });
   }
 });
