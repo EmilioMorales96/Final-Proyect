@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import templateRoutes from './routes/template.routes.js';
 import formRoutes from './routes/form.routes.js';
+import tagRoutes from './routes/tag.routes.js';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/forms', formRoutes);
+app.use('/api/tags', tagRoutes);
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));

@@ -9,6 +9,9 @@ dotenv.config();
 // Import essential routes
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import templateRoutes from './routes/template.routes.js';
+import formRoutes from './routes/form.routes.js';
+import tagRoutes from './routes/tag.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,6 +56,9 @@ app.get('/api/health', async (req, res) => {
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/forms', formRoutes);
+app.use('/api/tags', tagRoutes);
 
 // Serve static files
 app.use('/uploads', express.static('uploads'));
@@ -99,6 +105,9 @@ const startServer = async () => {
       console.log(`🗄️  Database health: http://localhost:${PORT}/api/health`);
       console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
       console.log(`👤 User endpoints: http://localhost:${PORT}/api/users`);
+      console.log(`📝 Template endpoints: http://localhost:${PORT}/api/templates`);
+      console.log(`📋 Form endpoints: http://localhost:${PORT}/api/forms`);
+      console.log(`🏷️  Tag endpoints: http://localhost:${PORT}/api/tags`);
       console.log('\n💡 Tip: This server will work without database for testing routes');
     });
   } catch (error) {
