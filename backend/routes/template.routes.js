@@ -77,52 +77,107 @@ router.post('/debug/unblock-admin', async (req, res) => {
   }
 });
 
+// Debug endpoint to test template creation with minimal data
+router.post('/debug/test-create', authenticateToken, async (req, res) => {
+  try {
+    console.log('[TEMPLATE DEBUG] User info:', req.user);
+    console.log('[TEMPLATE DEBUG] Request body:', req.body);
+    
+    // Create a minimal test template
+    const testTemplate = {
+      title: 'Test Template',
+      description: 'Test Description',
+      topic: 'Other',
+      isPublic: true,
+      questions: [
+        {
+          title: 'Test Question',
+          questionText: 'This is a test question',
+          type: 'text',
+          isRequired: false
+        }
+      ]
+    };
+    
+    const template = await Template.create({
+      ...testTemplate,
+      authorId: req.user.id
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Test template created successfully', 
+      templateId: template.id 
+    });
+  } catch (error) {
+    console.error('[TEMPLATE DEBUG] Error:', error);
+    res.status(500).json({ 
+      message: 'Error creating test template', 
+      error: error.message 
+    });
+  }
+});
+
 // Create template (authenticated only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
     console.log('Creating template - User info:', req.user);
-    console.log('Creating template with data:', req.body);
+    console.log('Creating template with data:', JSON.stringify(req.body, null, 2));
     const { title, description, topic, imageUrl, tags, isPublic, accessUsers, questions } = req.body;
 
-    // Basic validation
+    // Basic validation with detailed logging
+    console.log('[TEMPLATE] Validating basic fields...');
     if (!title || !title.trim()) {
+      console.log('[TEMPLATE] Validation failed: Title is missing or empty');
       return res.status(400).json({ message: 'Title is required.' });
     }
     
     if (!description || !description.trim()) {
+      console.log('[TEMPLATE] Validation failed: Description is missing or empty');
       return res.status(400).json({ message: 'Description is required.' });
     }
 
     if (!topic) {
+      console.log('[TEMPLATE] Validation failed: Topic is missing');
       return res.status(400).json({ message: 'Topic is required.' });
     }
 
-    // Questions validation
+    // Questions validation with detailed logging
+    console.log('[TEMPLATE] Validating questions...');
+    console.log('[TEMPLATE] Questions received:', questions);
+    
     if (!Array.isArray(questions) || questions.length === 0) {
+      console.log('[TEMPLATE] Validation failed: Questions array is empty or not an array');
       return res.status(400).json({ message: 'You must add at least one question.' });
     }
-    if (questions.some(q => !q.title || !q.title.trim() || !q.questionText || !q.questionText.trim())) {
+    
+    const invalidQuestion = questions.find(q => !q.title || !q.title.trim() || !q.questionText || !q.questionText.trim());
+    if (invalidQuestion) {
+      console.log('[TEMPLATE] Validation failed: Invalid question found:', invalidQuestion);
       return res.status(400).json({ message: "Each question must have a title and question text." });
     }
 
     // Check question type limits
+    console.log('[TEMPLATE] Validating question type limits...');
     const typeCounts = {};
     questions.forEach(q => {
       typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
     });
+    console.log('[TEMPLATE] Question type counts:', typeCounts);
 
     const limitedTypes = ['text', 'textarea', 'integer', 'checkbox'];
     const maxPerType = 4;
     
     for (const type of limitedTypes) {
       if (typeCounts[type] > maxPerType) {
+        console.log(`[TEMPLATE] Validation failed: Too many questions of type ${type}: ${typeCounts[type]} > ${maxPerType}`);
         return res.status(400).json({ 
           message: `Maximum ${maxPerType} questions allowed for type: ${type}` 
         });
       }
     }
 
-    console.log('Creating template object...');
+    console.log('[TEMPLATE] All validations passed, creating template object...');
     const template = await Template.create({
       title: title.trim(),
       description: description.trim(),
