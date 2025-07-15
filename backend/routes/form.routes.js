@@ -1,6 +1,7 @@
 import express from 'express';
 import db from '../models/index.js';
 import authenticateToken from '../middleware/auth.middleware.js';
+import { requireAdmin, requireResourceOwnershipOrAdmin, requireFormAccessOrAdmin } from '../middleware/authorization.middleware.js';
 
 const { Form, User, Template } = db;
 const router = express.Router();
@@ -53,10 +54,7 @@ router.get('/mine', authenticateToken, async (req, res) => {
 });
 
 // Obtener todos los forms (solo admin) - must come before /:id
-router.get('/admin/all', authenticateToken, async (req, res) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Admin only.' });
-  }
+router.get('/admin/all', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const forms = await db.Form.findAll({
       include: [
@@ -123,23 +121,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Actualizar formulario (solo dueño)
-router.put('/:id', authenticateToken, async (req, res) => {
+// Actualizar formulario (form owner, template owner, or admin)
+router.put('/:id', authenticateToken, requireFormAccessOrAdmin, async (req, res) => {
   try {
     const form = await Form.findByPk(req.params.id);
     if (!form) return res.status(404).json({ message: 'Form not found' });
-
-    const template = await Template.findByPk(form.templateId);
-    if (!template) return res.status(404).json({ message: 'Template not found' });
-
-    const isOwner = form.userId === req.user.id;
-    const isTemplateOwner = template.authorId === req.user.id;
-    const isAdmin = req.user.role === 'admin';
-
-    if (!(isOwner || isTemplateOwner || isAdmin)) {
-      // No tienes permiso
-      return res.status(403).json({ message: "You do not have permission to edit this template." });
-    }
 
     // Validación de datos
     if ('answers' in req.body && typeof req.body.answers !== 'object') {
@@ -155,25 +141,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Eliminar formulario (solo dueño)
-router.delete('/:id', authenticateToken, async (req, res) => {
+// Eliminar formulario (form owner, template owner, or admin)
+router.delete('/:id', authenticateToken, requireFormAccessOrAdmin, async (req, res) => {
   try {
     const form = await Form.findByPk(req.params.id);
     if (!form) return res.status(404).json({ message: 'Form not found' });
 
-    const template = await Template.findByPk(form.templateId);
-    if (!template) return res.status(404).json({ message: 'Template not found' });
-
-    const isOwner = form.userId === req.user.id;
-    const isTemplateOwner = template.authorId === req.user.id;
-    const isAdmin = req.user.role === 'admin';
-
-    if (!(isOwner || isTemplateOwner || isAdmin)) {
-      return res.status(403).json({ message: 'You do not have permission to delete this form.' });
-    }
-
     await form.destroy();
-    res.json({ message: 'Form deleted' });
+    res.json({ message: 'Form deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Error deleting form', error: err.message });
   }

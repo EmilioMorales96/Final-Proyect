@@ -22,8 +22,20 @@ export default async function authenticateToken(req, res, next) {
       return res.status(401).json({ message: 'User not found' });
     }
 
+    // Check if user is blocked
+    if (user.isBlocked) {
+      return res.status(403).json({ 
+        message: 'Your account has been blocked. Please contact an administrator.' 
+      });
+    }
+
     // Attach user info to request object
-    req.user = { id: user.id, role: user.role };
+    req.user = { 
+      id: user.id, 
+      role: user.role, 
+      isBlocked: user.isBlocked,
+      username: user.username 
+    };
     next();
   } catch (err) {
     return res.status(403).json({ message: 'Invalid token' });

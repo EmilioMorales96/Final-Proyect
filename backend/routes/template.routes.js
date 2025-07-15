@@ -3,6 +3,7 @@ import db from '../models/index.js';
 const { Template, Tag, User, Like, Comment } = db;
 import { userHasAccess } from '../utils/access.js';
 import authenticateToken from '../middleware/auth.middleware.js';
+import { requireAdmin, requireResourceOwnershipOrAdmin } from '../middleware/authorization.middleware.js';
 
 const router = express.Router();
 
@@ -244,16 +245,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Update template (owner only)
-router.put('/:id', authenticateToken, async (req, res) => {
+// Update template (owner or admin only)
+router.put('/:id', authenticateToken, requireResourceOwnershipOrAdmin('Template'), async (req, res) => {
   try {
     const template = await Template.findByPk(req.params.id);
     if (!template) return res.status(404).json({ message: 'Template not found' });
-
-    const hasAccess = userHasAccess(template, req.user.id, req.user.role);
-    if (!hasAccess) {
-      return res.status(403).json({ message: 'You do not have permission to edit this template.' });
-    }
 
     const { tags, ...updateData } = req.body;
     await template.update(updateData);
@@ -268,25 +264,33 @@ router.put('/:id', authenticateToken, async (req, res) => {
       await template.setTags(tagInstances);
     }
 
-    res.json(template);
+    const updatedTemplate = await Template.findByPk(req.params.id, {
+      include: [
+        { model: Tag, attributes: ['name'] },
+        { model: User, as: 'author', attributes: ['username'] }
+      ]
+    });
+
+    res.json({ 
+      message: 'Template updated successfully', 
+      template: updatedTemplate 
+    });
   } catch (err) {
+    console.error('Error updating template:', err);
     res.status(500).json({ message: 'Error updating template', error: err.message });
   }
 });
 
-// Delete template (owner only)
-router.delete('/:id', authenticateToken, async (req, res) => {
+// Delete template (owner or admin only)
+router.delete('/:id', authenticateToken, requireResourceOwnershipOrAdmin('Template'), async (req, res) => {
   try {
     const template = await Template.findByPk(req.params.id);
     if (!template) return res.status(404).json({ message: 'Template not found' });
 
-    if (template.authorId !== req.user.id) {
-      return res.status(403).json({ message: 'You do not have permission to delete this template.' });
-    }
-
     await template.destroy();
-    res.json({ message: 'Template deleted' });
+    res.json({ message: 'Template deleted successfully' });
   } catch (err) {
+    console.error('Error deleting template:', err);
     res.status(500).json({ message: 'Error deleting template', error: err.message });
   }
 });

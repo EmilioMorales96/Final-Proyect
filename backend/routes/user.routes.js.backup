@@ -22,6 +22,7 @@ const upload = multer({ storage });
 
 // Get authenticated user's profile
 router.get('/me', authenticateToken, async (req, res) => {
+router.get('/me', authenticateToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
       attributes: ['id', 'username', 'email', 'role', 'isBlocked', 'avatar', 'createdAt']
