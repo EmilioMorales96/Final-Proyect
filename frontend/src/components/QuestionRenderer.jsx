@@ -15,8 +15,7 @@ export default function QuestionRenderer({
   mode = 'preview', 
   answer, 
   setAnswer, 
-  disabled = false,
-  editProps = {}
+  disabled = false
 }) {
   // For answer mode, use the existing question type components
   if (mode === 'answer') {
