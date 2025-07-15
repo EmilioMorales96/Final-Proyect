@@ -2,14 +2,6 @@
 import cors from 'cors';
 import db from './models/index.js';
 
-// Import essential route modules
-import authRoutes from './routes/auth.routes.js';
-import userRoutes from './routes/user.routes.js';
-import templateRoutes from './routes/template.routes.js';
-import formRoutes from './routes/form.routes.js';
-import tagRoutes from './routes/tag.routes.js';
-import likeRoutes from './routes/like.routes.js';
-
 const app = express();
 
 // Enable JSON parsing middleware
@@ -25,7 +17,7 @@ app.use(cors({
 }));
 app.options('*', cors());
 
-// Health check
+// Basic health check
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Forms API is running', 
@@ -33,14 +25,6 @@ app.get('/', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-
-// Mount API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/templates', templateRoutes);
-app.use('/api/forms', formRoutes);
-app.use('/api/tags', tagRoutes);
-app.use('/api/likes', likeRoutes);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
@@ -60,6 +44,61 @@ app.get('/health', async (req, res) => {
     });
   }
 });
+
+// Debug endpoint for likes system
+app.get('/debug/likes', async (req, res) => {
+  try {
+    const { Like, Template, User } = db;
+    
+    // Get basic statistics
+    const likeCount = await Like.count();
+    const templateCount = await Template.count();
+    const userCount = await User.count();
+    
+    res.json({
+      status: 'success',
+      timestamp: new Date().toISOString(),
+      statistics: {
+        totalLikes: likeCount,
+        totalTemplates: templateCount,
+        totalUsers: userCount
+      },
+      environment: {
+        nodeEnv: process.env.NODE_ENV,
+        hasDbConnection: true
+      }
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Debug endpoint failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Only load essential routes first
+console.log('🔄 Loading essential routes...');
+
+// Load auth routes
+console.log('Loading auth routes...');
+import authRoutes from './routes/auth.routes.js';
+app.use('/api/auth', authRoutes);
+console.log('✓ Auth routes loaded');
+
+// Load user routes
+console.log('Loading user routes...');
+import userRoutes from './routes/user.routes.js';
+app.use('/api/users', userRoutes);
+console.log('✓ User routes loaded');
+
+// Load like routes (our fixed ones)
+console.log('Loading like routes...');
+import likeRoutes from './routes/like.routes.js';
+app.use('/api/likes', likeRoutes);
+console.log('✓ Like routes loaded');
 
 // Debug endpoint for likes system
 app.get('/debug/likes', async (req, res) => {
@@ -127,6 +166,8 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   });
 });
+
+console.log('✅ Essential routes loaded successfully');
 
 export default app;
 
