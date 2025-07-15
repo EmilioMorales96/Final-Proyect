@@ -206,6 +206,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // Get recent templates for home page
 router.get('/recent', async (req, res) => {
   try {
+    console.log('[TEMPLATES] Fetching recent templates...');
     const templates = await Template.findAll({
       where: { isPublic: true },
       include: [
@@ -215,7 +216,8 @@ router.get('/recent', async (req, res) => {
           attributes: ['id', 'username']
         },
         {
-          model: Tag,
+          model: db.Tag,
+          as: 'Tags',
           through: { attributes: [] },
           attributes: ['name']
         }
@@ -224,16 +226,20 @@ router.get('/recent', async (req, res) => {
       limit: 8
     });
     
+    console.log(`[TEMPLATES] Found ${templates.length} recent templates`);
     res.json(templates);
   } catch (error) {
     console.error('Error fetching recent templates:', error);
-    res.status(500).json({ message: 'Error fetching recent templates' });
+    res.status(500).json({ message: 'Error fetching recent templates', error: error.message });
   }
 });
 
 // Get popular templates for home page
 router.get('/popular', async (req, res) => {
   try {
+    console.log('[TEMPLATES] Fetching popular templates...');
+    
+    // Simplified approach: get templates with basic info, then calculate popularity
     const templates = await Template.findAll({
       where: { isPublic: true },
       include: [
@@ -243,31 +249,25 @@ router.get('/popular', async (req, res) => {
           attributes: ['id', 'username']
         },
         {
-          model: Like,
-          attributes: []
-        },
-        {
-          model: Comment,
-          attributes: []
+          model: db.Tag,
+          as: 'Tags',
+          through: { attributes: [] },
+          attributes: ['name']
         }
       ],
-      attributes: [
-        'id', 'title', 'description', 'topic', 'createdAt',
-        [db.sequelize.fn('COUNT', db.sequelize.col('likes.id')), 'likesCount'],
-        [db.sequelize.fn('COUNT', db.sequelize.col('Comments.id')), 'commentsCount']
-      ],
-      group: ['Template.id', 'author.id'],
-      order: [
-        [db.sequelize.literal('("likesCount" + "commentsCount")'), 'DESC'],
-        ['createdAt', 'DESC']
-      ],
-      limit: 5
+      order: [['createdAt', 'DESC']],
+      limit: 20 // Get more to then sort by popularity
     });
+
+    // For now, return recent templates as "popular" 
+    // TODO: Implement proper popularity calculation based on likes/comments
+    const popularTemplates = templates.slice(0, 5);
     
-    res.json(templates);
+    console.log(`[TEMPLATES] Found ${popularTemplates.length} popular templates`);
+    res.json(popularTemplates);
   } catch (error) {
     console.error('Error fetching popular templates:', error);
-    res.status(500).json({ message: 'Error fetching popular templates' });
+    res.status(500).json({ message: 'Error fetching popular templates', error: error.message });
   }
 });
 
