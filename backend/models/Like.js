@@ -12,7 +12,15 @@ export default (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      unique: 'user_template_unique'
     }
-  }, { timestamps: false });
+  }, { 
+    timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ['userId', 'templateId'],
+        name: 'user_template_unique'
+      }
+    ]
+  });
 };

@@ -1,5 +1,6 @@
 ﻿import express from 'express';
 import cors from 'cors';
+import db from './models/index.js';
 
 // Import essential route modules
 import authRoutes from './routes/auth.routes.js';
@@ -7,6 +8,7 @@ import userRoutes from './routes/user.routes.js';
 import templateRoutes from './routes/template.routes.js';
 import formRoutes from './routes/form.routes.js';
 import tagRoutes from './routes/tag.routes.js';
+import likeRoutes from './routes/like.routes.js';
 
 const app = express();
 
@@ -38,6 +40,72 @@ app.use('/api/users', userRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/tags', tagRoutes);
+app.use('/api/likes', likeRoutes);
+
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    await db.sequelize.authenticate();
+    res.json({ 
+      message: 'Database connection successful',
+      status: 'healthy',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Database connection failed',
+      status: 'unhealthy',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Debug endpoint for likes system
+app.get('/debug/likes', async (req, res) => {
+  try {
+    const { Like, Template, User } = db;
+    
+    // Get basic statistics
+    const likeCount = await Like.count();
+    const templateCount = await Template.count();
+    const userCount = await User.count();
+    
+    // Test a simple like query
+    const recentLikes = await Like.findAll({
+      limit: 5,
+      order: [['createdAt', 'DESC']],
+      include: [
+        { model: User, attributes: ['id', 'username'] },
+        { model: Template, attributes: ['id', 'title'] }
+      ]
+    });
+    
+    res.json({
+      status: 'success',
+      timestamp: new Date().toISOString(),
+      statistics: {
+        totalLikes: likeCount,
+        totalTemplates: templateCount,
+        totalUsers: userCount
+      },
+      recentLikes: recentLikes.length,
+      sampleLikes: recentLikes,
+      environment: {
+        nodeEnv: process.env.NODE_ENV,
+        hasDbConnection: true
+      }
+    });
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Debug endpoint failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));
