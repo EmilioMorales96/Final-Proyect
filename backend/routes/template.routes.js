@@ -10,6 +10,7 @@ const router = express.Router();
 // Create template (authenticated only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
+    console.log('Creating template - User info:', req.user);
     console.log('Creating template with data:', req.body);
     const { title, description, topic, imageUrl, tags, isPublic, accessUsers, questions } = req.body;
 
