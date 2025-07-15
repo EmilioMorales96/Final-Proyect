@@ -1,12 +1,21 @@
-// Modal.jsx
-/* eslint-disable no-unused-vars */
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useRef } from "react";
 
+/**
+ * Reusable Modal component with animation and accessibility features
+ * Supports ESC key and backdrop click to close
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.open - Whether modal is open
+ * @param {string} props.title - Modal title
+ * @param {React.ReactNode} props.children - Modal content
+ * @param {Function} props.onClose - Function to close modal
+ * @returns {JSX.Element} Animated modal component
+ */
 export function Modal({ open, title, children, onClose }) {
   const backdropRef = useRef();
 
-  // Close with ESC
+  // Close with ESC key
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
@@ -16,7 +25,7 @@ export function Modal({ open, title, children, onClose }) {
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  // Close when clicking outside
+  // Close when clicking outside modal
   const handleBackdrop = (e) => {
     if (e.target === backdropRef.current) onClose();
   };

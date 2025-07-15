@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../hooks/useAuth";
 
+/**
+ * Admin route component that requires admin role
+ * Shows access denied message briefly before redirecting non-admin users
+ * 
+ * Used to wrap admin-only routes in AppRoutes.jsx
+ * 
+ * @returns {JSX.Element} Either admin content (Outlet), access denied message, or redirect to home
+ */
 export default function AdminRoute() {
   const { user } = useAuth();
   const [showDenied, setShowDenied] = useState(false);

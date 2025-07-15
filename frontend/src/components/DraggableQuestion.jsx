@@ -3,6 +3,15 @@ import { CSS } from "@dnd-kit/utilities";
 import { FiMove } from "react-icons/fi";
 import clsx from "clsx";
 
+/**
+ * Draggable question wrapper component using dnd-kit
+ * Provides drag and drop functionality for questions with visual feedback
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.id - Unique identifier for the draggable item
+ * @param {React.ReactNode} props.children - Question content to be rendered
+ * @returns {JSX.Element} Draggable wrapper with move handle
+ */
 export default function DraggableQuestion({ id, children }) {
   const {
     attributes,
@@ -27,7 +36,7 @@ export default function DraggableQuestion({ id, children }) {
         isDragging && "shadow-2xl ring-4 ring-purple-300"
       )}
     >
-      {/* Handle de arrastre */}
+      {/* Drag handle */}
       <button
         type="button"
         tabIndex={0}

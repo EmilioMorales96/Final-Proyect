@@ -1,6 +1,12 @@
-import { useAppSettings } from '../context/AppSettingsContext';
+import { useAppSettings } from '../hooks/useAppSettings';
 import { MdDarkMode, MdLightMode } from "react-icons/md";
 
+/**
+ * Theme toggle component for switching between light and dark mode
+ * Uses app settings context to manage theme state
+ * 
+ * @returns {JSX.Element} Theme toggle button with icon and text
+ */
 export default function ThemeMenu() {
   const { darkMode, setDarkMode } = useAppSettings();
 

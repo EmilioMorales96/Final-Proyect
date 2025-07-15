@@ -3,28 +3,43 @@ import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+/**
+ * Custom hook for fetching and managing forms and templates data
+ * Provides state management and fetch functions for forms and templates
+ * 
+ * @param {string} userToken - Authentication token for API requests
+ * @returns {Object} Object containing:
+ *   - forms: Array of user forms
+ *   - templates: Array of available templates
+ *   - loading: Loading state boolean
+ *   - error: Error message or null
+ *   - fetchForms: Function to fetch forms data
+ *   - fetchTemplates: Function to fetch templates data
+ */
 export const useFormsData = (userToken) => {
   const [forms, setForms] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  /**
+   * Fetches user forms from the API
+   */
   const fetchForms = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      console.log("Fetching forms...");
-      console.log("Token enviado en forms:", userToken);
       const response = await fetch(`${API_URL}/api/forms`, {
         headers: { "Authorization": `Bearer ${userToken}` }
       });
-      console.log("Forms response status:", response.status);
+      
       const data = await response.json();
-      console.log("Forms response data:", data);
+      
       if (Array.isArray(data)) {
         setForms(data);
       } else {
         setForms([]);
-      console.warn("[useFormsData] forms is not an array:", data);
+        console.warn("[useFormsData] Expected forms array, received:", typeof data);
       }
     } catch (err) {
       setError(err.message);
@@ -35,23 +50,26 @@ export const useFormsData = (userToken) => {
     }
   }, [userToken]);
 
+  /**
+   * Fetches available templates from the API
+   */
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      console.log("Fetching templates...");
       const response = await fetch(`${API_URL}/api/templates`, {
         headers: {
           "Authorization": `Bearer ${userToken}`
         }
       });
-      console.log("Templates response status:", response.status);
+      
       const data = await response.json();
-      console.log("Templates response data:", data);
+      
       if (Array.isArray(data)) {
         setTemplates(data);
       } else {
         setTemplates([]);
-        console.warn("[useFormsData] templates is not an array:", data);
+        console.warn("[useFormsData] Expected templates array, received:", typeof data);
       }
     } catch (err) {
       setError(err.message);

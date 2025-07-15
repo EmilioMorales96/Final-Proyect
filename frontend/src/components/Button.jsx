@@ -1,5 +1,19 @@
 import PropTypes from 'prop-types';
 
+/**
+ * Reusable Button component with multiple variants and styling options
+ * Supports icons, different variants, disabled state, and custom classes
+ * 
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Button content
+ * @param {Function} props.onClick - Click handler function
+ * @param {string} props.type - Button type (button, submit, reset)
+ * @param {string} props.variant - Button style variant
+ * @param {boolean} props.disabled - Whether button is disabled
+ * @param {string} props.className - Additional CSS classes
+ * @param {React.ReactNode} props.icon - Optional icon element
+ * @returns {JSX.Element} Styled button component
+ */
 const Button = ({
   children,
   onClick,

@@ -7,7 +7,18 @@ import LanguageSelector from '../LanguageSelector';
 import FloatingHelpButton from '../FloatingHelpButton';
 
 /**
- * Main layout component that provides navigation and search functionality
+ * Main layout component that provides the application structure
+ * Includes navigation bar, search functionality, main content area, and footer
+ * 
+ * Features:
+ * - Responsive navigation with brand link and forms navigation
+ * - Global search functionality with dropdown results
+ * - User authentication state handling (login/register vs user menu)
+ * - Language selector integration
+ * - Dark mode support
+ * - Floating help button
+ * 
+ * @returns {JSX.Element} The main layout structure
  */
 export const MainLayout = () => {
   const parsedUser = JSON.parse(localStorage.getItem("user"));
@@ -16,6 +27,10 @@ export const MainLayout = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
 
+  /**
+   * Handles search functionality with API integration
+   * @param {string} query - Search query string
+   */
   const handleSearch = async (query) => {
     if (!query.trim() || query.length < 2) {
       setSearchResults([]);
@@ -39,6 +54,9 @@ export const MainLayout = () => {
     }
   };
 
+  /**
+   * Clears search state and results
+   */
   const clearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);

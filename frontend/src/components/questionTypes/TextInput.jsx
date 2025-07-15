@@ -1,3 +1,14 @@
+/**
+ * TextInput - Single line text input component
+ * Handles short text responses with basic validation
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.question - Question configuration object
+ * @param {string} props.answer - Current answer value
+ * @param {Function} props.setAnswer - Function to update answer
+ * @param {boolean} props.disabled - Whether input is disabled
+ * @returns {JSX.Element} Text input with styling and validation
+ */
 export default function TextInput({ question, answer, setAnswer, disabled }) {
   return (
     <input

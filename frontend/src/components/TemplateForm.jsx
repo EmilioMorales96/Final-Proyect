@@ -22,6 +22,11 @@ import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+/**
+ * Creates a default question object with specified type
+ * @param {string} type - Question type (text, multiple-choice, etc.)
+ * @returns {Object} Default question configuration
+ */
 const DEFAULT_QUESTION = type => ({
   type,
   title: "",
@@ -32,6 +37,15 @@ const DEFAULT_QUESTION = type => ({
   required: false,
 });
 
+/**
+ * Internal draggable question wrapper component
+ * Provides drag and drop functionality for questions within the form builder
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.id - Unique identifier for the draggable item
+ * @param {React.ReactNode} props.children - Question content to be rendered
+ * @returns {JSX.Element} Draggable wrapper with visual feedback
+ */
 function DraggableQuestion({ id, children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
@@ -59,6 +73,23 @@ function DraggableQuestion({ id, children }) {
   );
 }
 
+/**
+ * TemplateForm - Main component for creating and editing form templates
+ * 
+ * Features:
+ * - Drag & drop question reordering
+ * - Multiple question types support
+ * - Tag management with creation
+ * - User permissions and visibility settings
+ * - Preview mode for testing forms
+ * - Comprehensive validation
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onSubmit - Callback function when form is submitted
+ * @param {Object} props.initialData - Initial data for editing existing templates
+ * @param {boolean} props.isEditing - Whether component is in editing mode
+ * @returns {JSX.Element} Complete template form with all features
+ */
 export default function TemplateForm({ onSubmit, initialData = null, isEditing = false }) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");

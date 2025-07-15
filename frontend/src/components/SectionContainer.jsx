@@ -1,5 +1,15 @@
 import { motion as Motion } from 'framer-motion';
 
+/**
+ * Animated section container component with theme support
+ * Provides consistent styling and animation for content sections
+ * 
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Section content
+ * @param {boolean} props.darkMode - Whether dark mode is active
+ * @param {string} props.title - Section title
+ * @returns {JSX.Element} Animated section with consistent styling
+ */
 export const SectionContainer = ({ children, darkMode, title }) => (
   <Motion.section
     initial={{ opacity: 0, y: 20 }}

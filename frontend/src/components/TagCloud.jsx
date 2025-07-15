@@ -2,6 +2,19 @@ import { useEffect, useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+/**
+ * TagCloud - Interactive tag cloud component
+ * Displays tags with font sizes proportional to their usage count
+ * 
+ * Features:
+ * - Dynamic font sizing based on tag frequency
+ * - Clickable tags for filtering
+ * - Fetches tag data from API
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onTagClick - Callback when a tag is clicked
+ * @returns {JSX.Element} Visual tag cloud with clickable tags
+ */
 export default function TagCloud({ onTagClick }) {
   const [tags, setTags] = useState([]);
 

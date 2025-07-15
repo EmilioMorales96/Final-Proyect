@@ -1,6 +1,14 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
+/**
+ * Protected route component that requires user authentication
+ * Redirects unauthenticated users to login page
+ * 
+ * Used to wrap routes that require authentication in AppRoutes.jsx
+ * 
+ * @returns {JSX.Element} Either the protected content (Outlet) or redirect to login
+ */
 export default function ProtectedRoute() {
   const { user } = useAuth();
 

@@ -3,6 +3,9 @@ import { FaQuestion, FaRegCheckSquare, FaListUl } from "react-icons/fa";
 import { BsTextareaResize, BsInputCursor } from "react-icons/bs";
 import { AiOutlineNumber } from "react-icons/ai";
 
+/**
+ * Icons mapping for different question types
+ */
 const questionTypeIcons = {
   text: BsInputCursor,
   textarea: BsTextareaResize,
@@ -12,6 +15,9 @@ const questionTypeIcons = {
   select: FaListUl,
 };
 
+/**
+ * Color schemes for different question types
+ */
 const questionTypeColors = {
   text: "bg-blue-100 text-blue-700 border-blue-200",
   textarea: "bg-green-100 text-green-700 border-green-200",
@@ -21,6 +27,29 @@ const questionTypeColors = {
   select: "bg-indigo-100 text-indigo-700 border-indigo-200",
 };
 
+/**
+ * QuestionCard - Individual question editing component
+ * Provides UI for editing question properties, options, and settings
+ * 
+ * Features:
+ * - Visual question type indicators with icons and colors
+ * - Drag handle for reordering questions
+ * - Option management for multi-choice questions
+ * - Validation indicators
+ * - Toggle switches for question settings
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.question - Question data object
+ * @param {number} props.idx - Question index in the list
+ * @param {Function} props.onChange - Handler for question property changes
+ * @param {Function} props.onOptionChange - Handler for option text changes
+ * @param {Function} props.onAddOption - Handler for adding new options
+ * @param {Function} props.onDeleteOption - Handler for deleting options
+ * @param {Function} props.onDelete - Handler for deleting the question
+ * @param {Object} props.dragHandleProps - Props for drag handle functionality
+ * @param {boolean} props.flash - Whether to show flash animation
+ * @returns {JSX.Element} Question card with editing interface
+ */
 export default function QuestionCard({
   question,
   idx,

@@ -1,3 +1,14 @@
+/**
+ * TextareaInput - Multi-line text input component
+ * Handles long text responses with auto-resizing
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.question - Question configuration object
+ * @param {string} props.answer - Current answer value
+ * @param {Function} props.setAnswer - Function to update answer
+ * @param {boolean} props.disabled - Whether input is disabled
+ * @returns {JSX.Element} Textarea input with styling and validation
+ */
 export default function TextareaInput({ question, answer, setAnswer, disabled }) {
   return (
     <textarea

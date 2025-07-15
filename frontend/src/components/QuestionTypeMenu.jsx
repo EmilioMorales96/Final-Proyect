@@ -4,6 +4,9 @@ import { AiOutlineNumber } from "react-icons/ai";
 import { FaRegCheckSquare, FaListUl, FaChevronDown } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 
+/**
+ * Available question types with their metadata
+ */
 const QUESTION_TYPES = [
   { 
     type: "text", 
@@ -49,6 +52,21 @@ const QUESTION_TYPES = [
   },
 ];
 
+/**
+ * QuestionTypeMenu - Dropdown menu for selecting question types
+ * Provides visual selection interface with icons, colors, and descriptions
+ * 
+ * Features:
+ * - Click outside to close
+ * - Escape key to close
+ * - Visual indicators for each question type
+ * - Hover effects and accessibility
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onSelect - Callback when question type is selected
+ * @param {Function} props.onClose - Callback to close the menu
+ * @returns {JSX.Element} Question type selection dropdown
+ */
 export default function QuestionTypeMenu({ onSelect, onClose }) {
   const menuRef = useRef(null);
 
