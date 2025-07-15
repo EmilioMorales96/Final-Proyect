@@ -1,22 +1,11 @@
 ﻿import express from 'express';
 import cors from 'cors';
-import db from './models/index.js';
 
-// Import all route modules
-import userRoutes from './routes/user.routes.js';
+// Import essential route modules
 import authRoutes from './routes/auth.routes.js';
-import questionRoutes from './routes/question.routes.js';
-import formRoutes from './routes/form.routes.js';
+import userRoutes from './routes/user.routes.js';
 import templateRoutes from './routes/template.routes.js';
-import commentRoutes from './routes/comment.routes.js';
-import likeRoutes from './routes/like.routes.js';
-import tagRoutes from './routes/tag.routes.js';
-import favoriteRoutes from './routes/favorite.routes.js';
-import searchRoutes from './routes/search.routes.js';
-import uploadRoutes from './routes/upload.routes.js';
-import salesforceRoutes from './routes/salesforce.routes.js';
-import externalRoutes from './routes/external.routes.js';
-import supportRoutes from './routes/support.routes.js';
+import formRoutes from './routes/form.routes.js';
 
 const app = express();
 
@@ -33,39 +22,41 @@ app.use(cors({
 }));
 app.options('*', cors());
 
+// Health check
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Forms API is running', 
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Mount API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes); 
-app.use('/api/forms', formRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/templates', templateRoutes);
-app.use('/api/questions', questionRoutes);
-app.use('/api/comments', commentRoutes);
-app.use('/api/likes', likeRoutes);
-app.use('/api/tags', tagRoutes);
-app.use('/api/favorites', favoriteRoutes);
-app.use('/api/search', searchRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/salesforce', salesforceRoutes);
-app.use('/api/external', externalRoutes);
-app.use('/api/support', supportRoutes);
+app.use('/api/forms', formRoutes);
 
 // Serve static files from uploads directory
 app.use('/uploads', express.static('uploads'));
 
 // Handle 404 errors for unknown routes
 app.use((req, res, next) => {
-  console.warn(`[404] Route not found: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ message: 'Route not found' });
+  res.status(404).json({ 
+    message: 'Route not found',
+    path: req.path,
+    method: req.method
+  });
 });
 
 // Global error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal server error', error: err.message });
+  console.error('Error:', err);
+  res.status(500).json({ 
+    message: 'Internal server error', 
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
 });
-
-// Synchronize database models
-await db.sequelize.sync();
 
 export default app;
 

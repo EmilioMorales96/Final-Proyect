@@ -4,9 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js",
-    "start:clean": "node server-clean.js",
-    "dev:clean": "nodemon server-clean.js"
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "author": "",
