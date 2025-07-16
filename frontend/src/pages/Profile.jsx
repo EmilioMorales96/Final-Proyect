@@ -49,14 +49,14 @@ export default function Profile() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Error updating profile");
+        setError(data.message || t('profile.errorUpdating'));
       } else {
-        setSuccess("Profile updated successfully");
+        setSuccess(t('profile.profileUpdated'));
         // Update user in context
         login(data.user, localStorage.getItem("token"));
       }
     } catch {
-      setError("Network or server error");
+      setError(t('register.networkError'));
     } finally {
       setLoading(false);
     }
@@ -85,14 +85,14 @@ export default function Profile() {
       const data = await res.json();
 
       if (!res.ok) {
-        setPasswordError(data.message || "Error changing password");
+        setPasswordError(data.message || t('profile.errorPassword'));
       } else {
-        setPasswordSuccess("Password updated successfully");
+        setPasswordSuccess(t('profile.passwordUpdated'));
         setCurrentPassword("");
         setNewPassword("");
       }
     } catch {
-      setPasswordError("Network or server error");
+      setPasswordError(t('register.networkError'));
     } finally {
       setPasswordLoading(false);
     }
@@ -194,25 +194,25 @@ export default function Profile() {
 
       {/* Profile form */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-8 w-full max-w-xl mb-10 animate-fade-in-up">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">My Profile</h2>
+        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">{t('profile.title')}</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block font-semibold mb-2 text-gray-700 dark:text-gray-200">Name</label>
+            <label className="block font-semibold mb-2 text-gray-700 dark:text-gray-200">{t('profile.name')}</label>
             <input
               className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Name"
+              placeholder={t('profile.name')}
               required
             />
           </div>
           <div>
-            <label className="block font-semibold mb-2 text-gray-700 dark:text-gray-200">Email</label>
+            <label className="block font-semibold mb-2 text-gray-700 dark:text-gray-200">{t('profile.email')}</label>
             <input
               className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="Email"
+              placeholder={t('profile.email')}
               type="email"
               required
               disabled
@@ -223,7 +223,7 @@ export default function Profile() {
             className="w-full py-3 rounded-lg bg-purple-700 hover:bg-purple-800 text-white font-bold text-lg shadow transition"
             disabled={loading}
           >
-            {loading ? "Saving..." : "Save changes"}
+            {loading ? t('profile.saving') : t('profile.saveProfile')}
           </button>
           {success && (
             <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mt-2 animate-fade-in">
@@ -240,10 +240,10 @@ export default function Profile() {
 
       {/* Password change form */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl p-8 w-full max-w-xl mb-10 animate-fade-in-up">
-        <h3 className="text-2xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">Change password</h3>
+        <h3 className="text-2xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">{t('profile.password')}</h3>
         <form onSubmit={handlePasswordChange} className="space-y-6">
           <div>
-            <label className="block font-semibold mb-2 text-gray-700 dark:text-gray-200">Current password</label>
+            <label className="block font-semibold mb-2 text-gray-700 dark:text-gray-200">{t('profile.currentPassword')}</label>
             <input
               className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
               type="password"

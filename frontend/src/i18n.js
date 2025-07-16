@@ -61,6 +61,32 @@ const resources = {
       "msg.login_to_interact": "Log in to interact with forms",
       "msg.create_template_failed": "Failed to create template. Please try again.",
       
+      // Welcome
+      "welcome.title": "Welcome!",
+      "welcome.message": "Your account has been created successfully.",
+      "welcome.submessage": "You can now log in and start using the platform.",
+      "welcome.login": "Log in",
+      
+      // Template Editor
+      "editor.templateIdRequired": "Template ID is required",
+      "editor.templateNotFound": "Template not found",
+      "editor.noPermission": "You don't have permission to edit this template",
+      "editor.failedToLoad": "Failed to load template",
+      "editor.loadingTemplate": "Loading template...",
+      "editor.failedToUpdate": "Failed to update template",
+      "editor.updatedSuccessfully": "Template updated successfully!",
+      
+      // Forms Page
+      "forms.failedToLoad": "Failed to load the form",
+      "forms.templateSaved": "Template saved successfully",
+      "forms.errorSaving": "Error saving template",
+      "forms.answersSubmitted": "Answers submitted successfully",
+      "forms.errorSubmitting": "Error submitting answers",
+      "forms.titleRequired": "The form must have a title.",
+      "forms.oneQuestionRequired": "Add at least one question.",
+      "forms.questionsNeedText": "All questions must have text.",
+      "forms.optionsRequired": "All option questions must have at least one valid option.",
+      
       // Modal
       "modal.delete_template": "Delete Template",
       "modal.action_undone": "This action cannot be undone.",
@@ -238,6 +264,32 @@ const resources = {
       "msg.link_copied": "¡Enlace copiado!",
       "msg.login_to_interact": "Inicia sesión para interactuar con formularios",
       "msg.create_template_failed": "Error al crear plantilla. Inténtalo de nuevo.",
+      
+      // Welcome
+      "welcome.title": "¡Bienvenido!",
+      "welcome.message": "Tu cuenta ha sido creada exitosamente.",
+      "welcome.submessage": "Ahora puedes iniciar sesión y comenzar a usar la plataforma.",
+      "welcome.login": "Iniciar sesión",
+      
+      // Template Editor
+      "editor.templateIdRequired": "Se requiere el ID de la plantilla",
+      "editor.templateNotFound": "Plantilla no encontrada",
+      "editor.noPermission": "No tienes permisos para editar esta plantilla",
+      "editor.failedToLoad": "Error al cargar la plantilla",
+      "editor.loadingTemplate": "Cargando plantilla...",
+      "editor.failedToUpdate": "Error al actualizar la plantilla",
+      "editor.updatedSuccessfully": "¡Plantilla actualizada exitosamente!",
+      
+      // Forms Page
+      "forms.failedToLoad": "Error al cargar el formulario",
+      "forms.templateSaved": "Plantilla guardada exitosamente",
+      "forms.errorSaving": "Error al guardar la plantilla",
+      "forms.answersSubmitted": "Respuestas enviadas exitosamente",
+      "forms.errorSubmitting": "Error al enviar las respuestas",
+      "forms.titleRequired": "El formulario debe tener un título.",
+      "forms.oneQuestionRequired": "Agrega al menos una pregunta.",
+      "forms.questionsNeedText": "Todas las preguntas deben tener texto.",
+      "forms.optionsRequired": "Todas las preguntas de opción deben tener al menos una opción válida.",
       
       // Modal
       "modal.delete_template": "Eliminar Plantilla",

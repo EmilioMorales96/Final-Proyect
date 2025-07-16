@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import TemplateForm from "../components/TemplateForm";
 import { useAuth } from "../hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -10,6 +11,7 @@ export default function TemplateEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
+  const { t } = useTranslation();
   const [templateData, setTemplateData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,7 +19,7 @@ export default function TemplateEditor() {
   // Load template data on mount
   useEffect(() => {
     if (!id) {
-      setError("Template ID is required");
+      setError(t('editor.templateIdRequired'));
       setLoading(false);
       return;
     }
@@ -33,11 +35,11 @@ export default function TemplateEditor() {
 
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error("Template not found");
+            throw new Error(t('editor.templateNotFound'));
           } else if (response.status === 403) {
-            throw new Error("You don't have permission to edit this template");
+            throw new Error(t('editor.noPermission'));
           } else {
-            throw new Error("Failed to load template");
+            throw new Error(t('editor.failedToLoad'));
           }
         }
 
@@ -54,7 +56,7 @@ export default function TemplateEditor() {
     };
 
     fetchTemplate();
-  }, [id, token]);
+  }, [id, token, t]);
 
   // Handle template update
   const handleSubmit = async (formData) => {

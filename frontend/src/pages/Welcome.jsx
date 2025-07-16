@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function Welcome() {
+  const { t } = useTranslation();
+  
   return (
     <div style={{
       minHeight: "70vh",
@@ -19,11 +22,11 @@ export default function Welcome() {
         textAlign: "center"
       }}>
         <h2 style={{ fontSize: "2rem", color: "#5E35B1", marginBottom: "1rem" }}>
-          Welcome!
+          {t('welcome.title')}
         </h2>
         <p style={{ color: "#757575", marginBottom: "2rem" }}>
-          Your account has been created successfully.<br />
-          You can now log in and start using the platform.
+          {t('welcome.message')}<br />
+          {t('welcome.submessage')}
         </p>
         <Link
           to="/login"
@@ -38,7 +41,7 @@ export default function Welcome() {
             fontSize: "1rem"
           }}
         >
-          Log in
+          {t('welcome.login')}
         </Link>
       </div>
     </div>
