@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import session from 'express-session';
+import passport from './config/passport.js';
 import db from './models/index.js';
 
 // Import only essential routes to avoid path-to-regexp errors
@@ -8,6 +10,8 @@ import userRoutes from './routes/user.routes.js';
 import likeRoutes from './routes/like.routes.js';
 import templateRoutes from './routes/template.routes.js';
 import tagRoutes from './routes/tag.routes.js';
+import formRoutes from './routes/form.routes.js';
+import emailRoutes from './routes/email.routes.js';
 
 const app = express();
 
@@ -20,6 +24,18 @@ app.use(cors({
   ],
   credentials: true
 }));
+
+// Session configuration for Passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false } // Set to true in production with HTTPS
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Basic health check
 app.get('/', (req, res) => {
@@ -134,6 +150,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/tags', tagRoutes);
+app.use('/api/forms', formRoutes);
+app.use('/api/email', emailRoutes);
 
 // Serve static files
 app.use('/uploads', express.static('uploads'));

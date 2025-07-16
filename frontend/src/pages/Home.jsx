@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TagCloud from "../components/TagCloud";
+import MarkdownRenderer from "../components/MarkdownRenderer";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -110,9 +111,12 @@ export default function Home() {
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2 truncate">
                       {template.title}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
-                      {template.description}
-                    </p>
+                    <div className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                      <MarkdownRenderer 
+                        content={template.description} 
+                        className="text-sm prose-sm max-w-none" 
+                      />
+                    </div>
                     <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-500">
                       <span>by {template.author?.username}</span>
                       <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded">

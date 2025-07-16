@@ -9,6 +9,7 @@ import LikeButton from "../components/LikeButton";
 import CommentModal from "../components/CommentModal";
 import { FaRegCommentDots } from "react-icons/fa";
 import TagCloud from "../components/TagCloud";
+import MarkdownRenderer from "../components/MarkdownRenderer";
 import confetti from "canvas-confetti";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -348,9 +349,12 @@ export default function FormsDashboard() {
 
                   {/* Template Content */}
                   <div className="p-6">
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2 leading-relaxed">
-                      {template.description}
-                    </p>
+                    <div className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3 leading-relaxed prose-sm">
+                      <MarkdownRenderer 
+                        content={template.description} 
+                        className="text-sm" 
+                      />
+                    </div>
                     
                     {/* Tags */}
                     {template.tags && template.tags.length > 0 && (

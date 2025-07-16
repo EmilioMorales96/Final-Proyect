@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import useRedirectIfAuthenticated from "../hooks/useRedirectIfAuthenticated";
+import GoogleAuthButton from "../components/GoogleAuthButton";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -92,6 +93,17 @@ export default function Login() {
                 </div>
               )}
             </form>
+            
+            {/* Divider */}
+            <div className="flex items-center my-6">
+              <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+              <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">or</span>
+              <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            
+            {/* Google OAuth Button */}
+            <GoogleAuthButton text="Continue with Google" />
+            
             <div className="text-center mt-6 text-gray-500 dark:text-gray-300 text-sm">
               Don't have an account?{" "}
               <a

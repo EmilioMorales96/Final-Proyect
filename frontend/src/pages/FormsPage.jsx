@@ -44,6 +44,7 @@ export default function FormsPage() {
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
+  const [emailCopy, setEmailCopy] = useState(false);
   const [lastDroppedIdx, setLastDroppedIdx] = useState(null);
   const [preview, setPreview] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -237,6 +238,7 @@ export default function FormsPage() {
       body: JSON.stringify({
         templateId,
         answers,
+        emailCopy,
       }),
     });
     if (!res.ok) {
@@ -494,6 +496,32 @@ export default function FormsPage() {
                 )}
               </div>
             </div>
+            
+            {/* Email Copy Checkbox - Only in fill mode */}
+            {mode === "fill" && isActionAllowed && (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4 mb-6">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailCopy}
+                    onChange={(e) => setEmailCopy(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">📧</span>
+                    <div>
+                      <span className="font-medium text-blue-800 dark:text-blue-200">
+                        Email me a copy of my answers
+                      </span>
+                      <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+                        We'll send a copy of your responses to your registered email address
+                      </p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            )}
+            
             <div className="flex justify-end">
               <button
                 type="submit"

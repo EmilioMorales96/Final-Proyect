@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
+import { MarkdownEditor } from './MarkdownRenderer';
 import QuestionTypeMenu from "./QuestionTypeMenu";
 import QuestionCard from "./QuestionCard";
 import QuestionRenderer from "./QuestionRenderer";
+import QuestionLimitsIndicator from "./QuestionLimitsIndicator";
+import { validateQuestionLimits, canAddQuestionType } from "../utils/questionValidation";
 import {
   DndContext,
   closestCenter,
@@ -128,7 +131,17 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
   }, [initialData]);
 
   const handleAddQuestion = type => {
+    // Check if we can add this question type
+    if (!canAddQuestionType(questions, type)) {
+      const configs = validateQuestionLimits([...questions, DEFAULT_QUESTION(type)]);
+      if (!configs.isValid) {
+        toast.error(configs.errors[0]);
+        return;
+      }
+    }
+    
     setQuestions(qs => [...qs, DEFAULT_QUESTION(type)]);
+    toast.success(`✅ ${type} question added!`);
   };
 
   const handleQuestionChange = (idx, field, value) => {
@@ -203,19 +216,10 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
     }
 
     // Check question type limits
-    const typeCounts = {};
-    questions.forEach(q => {
-      typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
-    });
-
-    const limitedTypes = ['text', 'textarea', 'integer', 'checkbox', 'radio', 'select'];
-    const maxPerType = 4;
-    
-    for (const type of limitedTypes) {
-      if (typeCounts[type] > maxPerType) {
-        toast.error(`Maximum ${maxPerType} questions allowed for type: ${type}`);
-        return;
-      }
+    const validation = validateQuestionLimits(questions);
+    if (!validation.isValid) {
+      toast.error(validation.errors[0]);
+      return;
     }
 
     try {
@@ -353,16 +357,11 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Description *
-                </label>
-                <textarea
-                  placeholder="Describe what this template is for..."
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-all duration-200 resize-none"
+                <MarkdownEditor
                   value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  required
+                  onChange={setDescription}
+                  placeholder="Describe what this template is for... (Markdown supported)"
+                  rows={4}
                 />
               </div>
             </div>
@@ -562,6 +561,14 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
                       </svg>
                       Add your first question
                     </button>
+                    
+                    {/* Question Limits Indicator */}
+                    <div className="mt-6">
+                      <QuestionLimitsIndicator 
+                        questions={questions}
+                        onTypeSelect={handleAddQuestion}
+                      />
+                    </div>
                   </div>
                 ) : previewMode ? (
                   /* Preview Mode */

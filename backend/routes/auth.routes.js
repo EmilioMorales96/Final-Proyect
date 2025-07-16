@@ -2,6 +2,7 @@ import express from 'express';
 import db from "../models/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import passport from '../config/passport.js';
 
 const router = express.Router();
 const { User } = db;
@@ -71,5 +72,31 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Google OAuth Routes
+router.get('/google', 
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+router.get('/google/callback',
+  passport.authenticate('google', { session: false }),
+  (req, res) => {
+    try {
+      // Generate JWT token for the authenticated user
+      const token = jwt.sign(
+        { id: req.user.id, role: req.user.role },
+        process.env.JWT_SECRET || "secretkey",
+        { expiresIn: "2h" }
+      );
+
+      // Redirect to frontend with token
+      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendURL}/auth/success?token=${token}`);
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendURL}/auth/error`);
+    }
+  }
+);
 
 export default router;

@@ -2,13 +2,14 @@ import express from 'express';
 import db from '../models/index.js';
 import authenticateToken from '../middleware/auth.middleware.js';
 import { requireAdmin, requireResourceOwnershipOrAdmin, requireFormAccessOrAdmin } from '../middleware/authorization.middleware.js';
+import { sendFormSubmissionEmail } from '../utils/emailService.js';
 
 const { Form, User, Template } = db;
 const router = express.Router();
 
 // Guardar respuestas de un formulario (protegido)
 router.post('/', authenticateToken, async (req, res) => {
-  const { templateId, answers } = req.body;
+  const { templateId, answers, emailCopy } = req.body;
 
   if (!templateId || typeof templateId !== 'number') {
     return res.status(400).json({ message: 'El templateId es obligatorio y debe ser un número.' });
@@ -18,11 +19,40 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 
   try {
+    // Create form entry
     const form = await Form.create({
       templateId,
       userId: req.user.id,
       answers,
     });
+
+    // Send email copy if requested
+    if (emailCopy && req.user.email) {
+      try {
+        // Get template information for email
+        const template = await Template.findByPk(templateId, {
+          attributes: ['title', 'description']
+        });
+
+        if (template) {
+          const emailResult = await sendFormSubmissionEmail(
+            req.user.email,
+            { ...form.toJSON(), answers },
+            template
+          );
+          
+          if (emailResult.success) {
+            console.log(`Email sent successfully to ${req.user.email}`);
+          } else {
+            console.warn(`Failed to send email to ${req.user.email}:`, emailResult.message);
+          }
+        }
+      } catch (emailError) {
+        // Don't fail the form submission if email fails
+        console.error('Email service error:', emailError);
+      }
+    }
+
     res.status(201).json(form);
   } catch (err) {
     res.status(500).json({ message: 'Error al guardar respuestas.', error: err.message });

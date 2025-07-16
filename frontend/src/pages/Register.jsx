@@ -1,6 +1,7 @@
 import useRedirectIfAuthenticated from "../hooks/useRedirectIfAuthenticated";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import GoogleAuthButton from "../components/GoogleAuthButton";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const COLORS = {
@@ -126,6 +127,17 @@ export default function Register() {
               <div className="text-center text-green-600 dark:text-green-400 font-medium text-sm py-3 rounded bg-green-50 dark:bg-green-900/30 animate-fade-in">{success}</div>
             )}
           </form>
+          
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+            <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">or</span>
+            <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+          </div>
+          
+          {/* Google OAuth Button */}
+          <GoogleAuthButton text="Sign up with Google" />
+          
           <div className="text-center mt-6 text-gray-500 dark:text-gray-300 text-sm">
             Already have an account?{' '}
             <a

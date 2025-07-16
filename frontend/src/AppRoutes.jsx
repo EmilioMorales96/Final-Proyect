@@ -3,6 +3,7 @@ import { MainLayout } from "./components/layout/Layout.jsx";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import AuthSuccess from "./pages/AuthSuccess";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Profile from "./pages/Profile.jsx";
 import FormsDashboard from "./pages/FormsDashboard";
@@ -38,6 +39,7 @@ export default function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/welcome" element={<Welcome />} />
+        <Route path="/auth/success" element={<AuthSuccess />} />
         
         {/* Forms and templates routes */}
         <Route path="/forms" element={<FormsDashboard />} />
