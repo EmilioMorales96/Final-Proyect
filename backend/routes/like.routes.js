@@ -49,12 +49,24 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(403).json({ message: 'Cannot like private template' });
     }
     
-    const [like, created] = await Like.findOrCreate({
+    // Check if like already exists
+    const existingLike = await Like.findOne({
       where: { templateId: templateIdInt, userId: req.user.id }
     });
     
-    console.log(`[LIKES] Like ${created ? 'created' : 'already existed'} for user ${req.user.id} on template ${templateIdInt}`);
-    res.status(201).json({ liked: created, likeId: like.id });
+    if (existingLike) {
+      console.log(`[LIKES] Like already exists for user ${req.user.id} on template ${templateIdInt}`);
+      return res.status(200).json({ liked: false, likeId: existingLike.id, message: 'Already liked' });
+    }
+    
+    // Create new like
+    const like = await Like.create({
+      templateId: templateIdInt, 
+      userId: req.user.id
+    });
+    
+    console.log(`[LIKES] Like created for user ${req.user.id} on template ${templateIdInt}`);
+    res.status(201).json({ liked: true, likeId: like.id });
   } catch (err) {
     console.error('[LIKES] Error:', err);
     console.error('[LIKES] Error details:', {
