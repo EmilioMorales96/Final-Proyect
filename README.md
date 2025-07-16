@@ -3,8 +3,8 @@
 A full-stack web application for creating and managing dynamic forms with three external system integrations.
 
 ## 🚀 Live Demo
-- **Frontend:** [Coming Soon - Render Deployment]
-- **Backend API:** [Coming Soon - Render Deployment]
+- **Frontend:** [https://frontend-9ajm.onrender.com](https://frontend-9ajm.onrender.com) ✅ **LIVE**
+- **Backend API:** [https://backend-service-pu47.onrender.com](https://backend-service-pu47.onrender.com) ✅ **LIVE**
 
 ## 📋 Project Overview
 
@@ -142,12 +142,13 @@ Language can be switched from the user interface.
 
 ## 📊 Project Status
 
-- ✅ **Frontend Build:** Successful (654KB bundle)
-- ✅ **Backend:** All routes implemented and tested
+- ✅ **Frontend:** Live at https://frontend-9ajm.onrender.com
+- ✅ **Backend:** Live at https://backend-service-pu47.onrender.com 
+- ✅ **Database:** Connected (Neon PostgreSQL)
 - ✅ **Integrations:** 3/3 fully implemented
 - ✅ **Documentation:** Complete
 - ✅ **Security:** Repository cleaned and secured
-- ✅ **Ready for Deployment**
+- ✅ **Deployment:** Complete and Live in Production
 
 ## 🧪 Testing
 

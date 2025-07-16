@@ -8,6 +8,7 @@ import db from './models/index.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import likeRoutes from './routes/like.routes.js';
+import favoriteRoutes from './routes/favorite.routes.js';
 import templateRoutes from './routes/template.routes.js';
 import tagRoutes from './routes/tag.routes.js';
 import formRoutes from './routes/form.routes.js';
@@ -158,6 +159,7 @@ app.get('/api/auth/oauth/status', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/likes', likeRoutes);
+app.use('/api/favorites', favoriteRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/forms', formRoutes);
