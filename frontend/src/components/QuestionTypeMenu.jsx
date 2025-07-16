@@ -183,10 +183,10 @@ export default function QuestionTypeMenu({ onSelect, onClose, questions = [] }) 
   return (
     <div 
       ref={menuRef}
-      className="absolute z-50 mt-2 right-0 w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 py-4 animate-in slide-in-from-top-2 duration-200 max-h-[80vh] overflow-y-auto"
+      className="absolute z-50 mt-2 right-0 w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-hidden flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
           Add Question
         </h3>
@@ -198,34 +198,37 @@ export default function QuestionTypeMenu({ onSelect, onClose, questions = [] }) 
         </button>
       </div>
 
-      {/* Limited Question Types Section */}
-      <div className="px-4 py-3">
-        <div className="flex items-center mb-3">
-          <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Limited Question Types (Max 4 each)
-          </h4>
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Limited Question Types Section */}
+        <div className="px-4 py-3">
+          <div className="flex items-center mb-3">
+            <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Limited Question Types (Max 4 each)
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {limitedTypes.map(config => renderQuestionButton(config, true))}
+          </div>
         </div>
-        <div className="space-y-2">
-          {limitedTypes.map(config => renderQuestionButton(config, true))}
-        </div>
-      </div>
 
-      {/* Unlimited Question Types Section */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center mb-3">
-          <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Unlimited Question Types
-          </h4>
-        </div>
-        <div className="space-y-2">
-          {unlimitedTypes.map(config => renderQuestionButton(config, false))}
+        {/* Unlimited Question Types Section */}
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center mb-3">
+            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Unlimited Question Types
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {unlimitedTypes.map(config => renderQuestionButton(config, false))}
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="px-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-50 dark:bg-gray-800/50">
         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
           <span>Total questions: {questions.length}</span>
           <span>Choose a type to add</span>
