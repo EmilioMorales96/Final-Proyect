@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next';
  * Modal que se muestra cuando un usuario ha sido bloqueado
  * Aparece automáticamente y redirige después de un tiempo
  */
-export default function UserBlockedModal({ isOpen, message, onClose }) {
+export default function UserBlockedModal({ show, message, onClose }) {
   const { t } = useTranslation();
   const [countdown, setCountdown] = useState(3);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!show) return;
 
     const timer = setInterval(() => {
       setCountdown(prev => {
@@ -24,9 +24,9 @@ export default function UserBlockedModal({ isOpen, message, onClose }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, onClose]);
+  }, [show, onClose]);
 
-  if (!isOpen) return null;
+  if (!show) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] animate-fade-in">
