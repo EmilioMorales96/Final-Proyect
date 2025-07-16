@@ -243,7 +243,7 @@ router.post('/sync-all-forms', authenticateToken, async (req, res) => {
 });
 
 /**
- * OAuth Authorization Endpoint
+ * OAuth Authorization Endpoint (Public - No Auth Required)
  * GET /api/salesforce/oauth/authorize
  */
 router.get('/oauth/authorize', (req, res) => {
@@ -273,7 +273,7 @@ router.get('/oauth/authorize', (req, res) => {
 });
 
 /**
- * OAuth Callback Endpoint
+ * OAuth Callback Endpoint (Public - No Auth Required)
  * GET /api/salesforce/oauth/callback
  */
 router.get('/oauth/callback', async (req, res) => {
@@ -326,7 +326,7 @@ router.get('/oauth/callback', async (req, res) => {
 });
 
 /**
- * Debug endpoint for Salesforce configuration
+ * Debug endpoint for Salesforce configuration (Public - No Auth Required)
  * GET /api/salesforce/debug/config
  */
 router.get('/debug/config', (req, res) => {
@@ -341,6 +341,29 @@ router.get('/debug/config', (req, res) => {
     },
     host: req.get('host'),
     protocol: req.protocol
+  });
+});
+
+/**
+ * Check authentication status (Public - No Auth Required)
+ * GET /api/salesforce/auth-check
+ */
+router.get('/auth-check', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.json({ 
+      authenticated: false, 
+      message: 'No token provided',
+      needsLogin: true
+    });
+  }
+
+  // Simple token presence check
+  res.json({ 
+    authenticated: true, 
+    message: 'Token present - proceed with OAuth',
+    needsLogin: false
   });
 });
 
