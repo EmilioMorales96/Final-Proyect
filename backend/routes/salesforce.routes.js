@@ -250,6 +250,19 @@ router.get('/oauth/authorize', (req, res) => {
   const clientId = process.env.SALESFORCE_CLIENT_ID;
   const redirectUri = process.env.SALESFORCE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
   
+  // Debug logging
+  console.log('🔧 OAuth Authorization Debug:');
+  console.log('CLIENT_ID:', clientId ? 'SET' : 'NOT SET');
+  console.log('REDIRECT_URI:', redirectUri);
+  console.log('Environment:', process.env.NODE_ENV);
+  
+  if (!clientId) {
+    return res.status(500).json({ 
+      error: 'Configuration Error',
+      message: 'SALESFORCE_CLIENT_ID not configured'
+    });
+  }
+  
   const authUrl = `https://login.salesforce.com/services/oauth2/authorize?` +
     `response_type=code&` +
     `client_id=${clientId}&` +
@@ -310,6 +323,25 @@ router.get('/oauth/callback', async (req, res) => {
     console.error('OAuth callback error:', error);
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=callback_failed`);
   }
+});
+
+/**
+ * Debug endpoint for Salesforce configuration
+ * GET /api/salesforce/debug/config
+ */
+router.get('/debug/config', (req, res) => {
+  res.json({
+    environment: process.env.NODE_ENV,
+    salesforce: {
+      clientId: process.env.SALESFORCE_CLIENT_ID ? 'SET' : 'NOT SET',
+      clientSecret: process.env.SALESFORCE_CLIENT_SECRET ? 'SET' : 'NOT SET',
+      redirectUri: process.env.SALESFORCE_REDIRECT_URI || 'NOT SET',
+      instanceUrl: process.env.SALESFORCE_INSTANCE_URL || 'NOT SET',
+      frontendUrl: process.env.FRONTEND_URL || 'NOT SET'
+    },
+    host: req.get('host'),
+    protocol: req.protocol
+  });
 });
 
 /**
