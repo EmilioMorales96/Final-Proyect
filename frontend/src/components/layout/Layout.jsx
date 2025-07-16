@@ -29,7 +29,10 @@ export const MainLayout = () => {
   const [showResults, setShowResults] = useState(false);
 
   // Monitor user status for real-time blocking
-  const { showBlockedModal, blockedMessage, handleModalClose } = useUserStatusMonitor();
+  const userStatusResult = useUserStatusMonitor();
+  const showBlockedModal = userStatusResult?.showBlockedModal || false;
+  const blockedMessage = userStatusResult?.blockedMessage || '';
+  const handleModalClose = userStatusResult?.handleModalClose || (() => {});
 
   /**
    * Handles search functionality with API integration
@@ -186,11 +189,13 @@ export const MainLayout = () => {
       <FloatingHelpButton />
       
       {/* Real-time user blocking modal */}
-      <UserBlockedModal 
-        isOpen={showBlockedModal}
-        message={blockedMessage}
-        onClose={handleModalClose}
-      />
+      {userStatusResult && (
+        <UserBlockedModal 
+          isOpen={showBlockedModal || false}
+          message={blockedMessage || ''}
+          onClose={handleModalClose || (() => {})}
+        />
+      )}
     </div>
   );
 };
