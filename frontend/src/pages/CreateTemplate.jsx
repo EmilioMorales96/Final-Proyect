@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import TemplateForm from "../components/TemplateForm";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function CreateTemplate() {
   const { token } = useAuth();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,7 +45,7 @@ export default function CreateTemplate() {
 
     } catch (error) {
       console.error("❌ Template creation error:", error);
-      toast.error(error.message || "Failed to create template. Please try again.");
+      toast.error(error.message || t('msg.create_template_failed'));
     } finally {
       setIsSubmitting(false);
     }

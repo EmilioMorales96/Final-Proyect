@@ -11,11 +11,13 @@ import { FaRegCommentDots } from "react-icons/fa";
 import TagCloud from "../components/TagCloud";
 import MarkdownRenderer from "../components/MarkdownRenderer";
 import confetti from "canvas-confetti";
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function FormsDashboard() {
   const { token, user } = useAuth();
+  const { t } = useTranslation();
   const { templates, loading, fetchTemplates } = useTemplatesData(token);
   const [modalOpen, setModalOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null);
@@ -68,10 +70,10 @@ export default function FormsDashboard() {
         },
       });
       if (!res.ok) throw new Error();
-      toast.success("Template deleted");
+      toast.success(t('msg.template_deleted'));
       fetchTemplates();
     } catch {
-      toast.error("Failed to delete template");
+      toast.error(t('msg.failed_delete'));
     } finally {
       closeModal();
     }
@@ -161,10 +163,10 @@ export default function FormsDashboard() {
                 </div>
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-                Forms Dashboard
+                {t('dashboard.title')}
               </h1>
               <p className="text-lg sm:text-xl text-indigo-100 max-w-2xl mx-auto leading-relaxed">
-                Create, manage, and analyze your forms with powerful tools and insights
+                {t('dashboard.subtitle')}
               </p>
             </div>
             
@@ -180,7 +182,7 @@ export default function FormsDashboard() {
                   <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                     {Array.isArray(templates) ? templates.length : 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Total Templates</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.stats.total')}</div>
                 </div>
                 
                 <div className="text-center">
@@ -192,7 +194,7 @@ export default function FormsDashboard() {
                   <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
                     {favorites.length}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Favorites</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.stats.favorites')}</div>
                 </div>
                 
                 <div className="text-center">
@@ -206,7 +208,7 @@ export default function FormsDashboard() {
                       (t.likes?.length || 0) >= 5 || Object.values(commentCounts)[t.id] >= 3
                     ).length : 0}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Trending</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.stats.trending')}</div>
                 </div>
               </div>
             </div>
@@ -217,10 +219,10 @@ export default function FormsDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-              My Templates
+              {t('dashboard.my_templates')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Manage and organize your form templates
+              {t('dashboard.manage_organize')}
             </p>
           </div>
           {user && (
@@ -229,7 +231,7 @@ export default function FormsDashboard() {
               className="group inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold shadow-xl hover:shadow-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105"
             >
               <FiPlus className="text-xl group-hover:rotate-90 transition-transform duration-300" />
-              Create Template
+              {t('dashboard.create_template')}
             </Link>
           )}
         </div>
@@ -266,12 +268,12 @@ export default function FormsDashboard() {
                 </svg>
               </div>
               <h3 className="text-2xl font-semibold text-gray-600 dark:text-gray-400 mb-4">
-                {tagFilter ? "No templates found for this tag" : "No templates yet"}
+                {tagFilter ? t('dashboard.no_templates_tag') : t('dashboard.no_templates')}
               </h3>
               <p className="text-gray-500 dark:text-gray-500 mb-8 max-w-md mx-auto">
                 {tagFilter 
-                  ? "Try selecting a different tag or clear the filter to see all templates."
-                  : "Get started by creating your first form template to collect responses from users."}
+                  ? t('dashboard.no_templates_tag_desc')
+                  : t('dashboard.no_templates_desc')}
               </p>
               {user && (
                 <Link
@@ -279,7 +281,7 @@ export default function FormsDashboard() {
                   className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold shadow-xl hover:shadow-2xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300"
                 >
                   <FiPlus className="text-xl" />
-                  Create Your First Template
+                  {t('dashboard.create_first')}
                 </Link>
               )}
             </div>
@@ -419,7 +421,7 @@ export default function FormsDashboard() {
                             className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
                           >
                             <FiClipboard className="text-sm" />
-                            Fill Form
+                            {t('template.fill_form')}
                           </Link>
 
                           {/* Edit, View Answers, and Delete buttons - only for template owner or admin */}
@@ -428,33 +430,33 @@ export default function FormsDashboard() {
                               <Link
                                 to={`/forms/edit/${template.id}`}
                                 className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors"
-                                title="Edit template"
+                                title={t('template.edit')}
                               >
                                 <FiEdit2 className="text-sm" />
-                                Edit
+                                {t('template.edit')}
                               </Link>
                               <Link
                                 to={`/templates/${template.id}/answers`}
                                 className="inline-flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors"
-                                title="View answers"
+                                title={t('template.answers')}
                               >
                                 <FiClipboard className="text-sm" />
-                                Answers
+                                {t('template.answers')}
                               </Link>
                               <button
                                 className="col-span-2 inline-flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
-                                title="Delete template"
+                                title={t('template.delete')}
                                 onClick={() => openDeleteModal(template.id)}
                               >
                                 <FiTrash2 className="text-sm" />
-                                Delete
+                                {t('template.delete')}
                               </button>
                             </div>
                           )}
                         </>
                       ) : (
                         <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
-                          Log in to interact with forms
+                          {t('msg.login_to_interact')}
                         </div>
                       )}
                     </div>

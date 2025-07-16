@@ -34,6 +34,8 @@ const resources = {
       "dashboard.show_favorites": "Show Only Favorites",
       "dashboard.show_all": "Show All Templates",
       "dashboard.filtering_by": "Filtering by:",
+      "dashboard.no_templates_tag": "No templates found for this tag",
+      "dashboard.no_templates_tag_desc": "Try selecting a different tag or clear the filter to see all templates.",
       
       // Template Actions
       "template.public": "Public",
@@ -57,6 +59,7 @@ const resources = {
       "msg.failed_delete": "Failed to delete template",
       "msg.link_copied": "Link copied!",
       "msg.login_to_interact": "Log in to interact with forms",
+      "msg.create_template_failed": "Failed to create template. Please try again.",
       
       // Modal
       "modal.delete_template": "Delete Template",
@@ -118,6 +121,70 @@ const resources = {
       "support.create_ticket": "Create Ticket",
       "support.ticket_created": "Support ticket created successfully!",
       
+      // User Menu
+      "menu.profile": "My profile",
+      "menu.adminPanel": "Admin panel",
+      "menu.logout": "Log out",
+      
+      // Language
+      "layout.language": "Language",
+      "layout.current": "Current",
+      
+      // Login
+      "login.title": "Log in",
+      "login.subtitle": "Enter your credentials to access",
+      "login.email": "Email",
+      "login.password": "Password",
+      "login.submit": "Log in",
+      "login.loading": "Logging in...",
+      "login.divider": "or",
+      "login.google": "Continue with Google",
+      "login.noAccount": "Don't have an account?",
+      "login.register": "Register",
+      "login.failed": "Login failed",
+      "login.networkError": "Network or server error",
+      
+      // Register
+      "register.title": "Create account",
+      "register.subtitle": "Join us and start creating amazing forms",
+      "register.username": "Username",
+      "register.email": "Email",
+      "register.password": "Password",
+      "register.submit": "Create account",
+      "register.loading": "Creating account...",
+      "register.divider": "or",
+      "register.google": "Continue with Google",
+      "register.hasAccount": "Already have an account?",
+      "register.login": "Log in",
+      "register.emailError": "Registration error: the email address must have a valid extension (e.g., .com, .net, .org)",
+      "register.failed": "Registration failed",
+      "register.networkError": "Network or server error",
+      "register.success": "Registration successful!",
+      
+      // Profile
+      "profile.title": "My Profile",
+      "profile.subtitle": "Manage your account information and preferences",
+      "profile.basicInfo": "Basic Information",
+      "profile.name": "Full Name",
+      "profile.email": "Email",
+      "profile.saveProfile": "Save Profile",
+      "profile.saving": "Saving...",
+      "profile.password": "Change Password",
+      "profile.currentPassword": "Current Password",
+      "profile.newPassword": "New Password",
+      "profile.savePassword": "Save Password",
+      "profile.avatar": "Profile Picture",
+      "profile.uploadAvatar": "Upload new profile picture",
+      "profile.profileUpdated": "Profile updated successfully!",
+      "profile.errorUpdating": "Error updating profile",
+      "profile.passwordUpdated": "Password updated successfully!",
+      "profile.errorPassword": "Error updating password",
+      "profile.avatarUpdated": "Profile picture updated successfully!",
+      "profile.errorAvatar": "Error updating profile picture",
+      "profile.selectImage": "Select an image",
+      "profile.uploadImage": "Upload Image",
+      "profile.uploading": "Uploading...",
+      
       // Footer
       "footer.rights": "All rights reserved"
     }
@@ -146,6 +213,8 @@ const resources = {
       "dashboard.show_favorites": "Mostrar Solo Favoritos",
       "dashboard.show_all": "Mostrar Todas las Plantillas",
       "dashboard.filtering_by": "Filtrando por:",
+      "dashboard.no_templates_tag": "No se encontraron plantillas para esta etiqueta",
+      "dashboard.no_templates_tag_desc": "Intenta seleccionar una etiqueta diferente o limpia el filtro para ver todas las plantillas.",
       
       // Template Actions
       "template.public": "Público",
@@ -165,10 +234,10 @@ const resources = {
       "msg.added_favorites": "¡Añadido a favoritos!",
       "msg.removed_favorites": "Eliminado de favoritos",
       "msg.failed_favorites": "Error al actualizar favoritos",
-      "msg.template_deleted": "Plantilla eliminada",
-      "msg.failed_delete": "Error al eliminar plantilla", 
+      "msg.template_deleted": "Plantilla eliminada",      "msg.failed_delete": "Error al eliminar plantilla",
       "msg.link_copied": "¡Enlace copiado!",
       "msg.login_to_interact": "Inicia sesión para interactuar con formularios",
+      "msg.create_template_failed": "Error al crear plantilla. Inténtalo de nuevo.",
       
       // Modal
       "modal.delete_template": "Eliminar Plantilla",
@@ -229,6 +298,70 @@ const resources = {
       "support.priority_low": "Baja",
       "support.create_ticket": "Crear Ticket",
       "support.ticket_created": "¡Ticket de soporte creado exitosamente!",
+      
+      // User Menu
+      "menu.profile": "Mi perfil",
+      "menu.adminPanel": "Panel de administrador",
+      "menu.logout": "Cerrar sesión",
+      
+      // Language
+      "layout.language": "Idioma",
+      "layout.current": "Actual",
+      
+      // Login
+      "login.title": "Iniciar sesión",
+      "login.subtitle": "Ingresa tus credenciales para acceder",
+      "login.email": "Correo electrónico",
+      "login.password": "Contraseña",
+      "login.submit": "Iniciar sesión",
+      "login.loading": "Iniciando sesión...",
+      "login.divider": "o",
+      "login.google": "Continuar con Google",
+      "login.noAccount": "¿No tienes una cuenta?",
+      "login.register": "Registrarse",
+      "login.failed": "Error al iniciar sesión",
+      "login.networkError": "Error de red o servidor",
+      
+      // Register
+      "register.title": "Crear cuenta",
+      "register.subtitle": "Únete a nosotros y comienza a crear formularios increíbles",
+      "register.username": "Nombre de usuario",
+      "register.email": "Correo electrónico",
+      "register.password": "Contraseña",
+      "register.submit": "Crear cuenta",
+      "register.loading": "Creando cuenta...",
+      "register.divider": "o",
+      "register.google": "Continuar con Google",
+      "register.hasAccount": "¿Ya tienes una cuenta?",
+      "register.login": "Iniciar sesión",
+      "register.emailError": "Error de registro: la dirección de correo debe tener una extensión válida (ej., .com, .net, .org)",
+      "register.failed": "Error en el registro",
+      "register.networkError": "Error de red o servidor",
+      "register.success": "¡Registro exitoso!",
+      
+      // Profile
+      "profile.title": "Mi Perfil",
+      "profile.subtitle": "Gestiona la información de tu cuenta y preferencias",
+      "profile.basicInfo": "Información Básica",
+      "profile.name": "Nombre Completo",
+      "profile.email": "Correo Electrónico",
+      "profile.saveProfile": "Guardar Perfil",
+      "profile.saving": "Guardando...",
+      "profile.password": "Cambiar Contraseña",
+      "profile.currentPassword": "Contraseña Actual",
+      "profile.newPassword": "Nueva Contraseña",
+      "profile.savePassword": "Guardar Contraseña",
+      "profile.avatar": "Foto de Perfil",
+      "profile.uploadAvatar": "Subir nueva foto de perfil",
+      "profile.profileUpdated": "¡Perfil actualizado exitosamente!",
+      "profile.errorUpdating": "Error al actualizar el perfil",
+      "profile.passwordUpdated": "¡Contraseña actualizada exitosamente!",
+      "profile.errorPassword": "Error al actualizar la contraseña",
+      "profile.avatarUpdated": "¡Foto de perfil actualizada exitosamente!",
+      "profile.errorAvatar": "Error al actualizar la foto de perfil",
+      "profile.selectImage": "Seleccionar una imagen",
+      "profile.uploadImage": "Subir Imagen",
+      "profile.uploading": "Subiendo...",
       
       // Footer
       "footer.rights": "Todos los derechos reservados"

@@ -2,11 +2,14 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import ThemeMenu from "./ThemeMenu";
+import LanguageMenuOption from "./LanguageMenuOption";
 import { HiOutlineUserCircle, HiOutlineChevronDown, HiOutlineLogout, HiOutlineUser } from "react-icons/hi";
 import { MdDarkMode, MdAdminPanelSettings } from "react-icons/md";
+import { useTranslation } from 'react-i18next';
 
 export default function UserMenu({ user }) {
   const { logout } = useAuth();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const menuRef = useRef();
 
@@ -66,7 +69,7 @@ export default function UserMenu({ user }) {
               onClick={() => setOpen(false)}
             >
               <HiOutlineUser className="text-purple-700 dark:text-purple-300" />
-              My profile
+              {t('menu.profile', 'My profile')}
             </Link>
             {user?.role === "admin" && (
               <Link
@@ -75,10 +78,11 @@ export default function UserMenu({ user }) {
                 onClick={() => setOpen(false)}
               >
                 <MdAdminPanelSettings className="text-2xl" />
-                Admin panel
+                {t('menu.adminPanel', 'Admin panel')}
               </Link>
             )}
             <ThemeMenu />
+            <LanguageMenuOption onLanguageChange={() => setOpen(false)} />
           </div>
           <div className="border-t border-gray-100 dark:border-gray-700" />
           <button
@@ -86,7 +90,7 @@ export default function UserMenu({ user }) {
             className="flex items-center gap-2 w-full text-left px-5 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-800 transition font-semibold"
           >
             <HiOutlineLogout />
-            Log out
+            {t('menu.logout', 'Log out')}
           </button>
         </div>
       )}

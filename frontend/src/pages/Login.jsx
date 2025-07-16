@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import useRedirectIfAuthenticated from "../hooks/useRedirectIfAuthenticated";
 import GoogleAuthButton from "../components/GoogleAuthButton";
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Login() {
   useRedirectIfAuthenticated();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +31,7 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Login failed");
+        setError(data.message || t('login.failed'));
       } else {
         const userWithToken = { ...data.user, token: data.token };
         localStorage.setItem("user", JSON.stringify(userWithToken));
@@ -37,7 +39,7 @@ export default function Login() {
         window.location.href = "/";
       }
     } catch {
-      setError("Network or server error");
+      setError(t('login.networkError'));
     } finally {
       setLoading(false);
     }
@@ -53,10 +55,10 @@ export default function Login() {
           <div>
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400 mb-2 animate-pulse">
-                Log in
+                {t('login.title')}
               </h2>
               <p className="text-gray-500 dark:text-gray-300 text-sm">
-                Enter your credentials to access
+                {t('login.subtitle')}
               </p>
             </div>
             <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
@@ -64,7 +66,7 @@ export default function Login() {
                 <input
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                   type="email"
-                  placeholder="Email"
+                  placeholder={t('login.email')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -74,7 +76,7 @@ export default function Login() {
                 <input
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                   type="password"
-                  placeholder="Password"
+                  placeholder={t('login.password')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -85,7 +87,7 @@ export default function Login() {
                 type="submit"
                 disabled={loading}
               >
-                {loading ? "Logging in..." : "Log in"}
+                {loading ? t('login.loading') : t('login.submit')}
               </button>
               {error && (
                 <div className="text-center text-red-600 dark:text-red-400 font-medium text-sm py-3 rounded bg-red-50 dark:bg-red-900/30 animate-fade-in">
@@ -97,20 +99,20 @@ export default function Login() {
             {/* Divider */}
             <div className="flex items-center my-6">
               <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-              <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">or</span>
+              <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">{t('login.divider')}</span>
               <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
             </div>
             
             {/* Google OAuth Button */}
-            <GoogleAuthButton text="Continue with Google" />
+            <GoogleAuthButton text={t('login.google')} />
             
             <div className="text-center mt-6 text-gray-500 dark:text-gray-300 text-sm">
-              Don't have an account?{" "}
+              {t('login.noAccount')}{" "}
               <a
                 href="/register"
                 className="text-purple-700 dark:text-purple-400 font-semibold hover:underline"
               >
-                Register
+                {t('login.register')}
               </a>
             </div>
           </div>

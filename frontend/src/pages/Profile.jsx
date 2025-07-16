@@ -4,11 +4,13 @@ import { FiCamera } from "react-icons/fi";
 import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import SalesforceIntegration from "../components/SalesforceIntegration";
 import ApiTokenManager from "../components/ApiTokenManager";
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Profile() {
   const { user, login } = useAuth();
+  const { t } = useTranslation();
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [success, setSuccess] = useState("");

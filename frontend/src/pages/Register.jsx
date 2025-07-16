@@ -2,6 +2,7 @@ import useRedirectIfAuthenticated from "../hooks/useRedirectIfAuthenticated";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GoogleAuthButton from "../components/GoogleAuthButton";
+import { useTranslation } from "react-i18next";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const COLORS = {
@@ -19,6 +20,7 @@ const COLORS = {
 
 export default function Register() {
   useRedirectIfAuthenticated();
+  const { t } = useTranslation();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -38,7 +40,7 @@ export default function Register() {
 
     // Email validation
     if (!emailRegex.test(email)) {
-      setError("Registration error: the email address must have a valid extension (e.g., .com, .net, .org)");
+      setError(t('register.emailError'));
       setLoading(false);
       return;
     }
@@ -53,16 +55,16 @@ export default function Register() {
       console.log("Status:", res.status);
       console.log("Response data:", data);
       if (!res.ok) {
-        setError(data.message || "Could not register");
+        setError(data.message || t('register.failed'));
       } else {
-        setSuccess("Registration successful! You can now log in.");
+        setSuccess(t('register.success'));
         setUsername("");
         setEmail("");
         setPassword("");
         navigate("/welcome");
       }
     } catch (err) {
-      setError("Network or server error");
+      setError(t('register.networkError'));
       console.error("Network/server error:", err);
     } finally {
       setLoading(false);
@@ -75,35 +77,35 @@ export default function Register() {
       <div className="relative z-10 flex min-h-screen items-center justify-center font-sans">
         <div className="w-full max-w-[450px] bg-white/90 dark:bg-gray-800/90 rounded-2xl p-10 shadow-2xl border border-gray-200 dark:border-gray-700 backdrop-blur-md animate-fade-in-up">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400 mb-2">Register</h2>
-            <p className="text-gray-500 dark:text-gray-300 text-sm">Create an account to start using FormsApp</p>
+            <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400 mb-2">{t('register.title')}</h2>
+            <p className="text-gray-500 dark:text-gray-300 text-sm">{t('register.subtitle')}</p>
           </div>
           
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <div>
-              <label className="block mb-2 font-medium text-gray-700 dark:text-gray-200">Name</label>
+              <label className="block mb-2 font-medium text-gray-700 dark:text-gray-200">{t('register.username')}</label>
               <input
                 className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                 type="text"
-                placeholder="Your full name"
+                placeholder={t('register.username')}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
             <div>
-              <label className="block mb-2 font-medium text-gray-700 dark:text-gray-200">Email</label>
+              <label className="block mb-2 font-medium text-gray-700 dark:text-gray-200">{t('register.email')}</label>
               <input
                 className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                 type="email"
-                placeholder="your@email.com"
+                placeholder={t('register.email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div>
-              <label className="block mb-2 font-medium text-gray-700 dark:text-gray-200">Password</label>
+              <label className="block mb-2 font-medium text-gray-700 dark:text-gray-200">{t('register.password')}</label>
               <input
                 className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
                 type="password"
@@ -118,7 +120,7 @@ export default function Register() {
               type="submit"
               disabled={loading}
             >
-              {loading ? "Registering..." : "Register"}
+              {loading ? t('register.loading') : t('register.submit')}
             </button>
             {error && (
               <div className="text-center text-red-600 dark:text-red-400 font-medium text-sm py-3 rounded bg-red-50 dark:bg-red-900/30 animate-fade-in">{error}</div>
@@ -131,20 +133,20 @@ export default function Register() {
           {/* Divider */}
           <div className="flex items-center my-6">
             <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-            <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">or</span>
+            <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500 text-sm">{t('register.divider')}</span>
             <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
           </div>
           
           {/* Google OAuth Button */}
-          <GoogleAuthButton text="Sign up with Google" />
+          <GoogleAuthButton text={t('register.google')} />
           
           <div className="text-center mt-6 text-gray-500 dark:text-gray-300 text-sm">
-            Already have an account?{' '}
+            {t('register.hasAccount')}{' '}
             <a
               href="/login"
               className="text-purple-700 dark:text-purple-400 font-semibold hover:underline"
             >
-              Log in
+              {t('register.login')}
             </a>
           </div>
         </div>

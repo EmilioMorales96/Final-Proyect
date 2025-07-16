@@ -3,7 +3,6 @@ import { useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import UserMenu from '../UserMenu'; 
-import LanguageSelector from '../LanguageSelector';
 import FloatingHelpButton from '../FloatingHelpButton';
 
 /**
@@ -142,7 +141,6 @@ export const MainLayout = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <LanguageSelector />
             {!parsedUser ? (
               <>
                 <Link 
