@@ -14,6 +14,7 @@ import CreateTemplate from "./pages/CreateTemplate.jsx";
 import AdminUsersPage from "./pages/admin/AdminUsersPage.jsx";
 import AdminFormsPage from "./pages/admin/AdminFormsPage.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
+import AdminIntegrationsPage from "./pages/admin/AdminIntegrationsPage.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import TemplateAnswersPage from "./pages/TemplateAnswersPage.jsx";
 
@@ -61,6 +62,7 @@ export default function AppRoutes() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/forms" element={<AdminFormsPage />} />
+          <Route path="/admin/integrations" element={<AdminIntegrationsPage />} />
         </Route>
       </Route>
     </Routes>

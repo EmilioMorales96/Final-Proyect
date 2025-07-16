@@ -152,6 +152,11 @@ const resources = {
       "menu.adminPanel": "Admin panel",
       "menu.logout": "Log out",
       
+      // Admin Panel
+      "admin.integrations": "System Integrations",
+      "admin.integrationsDesc": "Manage Salesforce integration and API tokens",
+      "admin.back": "Back to Admin Panel",
+      
       // Language
       "layout.language": "Language",
       "layout.current": "Current",
@@ -355,6 +360,11 @@ const resources = {
       "menu.profile": "Mi perfil",
       "menu.adminPanel": "Panel de administrador",
       "menu.logout": "Cerrar sesión",
+      
+      // Admin Panel
+      "admin.integrations": "Integraciones del Sistema",
+      "admin.integrationsDesc": "Gestionar integración de Salesforce y tokens API",
+      "admin.back": "Volver al Panel de Administrador",
       
       // Language
       "layout.language": "Idioma",

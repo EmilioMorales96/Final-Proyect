@@ -2,8 +2,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useState } from "react";
 import { FiCamera } from "react-icons/fi";
 import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
-import SalesforceIntegration from "../components/SalesforceIntegration";
-import ApiTokenManager from "../components/ApiTokenManager";
+
 import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -282,17 +281,6 @@ export default function Profile() {
             </div>
           )}
         </form>
-      </div>
-
-      {/* External Integrations Section */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">External Integrations</h2>
-        
-        {/* Salesforce Integration */}
-        <SalesforceIntegration />
-        
-        {/* API Token Manager */}
-        <ApiTokenManager />
       </div>
 
     </div>
