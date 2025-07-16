@@ -56,6 +56,8 @@ export const useUserStatusMonitor = () => {
     if (!user || !token) return;
 
     try {
+      console.log('🔍 [UserStatusMonitor] Checking user status...');
+      
       const response = await fetch(`${API_URL}/api/users/me/status`, {
         method: 'GET',
         headers: {
@@ -63,6 +65,8 @@ export const useUserStatusMonitor = () => {
           'Content-Type': 'application/json'
         }
       });
+
+      console.log('📡 [UserStatusMonitor] Response status:', response.status);
 
       if (response.status === 401) {
         // Token inválido o expirado
@@ -75,26 +79,46 @@ export const useUserStatusMonitor = () => {
         return;
       }
 
+      if (response.status === 403) {
+        // Could be a blocked user or CORS/auth issue
+        console.log('🚫 [UserStatusMonitor] 403 Forbidden - possible blocking or auth issue');
+        try {
+          const errorData = await response.json();
+          if (errorData.message && errorData.message.includes('blocked')) {
+            handleUserBlocked(errorData.message);
+          } else {
+            console.log('⚠️ [UserStatusMonitor] 403 error but not user blocking:', errorData.message);
+            // Silently fail - could be a temporary server issue
+          }
+        } catch (parseError) {
+          console.log('⚠️ [UserStatusMonitor] Could not parse 403 response');
+        }
+        return;
+      }
+
       if (!response.ok) {
-        // Error del servidor, no hacer nada por ahora
+        // Error del servidor, log but don't disrupt user experience
+        console.log('⚠️ [UserStatusMonitor] Server error:', response.status);
         return;
       }
 
       const userData = await response.json();
+      console.log('✅ [UserStatusMonitor] Status check result:', userData);
       
       // Verificar si el usuario ha sido bloqueado
       if (userData.isBlocked) {
         console.log('🚫 [UserStatusMonitor] User has been blocked');
         if (t) {
-          handleUserBlocked(t('userStatus.blocked', 'Your account has been blocked by an administrator.'));
+          handleUserBlocked(t('blocking.message', 'Your account has been blocked by an administrator.'));
         } else {
           handleUserBlocked('Your account has been blocked by an administrator.');
         }
       }
 
     } catch (error) {
-      console.error('❌ [UserStatusMonitor] Error checking user status:', error);
+      console.error('❌ [UserStatusMonitor] Network error checking user status:', error);
       // No hacer nada en caso de error de red para evitar desconexiones innecesarias
+      // Solo loggear para debugging
     }
   }, [user, token, handleUserBlocked, t]);
 

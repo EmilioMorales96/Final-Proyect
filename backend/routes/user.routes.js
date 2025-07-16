@@ -3,6 +3,7 @@ const router = express.Router();
 import db from '../models/index.js';
 const { User } = db;
 import authenticateToken from '../middleware/auth.middleware.js';
+import authenticateTokenForStatus from '../middleware/auth-status.middleware.js';
 import { requireAdmin, requireOwnershipOrAdmin } from '../middleware/authorization.middleware.js';
 import multer from 'multer';
 import path from 'path';
@@ -34,14 +35,18 @@ router.get('/me', authenticateToken, async (req, res) => {
 });
 
 // Get authenticated user's status (for real-time monitoring)
-router.get('/me/status', authenticateToken, async (req, res) => {
+// Uses special middleware that allows blocked users to get their status
+router.get('/me/status', authenticateTokenForStatus, async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: ['id', 'isBlocked']
+    console.log('📊 [Status Endpoint] User requesting status:', req.user.id, 'Blocked:', req.user.isBlocked);
+    
+    // Return the blocking status directly from the authenticated user info
+    res.json({ 
+      isBlocked: req.user.isBlocked,
+      userId: req.user.id 
     });
-    if (!user) return res.status(404).json({ message: 'User not found.' });
-    res.json({ isBlocked: user.isBlocked });
   } catch (err) {
+    console.error('❌ [Status Endpoint] Error:', err);
     res.status(500).json({ message: 'Error fetching user status.', error: err.message });
   }
 });
