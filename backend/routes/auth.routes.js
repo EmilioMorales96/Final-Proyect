@@ -72,31 +72,51 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Google OAuth Routes
-router.get('/google', 
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+// Google OAuth Routes (only if credentials are configured)
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-router.get('/google/callback',
-  passport.authenticate('google', { session: false }),
-  (req, res) => {
-    try {
-      // Generate JWT token for the authenticated user
-      const token = jwt.sign(
-        { id: req.user.id, role: req.user.role },
-        process.env.JWT_SECRET || "secretkey",
-        { expiresIn: "2h" }
-      );
+if (googleClientId && googleClientSecret) {
+  router.get('/google', 
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+  );
 
-      // Redirect to frontend with token
-      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
-      res.redirect(`${frontendURL}/auth/success?token=${token}`);
-    } catch (error) {
-      console.error('OAuth callback error:', error);
-      const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
-      res.redirect(`${frontendURL}/auth/error`);
+  router.get('/google/callback',
+    passport.authenticate('google', { session: false }),
+    (req, res) => {
+      try {
+        // Generate JWT token for the authenticated user
+        const token = jwt.sign(
+          { id: req.user.id, role: req.user.role },
+          process.env.JWT_SECRET || "secretkey",
+          { expiresIn: "2h" }
+        );
+
+        // Redirect to frontend with token
+        const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.redirect(`${frontendURL}/auth/success?token=${token}`);
+      } catch (error) {
+        console.error('OAuth callback error:', error);
+        const frontendURL = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.redirect(`${frontendURL}/auth/error`);
+      }
     }
-  }
-);
+  );
+} else {
+  // Fallback routes when Google OAuth is not configured
+  router.get('/google', (req, res) => {
+    res.status(503).json({ 
+      message: 'Google OAuth is not configured on this server',
+      error: 'OAUTH_NOT_CONFIGURED'
+    });
+  });
+
+  router.get('/google/callback', (req, res) => {
+    res.status(503).json({ 
+      message: 'Google OAuth is not configured on this server',
+      error: 'OAUTH_NOT_CONFIGURED'
+    });
+  });
+}
 
 export default router;

@@ -144,6 +144,16 @@ app.post('/debug/migrate-topic-enum', async (req, res) => {
   }
 });
 
+// OAuth status check endpoint
+app.get('/api/auth/oauth/status', (req, res) => {
+  res.json({
+    google: {
+      available: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+      configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+    }
+  });
+});
+
 // Mount essential API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

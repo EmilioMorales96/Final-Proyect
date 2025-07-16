@@ -1,14 +1,47 @@
+import { useState } from 'react';
 import { API_URL } from '../constants/api';
 
 const GoogleAuthButton = ({ text = "Continue with Google", className = "" }) => {
-  const handleGoogleAuth = () => {
-    window.location.href = `${API_URL}/api/auth/google`;
+  const [isAvailable, setIsAvailable] = useState(true); // Default to true, hide on error
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGoogleAuth = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Try to navigate to Google OAuth
+      const response = await fetch(`${API_URL}/api/auth/google`, {
+        method: 'GET',
+        redirect: 'manual' // Don't follow redirects, just check if endpoint exists
+      });
+      
+      // If we get a response (even 503), the endpoint exists
+      if (response.status === 503) {
+        // OAuth not configured, hide the button
+        setIsAvailable(false);
+        return;
+      }
+      
+      // Redirect to Google OAuth
+      window.location.href = `${API_URL}/api/auth/google`;
+      
+    } catch (error) {
+      console.warn('Google OAuth not available:', error);
+      setIsAvailable(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (!isAvailable) {
+    return null; // Don't render the button if OAuth is not available
+  }
 
   return (
     <button
       onClick={handleGoogleAuth}
-      className={`w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600 ${className}`}
+      disabled={isLoading}
+      className={`w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24">
         <path
