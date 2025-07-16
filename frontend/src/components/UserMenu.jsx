@@ -73,7 +73,7 @@ export default function UserMenu({ user }) {
             </Link>
             {user?.role === "admin" && (
               <Link
-                to="/admin/users"
+                to="/admin"
                 className="flex items-center gap-2 px-5 py-2 font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow hover:from-indigo-700 hover:to-purple-700 transition my-2"
                 onClick={() => setOpen(false)}
               >
