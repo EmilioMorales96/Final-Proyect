@@ -112,4 +112,134 @@ router.post('/create-account', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * Get Salesforce sync statistics
+ * GET /api/salesforce/stats
+ */
+router.get('/stats', authenticateToken, async (req, res) => {
+  try {
+    // Get access token
+    const tokenResponse = await fetch(`${process.env.SALESFORCE_INSTANCE_URL}/services/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: process.env.SALESFORCE_CLIENT_ID,
+        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      return res.status(500).json({ message: 'Failed to authenticate with Salesforce' });
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    // Query Salesforce for statistics
+    const accountsQuery = `SELECT COUNT() FROM Account WHERE Description LIKE '%Forms App%'`;
+    const contactsQuery = `SELECT COUNT() FROM Contact WHERE Description LIKE '%Forms App%'`;
+    const industryQuery = `SELECT Industry, COUNT(Id) total FROM Account WHERE Description LIKE '%Forms App%' AND Industry != null GROUP BY Industry LIMIT 10`;
+
+    const [accountsResult, contactsResult, industryResult] = await Promise.all([
+      fetch(`${process.env.SALESFORCE_INSTANCE_URL}/services/data/v57.0/query/?q=${encodeURIComponent(accountsQuery)}`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      }),
+      fetch(`${process.env.SALESFORCE_INSTANCE_URL}/services/data/v57.0/query/?q=${encodeURIComponent(contactsQuery)}`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      }),
+      fetch(`${process.env.SALESFORCE_INSTANCE_URL}/services/data/v57.0/query/?q=${encodeURIComponent(industryQuery)}`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      })
+    ]);
+
+    const [accountsData, contactsData, industryData] = await Promise.all([
+      accountsResult.json(),
+      contactsResult.json(),
+      industryResult.json()
+    ]);
+
+    const totalAccounts = accountsData.totalSize || 0;
+    const totalContacts = contactsData.totalSize || 0;
+    const industries = industryData.records?.map(record => ({
+      name: record.Industry,
+      count: record.total
+    })) || [];
+
+    res.json({
+      stats: {
+        totalAccounts,
+        totalContacts,
+        syncedForms: totalAccounts, // Assuming each account represents a synced form
+        successRate: totalAccounts > 0 ? Math.round((totalContacts / totalAccounts) * 100) : 0,
+        leadSources: {
+          forms: totalAccounts,
+          direct: 0
+        },
+        industries
+      }
+    });
+
+  } catch (error) {
+    console.error('Salesforce stats error:', error);
+    res.status(500).json({ message: 'Failed to fetch Salesforce statistics' });
+  }
+});
+
+/**
+ * Get sync history (mock implementation)
+ * GET /api/salesforce/sync-history
+ */
+router.get('/sync-history', authenticateToken, async (req, res) => {
+  try {
+    // This would typically come from a database
+    // For now, we'll return mock data
+    const mockHistory = [
+      {
+        type: 'Form Sync',
+        status: 'success',
+        timestamp: new Date().toISOString(),
+        count: 5
+      },
+      {
+        type: 'Account Creation',
+        status: 'success', 
+        timestamp: new Date(Date.now() - 86400000).toISOString(),
+        count: 3
+      }
+    ];
+
+    res.json({ history: mockHistory });
+  } catch (error) {
+    console.error('Sync history error:', error);
+    res.status(500).json({ message: 'Failed to fetch sync history' });
+  }
+});
+
+/**
+ * Sync all forms to Salesforce
+ * POST /api/salesforce/sync-all-forms
+ */
+router.post('/sync-all-forms', authenticateToken, async (req, res) => {
+  try {
+    // This is a placeholder for bulk sync functionality
+    // In a real implementation, you would:
+    // 1. Fetch all form responses from your database
+    // 2. Create Salesforce Accounts/Contacts for each
+    // 3. Track the sync progress
+
+    res.json({ 
+      message: 'Sync initiated',
+      synced: 0, // Would be the actual count
+      status: 'completed'
+    });
+
+  } catch (error) {
+    console.error('Bulk sync error:', error);
+    res.status(500).json({ message: 'Failed to sync forms' });
+  }
+});
+
 export default router;
