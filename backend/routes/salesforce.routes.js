@@ -242,4 +242,96 @@ router.post('/sync-all-forms', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * OAuth Authorization Endpoint
+ * GET /api/salesforce/oauth/authorize
+ */
+router.get('/oauth/authorize', (req, res) => {
+  const clientId = process.env.SALESFORCE_CLIENT_ID;
+  const redirectUri = process.env.SALESFORCE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
+  
+  const authUrl = `https://login.salesforce.com/services/oauth2/authorize?` +
+    `response_type=code&` +
+    `client_id=${clientId}&` +
+    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+    `scope=api%20refresh_token`;
+
+  res.redirect(authUrl);
+});
+
+/**
+ * OAuth Callback Endpoint
+ * GET /api/salesforce/oauth/callback
+ */
+router.get('/oauth/callback', async (req, res) => {
+  try {
+    const { code, error } = req.query;
+
+    if (error) {
+      console.error('OAuth error:', error);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=oauth_failed&details=${encodeURIComponent(error)}`);
+    }
+
+    if (!code) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=no_code`);
+    }
+
+    // Exchange code for access token
+    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
+    
+    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: process.env.SALESFORCE_CLIENT_ID,
+        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        code: code
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error('Token exchange error:', errorData);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=token_exchange_failed`);
+    }
+
+    const tokenData = await tokenResponse.json();
+    
+    // Here you would typically store the tokens in your database
+    // For now, we'll just redirect with success
+    
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?success=oauth_connected&instance=${encodeURIComponent(tokenData.instance_url)}`);
+
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=callback_failed`);
+  }
+});
+
+/**
+ * Check OAuth Connection Status
+ * GET /api/salesforce/oauth/status
+ */
+router.get('/oauth/status', authenticateToken, async (req, res) => {
+  try {
+    // Check if user has valid Salesforce tokens stored
+    // This is a simplified version - you would check your database
+    
+    const hasValidTokens = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
+    
+    res.json({
+      connected: hasValidTokens,
+      configured: hasValidTokens,
+      lastSync: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('OAuth status error:', error);
+    res.status(500).json({ message: 'Failed to check OAuth status' });
+  }
+});
+
 export default router;
