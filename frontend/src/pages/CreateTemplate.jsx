@@ -14,7 +14,12 @@ export default function CreateTemplate() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCreateTemplate = async (templateData) => {
-    if (isSubmitting) return;
+    console.log("🔧 [CreateTemplate] handleCreateTemplate called with:", templateData);
+    
+    if (isSubmitting) {
+      console.log("⚠️ [CreateTemplate] Already submitting, ignoring request");
+      return;
+    }
     
     setIsSubmitting(true);
     

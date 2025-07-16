@@ -92,7 +92,7 @@ function DraggableQuestion({ id, children }) {
  * @param {boolean} props.isEditing - Whether component is in editing mode
  * @returns {JSX.Element} Complete template form with all features
  */
-export default function TemplateForm({ onSubmit, initialData = null, isEditing = false }) {
+export default function TemplateForm({ onSubmit, initialData = null, isEditing = false, isSubmitting = false }) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [topic, setTopic] = useState(initialData?.topic || "");
@@ -195,8 +195,10 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
   // VALIDATION before calling onSubmit
   const handleSubmit = async e => {
     e.preventDefault();
+    console.log("🚀 [TemplateForm] handleSubmit called", { questions: questions.length, title, description, topic });
 
     if (!title.trim() || !description.trim() || !topic.trim()) {
+      console.log("❌ [TemplateForm] Missing required fields:", { title: title.trim(), description: description.trim(), topic: topic.trim() });
       toast.error("Please complete all required fields.");
       return;
     }
@@ -223,6 +225,15 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
 
     try {
       if (onSubmit) {
+        console.log("📤 [TemplateForm] Calling onSubmit with data:", {
+          title,
+          description,
+          topic,
+          questions: questions.length,
+          tags: tags.map(t => t.value),
+          accessUsers: allowedUsers.map(u => u.value),
+          isPublic
+        });
         await onSubmit({
           title,
           description,
@@ -622,10 +633,18 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
             <div className="pt-8 border-t border-gray-200 dark:border-gray-700">
               <button
                 type="submit"
+                onClick={(e) => {
+                  console.log("🔘 [TemplateForm] Button clicked", e);
+                }}
                 className="w-full py-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:from-violet-700 hover:via-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                disabled={questions.length === 0}
+                disabled={questions.length === 0 || isSubmitting}
               >
-                {questions.length === 0 ? (
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    {isEditing ? "Updating Template..." : "Creating Template..."}
+                  </div>
+                ) : questions.length === 0 ? (
                   "Add at least one question to create template"
                 ) : isEditing ? (
                   `Update Template with ${questions.length} Question${questions.length !== 1 ? 's' : ''}`
@@ -633,7 +652,7 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
                   `Create Template with ${questions.length} Question${questions.length !== 1 ? 's' : ''}`
                 )}
               </button>
-              {questions.length > 0 && (
+              {questions.length > 0 && !isSubmitting && (
                 <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
                   {isEditing ? "Your changes will be saved and the template updated" : "Your template will be saved and ready for others to use"}
                 </p>
