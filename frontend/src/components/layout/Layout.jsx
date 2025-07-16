@@ -4,6 +4,8 @@ import { FiSearch } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
 import UserMenu from '../UserMenu'; 
 import FloatingHelpButton from '../FloatingHelpButton';
+import UserBlockedModal from '../modals/UserBlockedModal';
+import { useUserStatusMonitor } from '../../hooks/useUserStatusMonitor';
 
 /**
  * Main layout component that provides the application structure
@@ -25,6 +27,9 @@ export const MainLayout = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
+
+  // Monitor user status for real-time blocking
+  const { showBlockedModal, blockedMessage, handleModalClose } = useUserStatusMonitor();
 
   /**
    * Handles search functionality with API integration
@@ -179,6 +184,13 @@ export const MainLayout = () => {
 
       {/* Floating Help Button */}
       <FloatingHelpButton />
+      
+      {/* Real-time user blocking modal */}
+      <UserBlockedModal 
+        isOpen={showBlockedModal}
+        message={blockedMessage}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

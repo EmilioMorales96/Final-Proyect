@@ -157,6 +157,14 @@ const resources = {
       "admin.integrationsDesc": "Manage Salesforce integration and API tokens",
       "admin.back": "Back to Admin Panel",
       
+      // User Status
+      "userStatus.blocked": "Your account has been blocked by an administrator.",
+      "userStatus.sessionExpired": "Your session has expired. Please log in again.",
+      "userStatus.accountBlocked": "Account Blocked",
+      "userStatus.redirecting": "Redirecting to login page in",
+      "userStatus.seconds": "seconds",
+      "userStatus.loginNow": "Go to Login Now",
+      
       // Language
       "layout.language": "Language",
       "layout.current": "Current",
@@ -217,7 +225,18 @@ const resources = {
       "profile.uploading": "Uploading...",
       
       // Footer
-      "footer.rights": "All rights reserved"
+      "footer.rights": "All rights reserved",
+      
+      // User blocking system
+      "blocking": {
+        "title": "Account Blocked",
+        "message": "Your account has been blocked by an administrator.",
+        "reason": "Reason: {{reason}}",
+        "redirect_message": "You will be redirected to the login page in {{seconds}} seconds.",
+        "contact_admin": "If you believe this is an error, please contact the administrator.",
+        "close": "Close",
+        "logout_message": "Session terminated due to account blocking"
+      }
     }
   },
   es: {
@@ -366,6 +385,14 @@ const resources = {
       "admin.integrationsDesc": "Gestionar integración de Salesforce y tokens API",
       "admin.back": "Volver al Panel de Administrador",
       
+      // User Status
+      "userStatus.blocked": "Tu cuenta ha sido bloqueada por un administrador.",
+      "userStatus.sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+      "userStatus.accountBlocked": "Cuenta Bloqueada",
+      "userStatus.redirecting": "Redirigiendo a la página de inicio de sesión en",
+      "userStatus.seconds": "segundos",
+      "userStatus.loginNow": "Ir al Login Ahora",
+      
       // Language
       "layout.language": "Idioma",
       "layout.current": "Actual",
@@ -426,7 +453,18 @@ const resources = {
       "profile.uploading": "Subiendo...",
       
       // Footer
-      "footer.rights": "Todos los derechos reservados"
+      "footer.rights": "Todos los derechos reservados",
+      
+      // User blocking system
+      "blocking": {
+        "title": "Cuenta Bloqueada",
+        "message": "Tu cuenta ha sido bloqueada por un administrador.",
+        "reason": "Razón: {{reason}}",
+        "redirect_message": "Serás redirigido a la página de inicio de sesión en {{seconds}} segundos.",
+        "contact_admin": "Si crees que esto es un error, por favor contacta al administrador.",
+        "close": "Cerrar",
+        "logout_message": "Sesión terminada debido al bloqueo de cuenta"
+      }
     }
   }
 };

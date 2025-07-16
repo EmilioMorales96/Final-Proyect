@@ -33,6 +33,19 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 });
 
+// Get authenticated user's status (for real-time monitoring)
+router.get('/me/status', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'isBlocked']
+    });
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+    res.json({ isBlocked: user.isBlocked });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching user status.', error: err.message });
+  }
+});
+
 // Update profile (username and email)
 router.put('/me', authenticateToken, async (req, res) => {
   const { username, email } = req.body;
