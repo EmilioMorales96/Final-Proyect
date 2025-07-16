@@ -1,80 +1,176 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaCode, FaCloud, FaShieldAlt, FaQuestionCircle } from 'react-icons/fa';
+import { 
+  FaCode, 
+  FaCloud, 
+  FaShieldAlt, 
+  FaQuestionCircle,
+  FaChartLine,
+  FaCog,
+  FaLightbulb
+} from 'react-icons/fa';
+import { 
+  HiOutlineCloud,
+  HiOutlineChartBar,
+  HiOutlineCog,
+  HiOutlineShieldCheck,
+  HiOutlineQuestionMarkCircle
+} from 'react-icons/hi';
 import SalesforceIntegration from '../../components/SalesforceIntegration';
 import SalesforceDashboard from '../../components/SalesforceDashboard';
 
 const AdminIntegrationsPage = () => {
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const integrationTabs = [
     {
       id: 'dashboard',
-      name: t('admin.integrations.dashboard'),
-      icon: <FaCloud className="w-5 h-5" />,
+      name: 'Dashboard Analytics',
+      description: 'Vista general y métricas de Salesforce',
+      icon: <HiOutlineChartBar className="w-6 h-6" />,
+      color: 'blue',
       component: <SalesforceDashboard />
     },
     {
       id: 'salesforce',
-      name: t('admin.integrations.salesforce'),
-      icon: <FaCloud className="w-5 h-5" />,
+      name: 'Salesforce CRM',
+      description: 'Gestión manual de cuentas y contactos',
+      icon: <HiOutlineCloud className="w-6 h-6" />,
+      color: 'indigo',
       component: <SalesforceIntegration />
     },
     {
       id: 'api-tokens',
-      name: t('admin.integrations.apiTokens'),
-      icon: <FaCode className="w-5 h-5" />,
+      name: 'API Configuration',
+      description: 'Configuración de tokens y credenciales',
+      icon: <HiOutlineCog className="w-6 h-6" />,
+      color: 'gray',
       component: <APITokensTab />
     },
     {
       id: 'security',
-      name: t('admin.integrations.security'),
-      icon: <FaShieldAlt className="w-5 h-5" />,
+      name: 'Security Settings',
+      description: 'Configuración de seguridad y permisos',
+      icon: <HiOutlineShieldCheck className="w-6 h-6" />,
+      color: 'green',
       component: <SecurityTab />
     },
     {
       id: 'help',
-      name: t('admin.integrations.help'),
-      icon: <FaQuestionCircle className="w-5 h-5" />,
+      name: 'Help & Documentation',
+      description: 'Guías y resolución de problemas',
+      icon: <HiOutlineQuestionMarkCircle className="w-6 h-6" />,
+      color: 'yellow',
       component: <HelpTab />
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Header con gradiente Salesforce */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center space-x-4 mb-4">
+            <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
+              <HiOutlineCloud className="w-8 h-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold">
+                Salesforce Integration Center
+              </h1>
+              <p className="text-blue-100 mt-1">
+                Gestiona tu integración con Salesforce CRM de forma completa
+              </p>
+            </div>
+          </div>
+          
+          {/* Stats rápidas en el header */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-green-500 rounded-lg">
+                  <HiOutlineChartBar className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-blue-100">Status de conexión</p>
+                  <p className="text-lg font-semibold">Conectado</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-purple-500 rounded-lg">
+                  <FaLightbulb className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-blue-100">Última sincronización</p>
+                  <p className="text-lg font-semibold">Hace 2 min</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-orange-500 rounded-lg">
+                  <FaChartLine className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-blue-100">Registros sincronizados</p>
+                  <p className="text-lg font-semibold">1,247</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenido principal */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Navegación con tarjetas mejoradas */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {t('admin.integrations.title')}
-          </h1>
-          <p className="text-gray-600">
-            {t('admin.integrations.description')}
-          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {integrationTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`group relative p-6 rounded-xl border-2 transition-all duration-300 text-left ${
+                  activeTab === tab.id
+                    ? `border-${tab.color}-500 bg-${tab.color}-50 shadow-lg scale-105`
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md hover:-translate-y-1'
+                }`}
+              >
+                <div className={`inline-flex p-3 rounded-lg mb-4 ${
+                  activeTab === tab.id 
+                    ? `bg-${tab.color}-500 text-white` 
+                    : `bg-gray-100 text-gray-600 group-hover:bg-${tab.color}-100 group-hover:text-${tab.color}-600`
+                }`}>
+                  {tab.icon}
+                </div>
+                <h3 className={`font-semibold mb-2 ${
+                  activeTab === tab.id ? `text-${tab.color}-900` : 'text-gray-900'
+                }`}>
+                  {tab.name}
+                </h3>
+                <p className={`text-sm ${
+                  activeTab === tab.id ? `text-${tab.color}-700` : 'text-gray-600'
+                }`}>
+                  {tab.description}
+                </p>
+                
+                {/* Indicador activo */}
+                {activeTab === tab.id && (
+                  <div className={`absolute top-3 right-3 w-3 h-3 bg-${tab.color}-500 rounded-full animate-pulse`}></div>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              {integrationTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.icon}
-                  <span>{tab.name}</span>
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <div className="p-6">
-            {integrationTabs.find(tab => tab.id === activeTab)?.component}
+        {/* Panel de contenido con animación */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+          <div className="p-8">
+            <div className="transition-all duration-500 ease-in-out">
+              {integrationTabs.find(tab => tab.id === activeTab)?.component}
+            </div>
           </div>
         </div>
       </div>
