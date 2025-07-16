@@ -120,6 +120,51 @@ try {
   console.log('❌ Error reading .env.example');
 }
 
+// ==============================================
+// CURRENT DEPLOYMENT STATUS CHECK - July 16, 2025
+// ==============================================
+
+console.log('🔍 CHECKING LATEST BACKEND FIXES...\n');
+
+const BASE_URL = 'https://backend-service-pu47.onrender.com';
+
+console.log('📋 Test these URLs manually:');
+console.log('');
+
+console.log('✅ Health Check:');
+console.log(`   ${BASE_URL}/health`);
+console.log('   Expected: 200 OK with "Database connection successful"');
+console.log('');
+
+console.log('🔍 Fixed Routes Tests:');
+console.log(`   ${BASE_URL}/api/favorites/debug/test`);
+console.log('   Expected: 200 OK (was 404 before fix)');
+console.log('');
+
+console.log(`   ${BASE_URL}/api/comments/debug/test`);
+console.log('   Expected: 200 OK (was 404 before fix)');
+console.log('');
+
+console.log(`   ${BASE_URL}/api/tags`);
+console.log('   Expected: 200 OK (POST now available)');
+console.log('');
+
+console.log('🔧 PowerShell Test Commands:');
+console.log(`Invoke-WebRequest -Uri "${BASE_URL}/health"`);
+console.log(`Invoke-WebRequest -Uri "${BASE_URL}/api/favorites/debug/test"`);
+console.log(`Invoke-WebRequest -Uri "${BASE_URL}/api/comments/debug/test"`);
+console.log(`Invoke-WebRequest -Uri "${BASE_URL}/api/tags"`);
+console.log('');
+
+console.log('📊 Latest Fixes Applied:');
+console.log('- ✅ favoriteRoutes: Import + Mount added');
+console.log('- ✅ commentRoutes: Import + Mount added'); 
+console.log('- ✅ tags POST: New endpoint added');
+console.log('- ✅ likes: Error handling improved');
+console.log('');
+
+console.log('💡 If 404 errors persist, auto-deploy is still in progress.');
+
 console.log('\n🚀 Verification completed!');
 console.log('\n📋 Next steps:');
 console.log('1. Upload code to GitHub');
