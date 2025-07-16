@@ -3,7 +3,6 @@ import { MarkdownEditor } from './MarkdownRenderer';
 import QuestionTypeMenu from "./QuestionTypeMenu";
 import QuestionCard from "./QuestionCard";
 import QuestionRenderer from "./QuestionRenderer";
-import QuestionLimitsIndicator from "./QuestionLimitsIndicator";
 import { validateQuestionLimits, canAddQuestionType } from "../utils/questionValidation";
 import {
   DndContext,
@@ -534,6 +533,7 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
                       <QuestionTypeMenu
                         onSelect={handleAddQuestion}
                         onClose={() => setShowMenu(false)}
+                        questions={questions}
                       />
                     )}
                   </div>
@@ -561,14 +561,6 @@ export default function TemplateForm({ onSubmit, initialData = null, isEditing =
                       </svg>
                       Add your first question
                     </button>
-                    
-                    {/* Question Limits Indicator */}
-                    <div className="mt-6">
-                      <QuestionLimitsIndicator 
-                        questions={questions}
-                        onTypeSelect={handleAddQuestion}
-                      />
-                    </div>
                   </div>
                 ) : previewMode ? (
                   /* Preview Mode */
