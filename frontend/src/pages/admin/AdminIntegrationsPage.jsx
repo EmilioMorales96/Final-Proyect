@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   FaCode, 
@@ -18,9 +18,43 @@ import {
 } from 'react-icons/hi';
 import SalesforceIntegration from '../../components/SalesforceIntegration';
 import SalesforceDashboard from '../../components/SalesforceDashboard';
+import toast from 'react-hot-toast';
 
 const AdminIntegrationsPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Handle OAuth callback parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+    const details = urlParams.get('details');
+
+    if (success === 'oauth_connected') {
+      toast.success('¡Salesforce conectado exitosamente!');
+      // Clean URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (error) {
+      let errorMessage = 'Error en la conexión con Salesforce';
+      switch (error) {
+        case 'oauth_failed':
+          errorMessage = `OAuth falló: ${details || 'Error desconocido'}`;
+          break;
+        case 'no_code':
+          errorMessage = 'No se recibió código de autorización';
+          break;
+        case 'token_exchange_failed':
+          errorMessage = 'Error al intercambiar tokens';
+          break;
+        case 'callback_failed':
+          errorMessage = 'Error en el callback de OAuth';
+          break;
+      }
+      toast.error(errorMessage);
+      // Clean URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const integrationTabs = [
     {

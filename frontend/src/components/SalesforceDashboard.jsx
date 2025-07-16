@@ -102,8 +102,8 @@ const SalesforceDashboard = () => {
   };
 
   const handleSalesforceAuth = () => {
-    // Redirigir a la página de autorización de Salesforce
-    const authUrl = `https://login.salesforce.com/services/oauth2/authorize?response_type=code&client_id=${import.meta.env.VITE_SALESFORCE_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + '/oauth/salesforce/callback')}&scope=api%20refresh_token`;
+    // Usar nuestro endpoint de autorización del backend
+    const authUrl = `${API_URL}/api/salesforce/oauth/authorize`;
     window.open(authUrl, '_blank', 'width=600,height=400');
   };
 
