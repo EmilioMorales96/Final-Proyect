@@ -452,6 +452,129 @@ router.get('/oauth/callback', async (req, res) => {
 });
 
 /**
+ * Get Salesforce integration statistics
+ * GET /api/salesforce/stats
+ */
+router.get('/stats', authenticateToken, async (req, res) => {
+  try {
+    // Check if Salesforce is configured
+    const hasCredentials = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
+    
+    if (!hasCredentials) {
+      return res.json({
+        status: 'not_configured',
+        message: 'Salesforce not configured',
+        stats: {
+          accounts_created: 0,
+          contacts_created: 0,
+          last_sync: null,
+          integration_status: 'not_configured'
+        }
+      });
+    }
+
+    // Test connection
+    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: process.env.SALESFORCE_CLIENT_ID,
+        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
+      })
+    });
+
+    const isConnected = tokenResponse.ok;
+    
+    res.json({
+      status: 'success',
+      stats: {
+        accounts_created: 12, // This would come from your database in a real app
+        contacts_created: 8,
+        last_sync: new Date().toISOString(),
+        integration_status: isConnected ? 'connected' : 'connection_error',
+        instance_url: isConnected ? (await tokenResponse.json()).instance_url : null
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Salesforce stats error:', error);
+    res.status(500).json({ 
+      status: 'error',
+      message: 'Error getting Salesforce statistics', 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * Get Salesforce sync history
+ * GET /api/salesforce/sync-history
+ */
+router.get('/sync-history', authenticateToken, async (req, res) => {
+  try {
+    // Check if Salesforce is configured
+    const hasCredentials = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
+    
+    if (!hasCredentials) {
+      return res.json({
+        status: 'not_configured',
+        message: 'Salesforce not configured',
+        history: []
+      });
+    }
+
+    // In a real application, this would come from your database
+    // For now, we'll return some sample sync history
+    const sampleHistory = [
+      {
+        id: 1,
+        type: 'account_created',
+        entity_name: 'Demo Company',
+        salesforce_id: 'ACC001',
+        timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+        status: 'success',
+        user_email: req.user.email
+      },
+      {
+        id: 2,
+        type: 'contact_created',
+        entity_name: 'John Doe',
+        salesforce_id: 'CON001',
+        timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+        status: 'success',
+        user_email: req.user.email
+      },
+      {
+        id: 3,
+        type: 'account_created',
+        entity_name: 'Tech Solutions Inc',
+        salesforce_id: 'ACC002',
+        timestamp: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
+        status: 'success',
+        user_email: req.user.email
+      }
+    ];
+
+    res.json({
+      status: 'success',
+      history: sampleHistory,
+      total: sampleHistory.length
+    });
+
+  } catch (error) {
+    console.error('❌ Salesforce sync history error:', error);
+    res.status(500).json({ 
+      status: 'error',
+      message: 'Error getting Salesforce sync history', 
+      error: error.message 
+    });
+  }
+});
+
+/**
  * Debug endpoint for Salesforce configuration (Public - No Auth Required)
  * GET /api/salesforce/debug/config
  */
