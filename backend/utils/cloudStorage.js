@@ -1,5 +1,14 @@
 import fs from 'fs/promises';
 import path from 'path';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+
+// Get current directory for ES6 modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from the correct path
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 /**
  * Real OneDrive Upload Function
@@ -56,6 +65,9 @@ export async function uploadToOneDrive(fileContent, fileName, ticketData) {
  */
 export async function uploadToDropbox(fileContent, fileName, ticketData) {
   const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
+  
+  console.log('🔍 DEBUG - DROPBOX_ACCESS_TOKEN exists:', !!accessToken);
+  console.log('🔍 DEBUG - Token length:', accessToken?.length || 'undefined');
   
   if (!accessToken) {
     throw new Error('Dropbox access token not configured');

@@ -264,4 +264,64 @@ router.get('/dropbox-files', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * Test endpoint para verificar integración (solo para desarrollo)
+ * POST /api/support/test-ticket
+ */
+router.post('/test-ticket', async (req, res) => {
+  try {
+    const { summary = "Test ticket", priority = "Medium", description = "Test from API" } = req.body;
+
+    // Create test ticket object
+    const ticket = {
+      id: `TEST-TICKET-${Date.now()}`,
+      reportedBy: "test@example.com",
+      userId: "test-user",
+      template: 'Test Template',
+      link: 'http://localhost:3000/test',
+      priority: priority,
+      summary: summary,
+      description: description,
+      admins: ['admin@formsapp.com'],
+      createdAt: new Date().toISOString(),
+      status: 'Open',
+      source: 'API Test'
+    };
+
+    // Create JSON file
+    const fileName = `support-ticket-${ticket.id}.json`;
+    const filePath = path.join(process.cwd(), 'uploads', 'tickets', fileName);
+    
+    // Ensure tickets directory exists
+    const ticketsDir = path.dirname(filePath);
+    if (!fs.existsSync(ticketsDir)) {
+      fs.mkdirSync(ticketsDir, { recursive: true });
+    }
+
+    // Write ticket to local file
+    fs.writeFileSync(filePath, JSON.stringify(ticket, null, 2));
+
+    // Upload to cloud storage
+    const fileContent = fs.readFileSync(filePath);
+    const uploadResult = await uploadToDropbox(fileContent, fileName, ticket);
+
+    res.json({
+      status: 'success',
+      message: 'Test ticket created and uploaded successfully',
+      ticket: {
+        id: ticket.id,
+        summary: ticket.summary,
+        priority: ticket.priority,
+        createdAt: ticket.createdAt
+      },
+      localFile: filePath,
+      cloudUpload: uploadResult || 'No cloud storage configured'
+    });
+
+  } catch (error) {
+    console.error('Test ticket creation error:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
 export default router;
