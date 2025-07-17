@@ -229,7 +229,7 @@ const SalesforceIntegration = () => {
       </div>
 
       {/* Modal mejorado con mejor espaciado */}
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <Modal open={isOpen} onClose={() => setIsOpen(false)}>
         <div className="p-10 max-w-4xl mx-auto">
           {/* Header del modal mejorado */}
           <div className="text-center mb-10">
