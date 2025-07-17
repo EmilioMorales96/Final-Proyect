@@ -157,6 +157,74 @@ const resources = {
       "admin.integrationsDesc": "Manage Salesforce integration and API tokens",
       "admin.back": "Back to Admin Panel",
       
+      // Admin Integrations Page
+      "integrations.title": "Salesforce Integration Center",
+      "integrations.subtitle": "Manage your complete Salesforce CRM integration",
+      "integrations.connectionStatus": "Connection Status",
+      "integrations.connected": "Connected",
+      "integrations.disconnected": "Disconnected",
+      "integrations.lastSync": "Last Sync",
+      "integrations.syncedRecords": "Synced Records",
+      "integrations.ago": "ago",
+      "integrations.minutes": "minutes",
+      
+      // Integration Tabs
+      "integrations.tabs.dashboard": "Dashboard Analytics",
+      "integrations.tabs.dashboardDesc": "Overview and Salesforce metrics",
+      "integrations.tabs.salesforce": "Salesforce CRM",
+      "integrations.tabs.salesforceDesc": "Manual account and contact management",
+      "integrations.tabs.apiConfig": "API Configuration",
+      "integrations.tabs.apiConfigDesc": "Token and credentials configuration",
+      "integrations.tabs.security": "Security Settings",
+      "integrations.tabs.securityDesc": "Security and permissions configuration",
+      "integrations.tabs.help": "Help & Documentation",
+      "integrations.tabs.helpDesc": "Guides and troubleshooting",
+      
+      // OAuth Messages
+      "oauth.success": "Salesforce connected successfully!",
+      "oauth.failed": "OAuth failed",
+      "oauth.noCode": "Authorization code not received",
+      "oauth.tokenFailed": "Token exchange error",
+      "oauth.callbackFailed": "OAuth callback error",
+      "oauth.unknownError": "Unknown error",
+      
+      // API Configuration Tab
+      "apiConfig.title": "API Configuration",
+      "apiConfig.description": "Manage your Salesforce API credentials and connection settings",
+      "apiConfig.clientId": "Client ID",
+      "apiConfig.clientSecret": "Client Secret",
+      "apiConfig.instanceUrl": "Instance URL",
+      "apiConfig.redirectUri": "Redirect URI",
+      "apiConfig.testConnection": "Test Connection",
+      "apiConfig.saveSettings": "Save Settings",
+      "apiConfig.connectionTest": "Connection Test",
+      "apiConfig.testSuccess": "Connection test successful!",
+      "apiConfig.testFailed": "Connection test failed",
+      
+      // Security Tab
+      "security.title": "Security Settings",
+      "security.description": "Configure security policies and access permissions",
+      "security.permissions": "Access Permissions",
+      "security.adminOnly": "Admin Only Access",
+      "security.userAccess": "User Access Enabled",
+      "security.encryptData": "Encrypt Transmitted Data",
+      "security.enableAudit": "Enable Audit Logging",
+      "security.sessionTimeout": "Session Timeout",
+      "security.minutes": "minutes",
+      "security.saveSettings": "Save Security Settings",
+      
+      // Help Tab
+      "help.title": "Help & Documentation",
+      "help.description": "Guides and resources for Salesforce integration",
+      "help.setupGuide": "Setup Guide",
+      "help.setupDesc": "Step-by-step Salesforce configuration",
+      "help.troubleshooting": "Troubleshooting",
+      "help.troubleshootDesc": "Common issues and solutions",
+      "help.apiDocs": "API Documentation",
+      "help.apiDocsDesc": "Complete API reference",
+      "help.support": "Contact Support",
+      "help.supportDesc": "Get help from our support team",
+      
       // User Status
       "userStatus.blocked": "Your account has been blocked by an administrator.",
       "userStatus.sessionExpired": "Your session has expired. Please log in again.",
@@ -384,6 +452,74 @@ const resources = {
       "admin.integrations": "Integraciones del Sistema",
       "admin.integrationsDesc": "Gestionar integración de Salesforce y tokens API",
       "admin.back": "Volver al Panel de Administrador",
+      
+      // Admin Integrations Page
+      "integrations.title": "Centro de Integración de Salesforce",
+      "integrations.subtitle": "Gestiona tu integración completa con Salesforce CRM",
+      "integrations.connectionStatus": "Estado de la Conexión",
+      "integrations.connected": "Conectado",
+      "integrations.disconnected": "Desconectado",
+      "integrations.lastSync": "Última Sincronización",
+      "integrations.syncedRecords": "Registros Sincronizados",
+      "integrations.ago": "hace",
+      "integrations.minutes": "minutos",
+      
+      // Integration Tabs
+      "integrations.tabs.dashboard": "Analítica del Panel",
+      "integrations.tabs.dashboardDesc": "Descripción general y métricas de Salesforce",
+      "integrations.tabs.salesforce": "Salesforce CRM",
+      "integrations.tabs.salesforceDesc": "Gestión manual de cuentas y contactos",
+      "integrations.tabs.apiConfig": "Configuración de API",
+      "integrations.tabs.apiConfigDesc": "Configuración de token y credenciales",
+      "integrations.tabs.security": "Configuración de Seguridad",
+      "integrations.tabs.securityDesc": "Configuración de seguridad y permisos",
+      "integrations.tabs.help": "Ayuda y Documentación",
+      "integrations.tabs.helpDesc": "Guías y solución de problemas",
+      
+      // OAuth Messages
+      "oauth.success": "¡Salesforce conectado exitosamente!",
+      "oauth.failed": "Error de OAuth",
+      "oauth.noCode": "Código de autorización no recibido",
+      "oauth.tokenFailed": "Error en el intercambio de token",
+      "oauth.callbackFailed": "Error en el callback de OAuth",
+      "oauth.unknownError": "Error desconocido",
+      
+      // API Configuration Tab
+      "apiConfig.title": "Configuración de API",
+      "apiConfig.description": "Gestiona tus credenciales de API de Salesforce y configuraciones de conexión",
+      "apiConfig.clientId": "ID de Cliente",
+      "apiConfig.clientSecret": "Secreto de Cliente",
+      "apiConfig.instanceUrl": "URL de Instancia",
+      "apiConfig.redirectUri": "URI de Redirección",
+      "apiConfig.testConnection": "Probar Conexión",
+      "apiConfig.saveSettings": "Guardar Configuraciones",
+      "apiConfig.connectionTest": "Prueba de Conexión",
+      "apiConfig.testSuccess": "¡Prueba de conexión exitosa!",
+      "apiConfig.testFailed": "Prueba de conexión fallida",
+      
+      // Security Tab
+      "security.title": "Configuración de Seguridad",
+      "security.description": "Configura políticas de seguridad y permisos de acceso",
+      "security.permissions": "Permisos de Acceso",
+      "security.adminOnly": "Acceso Solo para Administradores",
+      "security.userAccess": "Acceso de Usuario Habilitado",
+      "security.encryptData": "Cifrar Datos Transmitidos",
+      "security.enableAudit": "Habilitar Registro de Auditoría",
+      "security.sessionTimeout": "Tiempo de Espera de Sesión",
+      "security.minutes": "minutos",
+      "security.saveSettings": "Guardar Configuraciones de Seguridad",
+      
+      // Help Tab
+      "help.title": "Ayuda y Documentación",
+      "help.description": "Guías y recursos para la integración con Salesforce",
+      "help.setupGuide": "Guía de Configuración",
+      "help.setupDesc": "Configuración de Salesforce paso a paso",
+      "help.troubleshooting": "Solución de Problemas",
+      "help.troubleshootDesc": "Problemas comunes y soluciones",
+      "help.apiDocs": "Documentación de API",
+      "help.apiDocsDesc": "Referencia completa de la API",
+      "help.support": "Contactar Soporte",
+      "help.supportDesc": "Obtén ayuda de nuestro equipo de soporte",
       
       // User Status
       "userStatus.blocked": "Tu cuenta ha sido bloqueada por un administrador.",
