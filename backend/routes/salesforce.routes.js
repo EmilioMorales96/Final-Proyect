@@ -1047,4 +1047,194 @@ router.get('/debug/all-accounts', async (req, res) => {
   }
 });
 
+/**
+ * Enhanced demo endpoint with step-by-step logging
+ * POST /api/salesforce/debug/create-account-verbose
+ */
+router.post('/debug/create-account-verbose', async (req, res) => {
+  try {
+    const { company, phone, website, industry, annualRevenue, numberOfEmployees } = req.body;
+    
+    console.log('🚀 VERBOSE: Starting account creation...');
+    console.log('📝 Company name:', company);
+    
+    // Step 1: Validate
+    if (!company) {
+      console.log('❌ VERBOSE: Missing company name');
+      return res.status(400).json({ 
+        status: 'error',
+        message: 'Company name is required',
+        step: 'validation'
+      });
+    }
+    
+    // Step 2: Check credentials
+    const clientId = process.env.SALESFORCE_CLIENT_ID;
+    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
+    
+    console.log('🔐 VERBOSE: Checking credentials...');
+    console.log('Client ID set:', !!clientId);
+    console.log('Client Secret set:', !!clientSecret);
+    
+    if (!clientId || !clientSecret) {
+      console.log('❌ VERBOSE: Missing credentials - will use simulation');
+      const simulatedAccount = {
+        id: `SIM_NO_CREDS_${Date.now()}`,
+        name: company,
+        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
+        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
+      };
+
+      return res.json({
+        status: 'success',
+        message: 'Account created (Simulation - No Credentials)',
+        integration: 'simulated',
+        salesforce: { instance_url: 'https://simulation.salesforce.com', account: simulatedAccount },
+        step: 'credentials_check',
+        demo_note: 'Simulation - No Salesforce credentials'
+      });
+    }
+    
+    // Step 3: Test authentication
+    console.log('🔑 VERBOSE: Attempting authentication...');
+    console.log('Using Client ID:', clientId.substring(0, 15) + '...');
+    
+    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: clientId,
+        client_secret: clientSecret,
+      })
+    });
+    
+    console.log('🔍 VERBOSE: Auth response status:', tokenResponse.status);
+    console.log('🔍 VERBOSE: Auth response OK:', tokenResponse.ok);
+    
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.log('❌ VERBOSE: Auth failed with error:', errorText);
+      
+      const simulatedAccount = {
+        id: `SIM_AUTH_FAIL_${Date.now()}`,
+        name: company,
+        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
+        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
+      };
+
+      return res.json({
+        status: 'success',
+        message: 'Account created (Simulation - Auth Failed)',
+        integration: 'simulated',
+        salesforce: { instance_url: 'https://simulation.salesforce.com', account: simulatedAccount },
+        step: 'authentication',
+        demo_note: 'Simulation - Authentication failed',
+        auth_error: errorText,
+        debug: {
+          response_status: tokenResponse.status,
+          client_id_preview: clientId.substring(0, 10) + '...',
+          has_client_secret: !!clientSecret
+        }
+      });
+    }
+    
+    // Step 4: Parse token
+    const tokenData = await tokenResponse.json();
+    console.log('✅ VERBOSE: Auth successful!');
+    console.log('🏢 VERBOSE: Instance URL:', tokenData.instance_url);
+    
+    // Step 5: Create account
+    const accountData = {
+      Name: company,
+      Website: website || null,
+      Phone: phone || null,
+      Industry: industry || null,
+      AnnualRevenue: annualRevenue ? parseFloat(annualRevenue) : null,
+      NumberOfEmployees: numberOfEmployees ? parseInt(numberOfEmployees) : null,
+      Type: 'Prospect',
+      Description: 'VERBOSE DEBUG account created via Forms App',
+      LeadSource: 'Forms App Demo'
+    };
+    
+    console.log('📤 VERBOSE: Creating account with data:', JSON.stringify(accountData, null, 2));
+    
+    const accountResponse = await fetch(`${tokenData.instance_url}/services/data/v52.0/sobjects/Account/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${tokenData.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(accountData)
+    });
+    
+    console.log('📥 VERBOSE: Account creation response status:', accountResponse.status);
+    console.log('📥 VERBOSE: Account creation response OK:', accountResponse.ok);
+    
+    if (!accountResponse.ok) {
+      const errorData = await accountResponse.json();
+      console.log('❌ VERBOSE: Account creation failed:', JSON.stringify(errorData, null, 2));
+      
+      const simulatedAccount = {
+        id: `SIM_CREATE_FAIL_${Date.now()}`,
+        name: company,
+        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
+        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
+      };
+
+      return res.json({
+        status: 'success',
+        message: 'Account created (Simulation - Create Failed)',
+        integration: 'simulated',
+        salesforce: { instance_url: 'https://simulation.salesforce.com', account: simulatedAccount },
+        step: 'account_creation',
+        demo_note: 'Simulation - Account creation failed',
+        create_error: errorData
+      });
+    }
+    
+    const accountResult = await accountResponse.json();
+    console.log('🎉 VERBOSE: REAL account created successfully!');
+    console.log('🆔 VERBOSE: Account ID:', accountResult.id);
+    
+    return res.json({
+      status: 'success',
+      message: 'REAL Account created successfully!',
+      integration: 'real',
+      salesforce: {
+        instance_url: tokenData.instance_url,
+        account: {
+          id: accountResult.id,
+          name: company,
+          url: `${tokenData.instance_url}/lightning/r/Account/${accountResult.id}/view`,
+          api_url: `${tokenData.instance_url}/services/data/v52.0/sobjects/Account/${accountResult.id}`
+        }
+      },
+      step: 'success',
+      demo_note: 'REAL Salesforce integration - account actually created!'
+    });
+    
+  } catch (error) {
+    console.log('💥 VERBOSE: Unexpected error:', error.message);
+    console.log('📚 VERBOSE: Error stack:', error.stack);
+    
+    const simulatedAccount = {
+      id: `SIM_ERROR_${Date.now()}`,
+      name: company || 'Unknown Company',
+      url: `https://simulation.salesforce.com/Account/${Date.now()}`,
+      api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
+    };
+
+    res.json({
+      status: 'success',
+      message: 'Account created (Simulation - Unexpected Error)',
+      integration: 'simulated',
+      salesforce: { instance_url: 'https://simulation.salesforce.com', account: simulatedAccount },
+      step: 'error_handling',
+      demo_note: 'Simulation - Unexpected error occurred',
+      unexpected_error: error.message
+    });
+  }
+});
+
 export default router;
