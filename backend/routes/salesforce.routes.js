@@ -1237,4 +1237,81 @@ router.post('/debug/create-account-verbose', async (req, res) => {
   }
 });
 
+/**
+ * Simple test endpoint for quick frontend debugging (No Auth Required)
+ * GET /api/salesforce/debug/quick-test
+ */
+router.get('/debug/quick-test', async (req, res) => {
+  try {
+    const clientId = process.env.SALESFORCE_CLIENT_ID;
+    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
+    
+    console.log('🔧 QUICK TEST: Starting...');
+    console.log('🔧 Environment:', process.env.NODE_ENV);
+    console.log('🔧 Client ID available:', !!clientId);
+    console.log('🔧 Client Secret available:', !!clientSecret);
+    
+    if (!clientId || !clientSecret) {
+      return res.json({
+        status: 'error',
+        message: 'Missing credentials',
+        details: {
+          client_id: !!clientId,
+          client_secret: !!clientSecret,
+          environment: process.env.NODE_ENV
+        }
+      });
+    }
+    
+    console.log('🔧 Attempting auth with credentials...');
+    
+    const response = await fetch('https://login.salesforce.com/services/oauth2/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: clientId,
+        client_secret: clientSecret,
+      })
+    });
+    
+    const responseText = await response.text();
+    
+    console.log('🔧 Response status:', response.status);
+    console.log('🔧 Response body:', responseText);
+    
+    if (response.ok) {
+      const data = JSON.parse(responseText);
+      return res.json({
+        status: 'success',
+        message: 'Authentication successful!',
+        instance_url: data.instance_url,
+        token_type: data.token_type,
+        details: {
+          status_code: response.status,
+          has_access_token: !!data.access_token
+        }
+      });
+    } else {
+      return res.json({
+        status: 'error',
+        message: 'Authentication failed',
+        error_response: responseText,
+        details: {
+          status_code: response.status,
+          client_id_preview: clientId.substring(0, 12) + '...'
+        }
+      });
+    }
+    
+  } catch (error) {
+    console.log('🔧 QUICK TEST ERROR:', error);
+    res.json({
+      status: 'error',
+      message: 'Test failed',
+      error: error.message
+    });
+  }
+});
+
 export default router;
