@@ -23,6 +23,7 @@ import supportRoutes from './routes/support.routes.js';
 import salesforceRoutes from './routes/salesforce.routes.js';
 import salesforceLogoutRoutes from './routes/salesforce-logout.routes.js';
 import salesforceBattleRoutes from './routes/salesforce-battle.routes.js';
+import salesforceRedirectFixRoutes from './routes/salesforce-redirect-fix.routes.js';
 
 const app = express();
 
@@ -101,6 +102,7 @@ app.use('/api/support', supportRoutes);
 app.use('/api/salesforce', salesforceRoutes);
 app.use('/api/salesforce/auth', salesforceLogoutRoutes);
 app.use('/api/salesforce', salesforceBattleRoutes);
+app.use('/api/salesforce/redirect-fix', salesforceRedirectFixRoutes);
 
 // Static files
 app.use('/uploads', express.static('uploads'));
