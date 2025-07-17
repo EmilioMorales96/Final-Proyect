@@ -712,7 +712,10 @@ router.get('/oauth/callback', async (req, res) => {
     
     console.log('🔄 Exchanging OAuth code for tokens...');
     
-    const authEndpoint = getSalesforceAuthEndpoint();
+    // Use OAuth token endpoint (NOT Client Credentials endpoint)
+    const authEndpoint = process.env.SALESFORCE_IS_SANDBOX === 'true' 
+      ? 'https://test.salesforce.com/services/oauth2/token'
+      : 'https://login.salesforce.com/services/oauth2/token';
     const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
