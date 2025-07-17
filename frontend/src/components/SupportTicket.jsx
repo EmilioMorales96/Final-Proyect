@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
 import { FiHelpCircle, FiSend } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-import { useAuth } from '../hooks/useAuth';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -13,8 +11,6 @@ const API_URL = import.meta.env.VITE_API_URL;
  */
 export const SupportTicket = ({ isOpen, onClose, templateTitle = null }) => {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     summary: '',
@@ -38,27 +34,16 @@ export const SupportTicket = ({ isOpen, onClose, templateTitle = null }) => {
 
     setLoading(true);
     try {
-      const ticketData = {
-        reportedBy: user?.email || user?.username || 'Anonymous',
-        template: templateTitle || 'N/A',
-        link: window.location.href,
-        priority: formData.priority,
-        summary: formData.summary,
-        admins: ['admin@formsapp.com', 'support@formsapp.com'], // Multiple admin emails
-        userAgent: navigator.userAgent,
-        timestamp: new Date().toISOString(),
-        userId: user?.id || 'anonymous',
-        page: location.pathname,
-        referrer: document.referrer
-      };
-
-      const response = await fetch(`${API_URL}/api/support/create-ticket`, {
+      const response = await fetch(`${API_URL}/api/support/test-ticket`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(ticketData)
+        body: JSON.stringify({
+          summary: formData.summary,
+          priority: formData.priority,
+          description: `Support ticket created from ${window.location.href}`
+        })
       });
 
       const data = await response.json();

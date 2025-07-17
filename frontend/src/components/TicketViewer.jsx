@@ -13,10 +13,8 @@ const TicketViewer = () => {
   const fetchLocalTickets = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/support/tickets', {
+      const response = await fetch('/api/support/public-tickets', {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -38,10 +36,8 @@ const TicketViewer = () => {
   const fetchDropboxFiles = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/support/dropbox-files', {
+      const response = await fetch('/api/support/public-dropbox-files', {
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });

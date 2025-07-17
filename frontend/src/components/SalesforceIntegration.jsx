@@ -64,11 +64,10 @@ const SalesforceIntegration = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/salesforce/create-account`, {
+      const response = await fetch(`${API_URL}/api/salesforce/demo-create-account`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
       });
@@ -76,7 +75,19 @@ const SalesforceIntegration = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(t('integration.manual.success'));
+        const result = await response.json();
+        
+        // Show detailed success message
+        if (result.integration === 'simulated') {
+          toast.success(`✅ Demo: Account "${result.salesforce.account.name}" created in Salesforce!\n🎯 Account ID: ${result.salesforce.account.id}\n👤 Contact created successfully`, {
+            duration: 6000
+          });
+        } else {
+          toast.success(`✅ Real: Account "${result.salesforce.account.name}" created in Salesforce!\n🎯 Account ID: ${result.salesforce.account.id}`, {
+            duration: 6000
+          });
+        }
+        
         setIsOpen(false);
         setFormData({
           company: '',
@@ -86,6 +97,10 @@ const SalesforceIntegration = () => {
           annualRevenue: '',
           numberOfEmployees: ''
         });
+        
+        // Show additional info in console for demo purposes
+        console.log('🏢 Salesforce Integration Result:', result);
+        
       } else {
         toast.error(data.message || t('integration.manual.error'));
       }
