@@ -3,720 +3,242 @@ import authenticateToken from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-/**
- * Get the correct Salesforce authentication endpoint based on environment
- */
-function getSalesforceAuthEndpoint() {
-  const rawValue = process.env.SALESFORCE_IS_SANDBOX;
-  const isSandbox = process.env.SALESFORCE_IS_SANDBOX === 'true';
-  
-  console.log('🔍 DEBUG getSalesforceAuthEndpoint():');
-  console.log('  - Raw SALESFORCE_IS_SANDBOX value:', JSON.stringify(rawValue));
-  console.log('  - Type of raw value:', typeof rawValue);
-  console.log('  - isSandbox boolean result:', isSandbox);
-  console.log('  - Comparison (rawValue === "true"):', rawValue === 'true');
-  
-  const endpoint = isSandbox 
-    ? 'https://test.salesforce.com/services/oauth2/token'
-    : 'https://login.salesforce.com/services/oauth2/token';
-    
-  console.log('  - Selected endpoint:', endpoint);
-  console.log('  - Will use SANDBOX?', isSandbox ? 'YES' : 'NO');
-  
-  return endpoint;
-}
+// 🎯 SALESFORCE INTEGRATION - CLEAN VERSION
+// =========================================
 
 /**
- * Get the correct Salesforce OAuth authorize endpoint based on environment
+ * 🧪 PUBLIC TEST ENDPOINT
+ * GET /api/salesforce/test
+ * Test público para verificar configuración
  */
-function getSalesforceOAuthEndpoint() {
-  const rawValue = process.env.SALESFORCE_IS_SANDBOX;
-  const isSandbox = process.env.SALESFORCE_IS_SANDBOX === 'true';
-  
-  console.log('🔍 DEBUG getSalesforceOAuthEndpoint():');
-  console.log('  - Raw SALESFORCE_IS_SANDBOX value:', JSON.stringify(rawValue));
-  console.log('  - Type of raw value:', typeof rawValue);
-  console.log('  - isSandbox boolean result:', isSandbox);
-  
-  const endpoint = isSandbox 
-    ? 'https://test.salesforce.com/services/oauth2/authorize'
-    : 'https://login.salesforce.com/services/oauth2/authorize';
-    
-  console.log('  - Selected endpoint:', endpoint);
-  console.log('  - Will use SANDBOX?', isSandbox ? 'YES' : 'NO');
-  
-  return endpoint;
-}
-
-/**
- * REAL Salesforce Integration - Create Account and Contact
- * POST /api/salesforce/create-account
- * NO SIMULATION - ONLY REAL SALESFORCE INTEGRATION
- */
-router.post('/create-account', authenticateToken, async (req, res) => {
+router.get('/test', async (req, res) => {
   try {
-    const { company, phone, website, industry, annualRevenue, numberOfEmployees } = req.body;
-    const user = req.user;
-
-    // Validate required fields
-    if (!company) {
-      return res.status(400).json({ 
-        status: 'error',
-        message: 'Company name is required' 
-      });
-    }
-
-    // Check if Salesforce credentials are configured
-    if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
-      console.error('❌ Salesforce credentials not configured');
-      return res.status(500).json({ 
-        status: 'error',
-        message: 'Salesforce integration not configured. Please set up your Connected App.',
-        error: 'Missing client credentials'
-      });
-    }
-
-    console.log('🔐 Authenticating with Salesforce...');
-
-    // Get Salesforce access token
-    const authEndpoint = getSalesforceAuthEndpoint();
-    console.log('Using auth endpoint:', authEndpoint);
+    console.log('🧪 [Public Test] Checking configuration...');
     
-    const tokenResponse = await fetch(authEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: process.env.SALESFORCE_CLIENT_ID,
-        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
-      })
-    });
-
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      console.error('❌ Salesforce authentication failed:', errorData);
-      return res.status(500).json({ 
-        status: 'error',
-        message: 'Failed to authenticate with Salesforce. Please check your credentials.',
-        error: 'Authentication failed',
-        details: errorData,
-        setup_guide: 'See SALESFORCE_CONFIGURATION_GUIDE.md for setup instructions'
-      });
-    }
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-    const instanceUrl = tokenData.instance_url;
-
-    console.log('✅ Salesforce authentication successful');
-    console.log('🔗 Instance URL:', instanceUrl);
-
-    // Create Account in Salesforce
-    const accountData = {
-      Name: company,
-      Website: website || null,
-      Phone: phone || null,
-      Industry: industry || null,
-      AnnualRevenue: annualRevenue ? parseFloat(annualRevenue) : null,
-      NumberOfEmployees: numberOfEmployees ? parseInt(numberOfEmployees) : null,
-      Type: 'Prospect',
-      Description: `Account created via Forms App by ${user.email || user.username}`,
-      LeadSource: 'Forms App'
+    const config = {
+      client_id_configured: !!process.env.SALESFORCE_CLIENT_ID,
+      client_secret_configured: !!process.env.SALESFORCE_CLIENT_SECRET,
+      redirect_uri: process.env.SALESFORCE_REDIRECT_URI || 'DEFAULT',
+      is_sandbox: process.env.SALESFORCE_IS_SANDBOX || 'false',
+      login_url: process.env.SALESFORCE_LOGIN_URL || 'DEFAULT',
+      environment: process.env.NODE_ENV || 'development'
     };
-
-    console.log('📝 Creating Account in Salesforce...');
-
-    const accountResponse = await fetch(`${instanceUrl}/services/data/v52.0/sobjects/Account/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(accountData)
-    });
-
-    if (!accountResponse.ok) {
-      const errorData = await accountResponse.json();
-      console.error('❌ Salesforce account creation failed:', errorData);
-      return res.status(500).json({ 
-        status: 'error',
-        message: 'Failed to create account in Salesforce', 
-        error: errorData[0]?.message || 'Unknown error',
-        details: errorData
-      });
-    }
-
-    const accountResult = await accountResponse.json();
-    console.log('✅ Account created successfully:', accountResult.id);
-
-    // Create Contact in Salesforce
-    const contactData = {
-      FirstName: user.username?.split(' ')[0] || 'Contact',
-      LastName: user.username?.split(' ').slice(1).join(' ') || 'User',
-      Email: user.email || 'noemail@example.com',
-      AccountId: accountResult.id,
-      LeadSource: 'Forms App',
-      Description: `Contact created via Forms App by ${user.email || user.username}`
-    };
-
-    console.log('👤 Creating Contact in Salesforce...');
-
-    const contactResponse = await fetch(`${instanceUrl}/services/data/v52.0/sobjects/Contact/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(contactData)
-    });
-
-    let contactResult = null;
-    if (contactResponse.ok) {
-      contactResult = await contactResponse.json();
-      console.log('✅ Contact created successfully:', contactResult.id);
-    } else {
-      const contactError = await contactResponse.json();
-      console.error('⚠️ Contact creation failed:', contactError);
-      // Continue with account success even if contact fails
-    }
-
-    // Return REAL Salesforce data - NO SIMULATION
+    
     res.json({
       status: 'success',
-      message: 'Account and Contact created successfully in REAL Salesforce',
-      integration: 'real',
-      salesforce: {
-        instance_url: instanceUrl,
-        account: {
-          id: accountResult.id,
-          name: company,
-          url: `${instanceUrl}/lightning/r/Account/${accountResult.id}/view`,
-          api_url: `${instanceUrl}/services/data/v52.0/sobjects/Account/${accountResult.id}`
-        },
-        contact: contactResult ? {
-          id: contactResult.id,
-          name: `${contactData.FirstName} ${contactData.LastName}`,
-          email: contactData.Email,
-          url: `${instanceUrl}/lightning/r/Contact/${contactResult.id}/view`,
-          api_url: `${instanceUrl}/services/data/v52.0/sobjects/Contact/${contactResult.id}`
-        } : null
-      },
-      debug: {
-        account_data: accountData,
-        contact_data: contactData,
-        user_info: {
-          id: user.id,
-          email: user.email,
-          username: user.username
-        }
+      message: 'Clean Salesforce System - Public Test',
+      timestamp: new Date().toISOString(),
+      configuration: config,
+      ready: config.client_id_configured && config.client_secret_configured,
+      endpoints: {
+        status: 'GET /api/salesforce/status (requires auth)',
+        oauth_url: 'GET /api/salesforce/oauth/url (requires auth)',
+        oauth_callback: 'GET /api/salesforce/oauth/callback (public)',
+        accounts: 'GET /api/salesforce/accounts (requires auth)',
+        create_account: 'POST /api/salesforce/accounts (requires auth)',
+        debug: 'GET /api/salesforce/debug (requires auth)',
+        test: 'GET /api/salesforce/test (public)'
       }
     });
-
+    
   } catch (error) {
-    console.error('❌ Salesforce integration error:', error);
-    res.status(500).json({ 
-      status: 'error',
-      message: 'Internal server error during Salesforce integration', 
-      error: error.message 
-    });
-  }
-});
-
-/**
- * REAL Demo endpoint - NO SIMULATION, NO FALLBACK
- * POST /api/salesforce/demo-create-account
- */
-router.post('/demo-create-account', async (req, res) => {
-  try {
-    const { company, phone, website, industry, annualRevenue, numberOfEmployees } = req.body;
-
-    // Validate required fields
-    if (!company) {
-      return res.status(400).json({ 
-        status: 'error',
-        message: 'Company name is required' 
-      });
-    }
-
-    // Check if Salesforce credentials are configured
-    if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
-      console.error('❌ Salesforce not configured - Using simulation mode');
-      
-      // Return simulated success response when Salesforce is not configured
-      const simulatedAccount = {
-        id: `SIM_${Date.now()}`,
-        name: company,
-        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
-        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
-      };
-
-      return res.json({
-        status: 'success',
-        message: 'Account created successfully (Simulation Mode)',
-        integration: 'simulated',
-        salesforce: {
-          instance_url: 'https://simulation.salesforce.com',
-          account: simulatedAccount
-        },
-        demo_note: 'This is a simulation - Salesforce credentials not configured'
-      });
-    }
-
-    console.log('🔐 Demo: Authenticating with REAL Salesforce...');
-    console.log('Client ID:', process.env.SALESFORCE_CLIENT_ID ? `SET (${process.env.SALESFORCE_CLIENT_ID.substring(0, 10)}...)` : 'NOT SET');
-    console.log('Client Secret:', process.env.SALESFORCE_CLIENT_SECRET ? `SET (${process.env.SALESFORCE_CLIENT_SECRET.substring(0, 5)}...)` : 'NOT SET');
-    console.log('Environment:', process.env.NODE_ENV);
-    console.log('Is Sandbox:', process.env.SALESFORCE_IS_SANDBOX === 'true');
-    
-    const authEndpoint = getSalesforceAuthEndpoint();
-    console.log('Using endpoint:', authEndpoint);
-
-    const tokenResponse = await fetch(authEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: process.env.SALESFORCE_CLIENT_ID,
-        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
-      })
-    });
-
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      console.error('❌ Demo: Salesforce authentication failed:', errorData);
-      console.error('Response status:', tokenResponse.status);
-      console.error('Response statusText:', tokenResponse.statusText);
-      
-      // Try to parse error details
-      try {
-        const errorJson = JSON.parse(errorData);
-        console.error('Error details:', errorJson);
-      } catch (e) {
-        console.error('Raw error response:', errorData);
-      }
-      
-      // Return simulated success instead of error for better UX
-      console.log('🔄 Falling back to simulation mode due to auth failure');
-      
-      const simulatedAccount = {
-        id: `SIM_AUTH_FAIL_${Date.now()}`,
-        name: company,
-        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
-        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
-      };
-
-      return res.json({
-        status: 'success',
-        message: 'Account created successfully (Simulation - Auth Failed)',
-        integration: 'simulated',
-        salesforce: {
-          instance_url: 'https://simulation.salesforce.com',
-          account: simulatedAccount
-        },
-        demo_note: 'Simulation mode - Salesforce authentication failed',
-        original_error: errorData,
-        debug_info: {
-          status: tokenResponse.status,
-          statusText: tokenResponse.statusText,
-          client_id_set: !!process.env.SALESFORCE_CLIENT_ID,
-          client_secret_set: !!process.env.SALESFORCE_CLIENT_SECRET
-        }
-      });
-    }
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-    const instanceUrl = tokenData.instance_url;
-
-    console.log('✅ Demo: REAL Salesforce authentication successful');
-
-    // Create demo account data in REAL Salesforce
-    const accountData = {
-      Name: company,
-      Website: website || null,
-      Phone: phone || null,
-      Industry: industry || null,
-      AnnualRevenue: annualRevenue ? parseFloat(annualRevenue) : null,
-      NumberOfEmployees: numberOfEmployees ? parseInt(numberOfEmployees) : null,
-      Type: 'Prospect',
-      Description: 'Demo account created via Forms App - REAL INTEGRATION',
-      LeadSource: 'Forms App Demo'
-    };
-
-    const accountResponse = await fetch(`${instanceUrl}/services/data/v52.0/sobjects/Account/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(accountData)
-    });
-
-    if (!accountResponse.ok) {
-      const errorData = await accountResponse.json();
-      console.error('❌ Demo: Account creation failed:', errorData);
-      
-      // Return simulated success instead of error for better UX
-      console.log('🔄 Falling back to simulation mode due to account creation failure');
-      
-      const simulatedAccount = {
-        id: `SIM_CREATE_FAIL_${Date.now()}`,
-        name: company,
-        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
-        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
-      };
-
-      return res.json({
-        status: 'success',
-        message: 'Account created successfully (Simulation - Create Failed)',
-        integration: 'simulated',
-        salesforce: {
-          instance_url: 'https://simulation.salesforce.com',
-          account: simulatedAccount
-        },
-        demo_note: 'Simulation mode - Salesforce account creation failed',
-        original_error: errorData[0]?.message || 'Unknown error'
-      });
-    }
-
-    const accountResult = await accountResponse.json();
-    console.log('✅ Demo: REAL Account created:', accountResult.id);
-
-    return res.json({
-      status: 'success',
-      message: 'Demo Account created successfully in REAL Salesforce',
-      integration: 'real',
-      salesforce: {
-        instance_url: instanceUrl,
-        account: {
-          id: accountResult.id,
-          name: company,
-          url: `${instanceUrl}/lightning/r/Account/${accountResult.id}/view`,
-          api_url: `${instanceUrl}/services/data/v52.0/sobjects/Account/${accountResult.id}`
-        }
-      },
-      demo_note: 'This is a REAL Salesforce integration - no simulation used'
-    });
-
-  } catch (error) {
-    console.error('❌ Demo Salesforce error:', error);
-    
-    // Return simulated success instead of error for better UX
-    console.log('🔄 Falling back to simulation mode due to unexpected error');
-    
-    const simulatedAccount = {
-      id: `SIM_ERROR_${Date.now()}`,
-      name: company || 'Demo Company',
-      url: `https://simulation.salesforce.com/Account/${Date.now()}`,
-      api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
-    };
-
-    res.json({
-      status: 'success',
-      message: 'Account created successfully (Simulation - Unexpected Error)',
-      integration: 'simulated',
-      salesforce: {
-        instance_url: 'https://simulation.salesforce.com',
-        account: simulatedAccount
-      },
-      demo_note: 'Simulation mode - Unexpected error occurred',
-      original_error: error.message
-    });
-  }
-});
-
-/**
- * Get REAL Salesforce connection status
- * GET /api/salesforce/status
- */
-router.get('/status', async (req, res) => {
-  try {
-    const hasCredentials = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
-    
-    if (!hasCredentials) {
-      return res.json({
-        status: 'not_configured',
-        message: 'Salesforce credentials not configured',
-        configured: false,
-        setup_required: true
-      });
-    }
-
-    // Test REAL authentication
-    const authEndpoint = getSalesforceAuthEndpoint();
-    const tokenResponse = await fetch(authEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: process.env.SALESFORCE_CLIENT_ID,
-        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
-      })
-    });
-
-    if (tokenResponse.ok) {
-      const tokenData = await tokenResponse.json();
-      
-      return res.json({
-        status: 'connected',
-        message: 'REAL Salesforce integration is working perfectly',
-        configured: true,
-        instance_url: tokenData.instance_url,
-        token_type: tokenData.token_type,
-        integration_type: 'real'
-      });
-    } else {
-      const errorData = await tokenResponse.text();
-      
-      return res.json({
-        status: 'authentication_failed',
-        message: 'Salesforce credentials are invalid',
-        configured: true,
-        error: errorData,
-        setup_required: true
-      });
-    }
-
-  } catch (error) {
-    console.error('❌ Salesforce status error:', error);
-    res.status(500).json({ 
-      status: 'error',
-      message: 'Error checking Salesforce status', 
-      error: error.message 
-    });
-  }
-});
-
-/**
- * Get created Salesforce accounts for the current user
- * GET /api/salesforce/accounts
- */
-router.get('/accounts', authenticateToken, async (req, res) => {
-  try {
-    const user = req.user;
-
-    console.log('🔍 Fetching Salesforce accounts for user:', user.email || user.username);
-
-    // Check if Salesforce credentials are configured
-    const hasCredentials = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
-    
-    if (!hasCredentials) {
-      console.log('❌ No Salesforce credentials configured');
-      return res.json({
-        status: 'not_configured',
-        message: 'Salesforce not configured',
-        accounts: []
-      });
-    }
-
-    // Get access token
-    const authEndpoint = getSalesforceAuthEndpoint();
-    const tokenResponse = await fetch(authEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: process.env.SALESFORCE_CLIENT_ID,
-        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
-      })
-    });
-
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      console.error('❌ Authentication failed:', errorData);
-      return res.json({
-        status: 'authentication_failed',
-        message: 'Failed to authenticate with Salesforce',
-        accounts: [],
-        debug: { error: errorData }
-      });
-    }
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-    const instanceUrl = tokenData.instance_url;
-
-    console.log('✅ Salesforce authentication successful');
-    console.log('🔗 Instance URL:', instanceUrl);
-
-    // Query ALL accounts first to see what's available, then filter
-    const broadQuery = `SELECT Id, Name, Industry, Phone, Website, NumberOfEmployees, AnnualRevenue, CreatedDate, Description, LeadSource, CreatedBy.Name 
-                        FROM Account 
-                        ORDER BY CreatedDate DESC 
-                        LIMIT 100`;
-
-    console.log('🔍 Executing broad query to see all accounts...');
-
-    const queryResponse = await fetch(`${instanceUrl}/services/data/v52.0/query?q=${encodeURIComponent(broadQuery)}`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      }
-    });
-
-    if (!queryResponse.ok) {
-      const errorData = await queryResponse.json();
-      console.error('❌ Query failed:', errorData);
-      return res.status(500).json({
-        status: 'error',
-        message: 'Failed to fetch accounts from Salesforce',
-        error: errorData
-      });
-    }
-
-    const queryResult = await queryResponse.json();
-    
-    console.log(`📊 Total accounts found: ${queryResult.totalSize}`);
-    console.log(`📋 Records returned: ${queryResult.records.length}`);
-
-    // Log some sample records for debugging
-    if (queryResult.records.length > 0) {
-      console.log('📝 Sample accounts:');
-      queryResult.records.slice(0, 3).forEach((record, index) => {
-        console.log(`  ${index + 1}. ${record.Name} - LeadSource: ${record.LeadSource} - Created: ${record.CreatedDate}`);
-      });
-    }
-
-    // Filter accounts created by Forms App (more flexible filtering)
-    const formsAppAccounts = queryResult.records.filter(record => 
-      record.LeadSource === 'Forms App' || 
-      record.LeadSource === 'Forms App Demo' ||
-      (record.Description && record.Description.includes('Forms App'))
-    );
-
-    console.log(`🎯 Forms App accounts found: ${formsAppAccounts.length}`);
-    
-    // Format accounts for frontend
-    const accounts = formsAppAccounts.map(record => ({
-      id: record.Id,
-      name: record.Name,
-      company: record.Name,
-      industry: record.Industry,
-      phone: record.Phone,
-      website: record.Website,
-      employees: record.NumberOfEmployees,
-      revenue: record.AnnualRevenue,
-      created_date: record.CreatedDate,
-      description: record.Description,
-      lead_source: record.LeadSource,
-      created_by: record.CreatedBy?.Name,
-      url: `${instanceUrl}/lightning/r/Account/${record.Id}/view`
-    }));
-
-    // Also include ALL recent accounts for debugging if no Forms App accounts found
-    const debugAccounts = formsAppAccounts.length === 0 ? 
-      queryResult.records.slice(0, 5).map(record => ({
-        id: record.Id,
-        name: record.Name,
-        company: record.Name,
-        industry: record.Industry,
-        phone: record.Phone,
-        website: record.Website,
-        employees: record.NumberOfEmployees,
-        revenue: record.AnnualRevenue,
-        created_date: record.CreatedDate,
-        description: record.Description,
-        lead_source: record.LeadSource,
-        created_by: record.CreatedBy?.Name,
-        url: `${instanceUrl}/lightning/r/Account/${record.Id}/view`
-      })) : [];
-
-    res.json({
-      status: 'success',
-      accounts: accounts,
-      total: accounts.length,
-      instance_url: instanceUrl,
-      debug: {
-        total_accounts_in_org: queryResult.totalSize,
-        records_queried: queryResult.records.length,
-        forms_app_accounts: formsAppAccounts.length,
-        recent_accounts_sample: debugAccounts,
-        query_used: broadQuery,
-        user_info: {
-          id: user.id,
-          email: user.email,
-          username: user.username
-        }
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Error fetching Salesforce accounts:', error);
+    console.error('❌ Public test error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Error fetching Salesforce accounts',
-      error: error.message,
-      accounts: []
+      message: 'Error in public test',
+      error: error.message
     });
   }
 });
 
 /**
- * OAuth Authorization Endpoint (Public - No Auth Required)
- * GET /api/salesforce/oauth/authorize
+ * 📊 STATUS ENDPOINT
+ * GET /api/salesforce/status
+ * Verificar estado de configuración
  */
-router.get('/oauth/authorize', (req, res) => {
-  const clientId = process.env.SALESFORCE_CLIENT_ID;
-  const redirectUri = process.env.SALESFORCE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
-  
-  // Debug logging
-  console.log('🔧 OAuth Authorization Debug:');
-  console.log('CLIENT_ID:', clientId ? 'SET' : 'NOT SET');
-  console.log('REDIRECT_URI:', redirectUri);
-  console.log('Environment:', process.env.NODE_ENV);
-  
-  if (!clientId) {
-    return res.status(500).json({ 
-      error: 'Configuration Error',
-      message: 'SALESFORCE_CLIENT_ID not configured'
+router.get('/status', authenticateToken, async (req, res) => {
+  try {
+    console.log('📊 [Salesforce Status] User:', req.user.id);
+    
+    const config = {
+      client_id: process.env.SALESFORCE_CLIENT_ID ? 'CONFIGURED ✅' : 'MISSING ❌',
+      client_secret: process.env.SALESFORCE_CLIENT_SECRET ? 'CONFIGURED ✅' : 'MISSING ❌',
+      redirect_uri: process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback',
+      is_sandbox: process.env.SALESFORCE_IS_SANDBOX || 'false',
+      login_url: process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com'
+    };
+    
+    res.json({
+      status: 'success',
+      message: 'Salesforce configuration status',
+      user: req.user.id,
+      configuration: config,
+      ready_for_oauth: !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET)
+    });
+    
+  } catch (error) {
+    console.error('❌ Status error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error getting Salesforce status',
+      error: error.message
     });
   }
-  
-  const authUrl = `${getSalesforceOAuthEndpoint()}?` +
-    `response_type=code&` +
-    `client_id=${clientId}&` +
-    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-    `scope=api%20refresh_token`;
-
-  console.log('🔗 Redirecting to Salesforce OAuth:', authUrl);
-  res.redirect(authUrl);
 });
 
 /**
- * OAuth Callback Endpoint (Public - No Auth Required)
+ * 🔗 GENERATE OAUTH URL
+ * GET /api/salesforce/oauth/url
+ * Generar URL de autorización OAuth
+ */
+router.get('/oauth/url', authenticateToken, async (req, res) => {
+  try {
+    console.log('🔗 [OAuth URL] Generating for user:', req.user.id);
+    
+    // Verificar configuración
+    if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Salesforce not configured. Missing CLIENT_ID or CLIENT_SECRET.'
+      });
+    }
+    
+    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
+    const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
+    
+    // Construir URL OAuth
+    const authUrl = new URL(`${loginUrl}/services/oauth2/authorize`);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('client_id', process.env.SALESFORCE_CLIENT_ID);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', 'api refresh_token offline_access');
+    authUrl.searchParams.set('state', `user_${req.user.id}_${Date.now()}`);
+    authUrl.searchParams.set('prompt', 'consent');
+    
+    console.log('✅ OAuth URL generated successfully');
+    
+    res.json({
+      status: 'success',
+      message: 'OAuth URL generated',
+      oauth_url: authUrl.toString(),
+      instructions: [
+        '1. Clic en la URL para autorizar',
+        '2. Iniciar sesión en Salesforce',
+        '3. Aceptar permisos',
+        '4. Serás redirigido automáticamente'
+      ],
+      configuration: {
+        client_id: process.env.SALESFORCE_CLIENT_ID.substring(0, 20) + '...',
+        redirect_uri: redirectUri,
+        login_url: loginUrl
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ OAuth URL generation error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error generating OAuth URL',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * 🔗 GENERATE OAUTH URL - PUBLIC VERSION
+ * GET /api/salesforce/oauth-url-public
+ * Generar URL de autorización OAuth (versión pública para testing)
+ */
+router.get('/oauth-url-public', async (req, res) => {
+  try {
+    console.log('🔗 [OAuth URL Public] Generating...');
+    
+    // Verificar configuración
+    if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Salesforce not configured. Missing CLIENT_ID or CLIENT_SECRET.'
+      });
+    }
+    
+    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
+    const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
+    
+    // Construir URL OAuth
+    const authUrl = new URL(`${loginUrl}/services/oauth2/authorize`);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('client_id', process.env.SALESFORCE_CLIENT_ID);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', 'api refresh_token offline_access');
+    authUrl.searchParams.set('state', `clean_test_${Date.now()}`);
+    authUrl.searchParams.set('prompt', 'consent');
+    
+    console.log('✅ OAuth URL generated successfully (PUBLIC)');
+    
+    res.json({
+      status: 'success',
+      message: 'OAuth URL generated - Clean System',
+      oauth_url: authUrl.toString(),
+      instructions: [
+        '🔗 COPY Y PEGA LA URL EN TU NAVEGADOR',
+        '1. Clic en la URL para autorizar',
+        '2. Iniciar sesión en Salesforce',
+        '3. Aceptar permisos',
+        '4. Serás redirigido automáticamente'
+      ],
+      configuration: {
+        client_id: process.env.SALESFORCE_CLIENT_ID.substring(0, 20) + '...',
+        redirect_uri: redirectUri,
+        login_url: loginUrl
+      },
+      important_note: 'ASEGÚRATE de que en tu Salesforce Connected App el Callback URL sea EXACTAMENTE: ' + redirectUri
+    });
+    
+  } catch (error) {
+    console.error('❌ OAuth URL generation error (PUBLIC):', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error generating OAuth URL',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * 🔄 OAUTH CALLBACK
  * GET /api/salesforce/oauth/callback
+ * Manejar callback de autorización OAuth
  */
 router.get('/oauth/callback', async (req, res) => {
   try {
-    const { code, error } = req.query;
-
+    const { code, state, error, error_description } = req.query;
+    
+    console.log('🔄 [OAuth Callback] Received:', { 
+      code: code ? 'YES' : 'NO', 
+      state, 
+      error, 
+      error_description 
+    });
+    
+    // Manejar errores de OAuth
     if (error) {
-      console.error('OAuth error:', error);
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=oauth_failed&details=${encodeURIComponent(error)}`);
+      console.error('❌ OAuth Error:', error, error_description);
+      return res.redirect(`${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?error=${error}&description=${encodeURIComponent(error_description || '')}`);
     }
-
+    
+    // Verificar que tenemos código de autorización
     if (!code) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=no_code`);
+      console.error('❌ No authorization code received');
+      return res.redirect(`${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?error=no_code`);
     }
-
-    // Exchange code for access token
-    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
     
-    console.log('🔄 Exchanging OAuth code for tokens...');
+    // Intercambiar código por token
+    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
+    const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
     
-    // Use OAuth token endpoint (NOT Client Credentials endpoint)
-    const authEndpoint = process.env.SALESFORCE_IS_SANDBOX === 'true' 
-      ? 'https://test.salesforce.com/services/oauth2/token'
-      : 'https://login.salesforce.com/services/oauth2/token';
-    const tokenResponse = await fetch(authEndpoint, {
+    console.log('🔄 Exchanging code for token...');
+    
+    const tokenResponse = await fetch(`${loginUrl}/services/oauth2/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -729,838 +251,153 @@ router.get('/oauth/callback', async (req, res) => {
         code: code
       })
     });
-
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      console.error('Token exchange error:', errorData);
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=token_exchange_failed`);
-    }
-
+    
     const tokenData = await tokenResponse.json();
+    console.log('🎯 Token Response Status:', tokenResponse.status);
     
-    console.log('✅ OAuth Success! Tokens received');
-    console.log('Instance URL:', tokenData.instance_url);
-    
-    // Here you would typically store the tokens in your database
-    // For now, we'll just redirect with success
-    
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?success=oauth_connected&instance=${encodeURIComponent(tokenData.instance_url)}`);
-
-  } catch (error) {
-    console.error('OAuth callback error:', error);
-    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=callback_failed`);
-  }
-});
-
-/**
- * Get Salesforce integration statistics
- * GET /api/salesforce/stats
- */
-router.get('/stats', authenticateToken, async (req, res) => {
-  try {
-    // Check if Salesforce is configured
-    const hasCredentials = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
-    
-    if (!hasCredentials) {
-      return res.json({
-        status: 'not_configured',
-        message: 'Salesforce not configured',
-        stats: {
-          accounts_created: 0,
-          contacts_created: 0,
-          last_sync: null,
-          integration_status: 'not_configured'
-        }
-      });
-    }
-
-    // Test connection
-    const authEndpoint = getSalesforceAuthEndpoint();
-    const tokenResponse = await fetch(authEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: process.env.SALESFORCE_CLIENT_ID,
-        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
-      })
-    });
-
-    const isConnected = tokenResponse.ok;
-    
-    res.json({
-      status: 'success',
-      stats: {
-        accounts_created: 12, // This would come from your database in a real app
-        contacts_created: 8,
-        last_sync: new Date().toISOString(),
-        integration_status: isConnected ? 'connected' : 'connection_error',
-        instance_url: isConnected ? (await tokenResponse.json()).instance_url : null
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Salesforce stats error:', error);
-    res.status(500).json({ 
-      status: 'error',
-      message: 'Error getting Salesforce statistics', 
-      error: error.message 
-    });
-  }
-});
-
-/**
- * Get Salesforce sync history
- * GET /api/salesforce/sync-history
- */
-router.get('/sync-history', authenticateToken, async (req, res) => {
-  try {
-    // Check if Salesforce is configured
-    const hasCredentials = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
-    
-    if (!hasCredentials) {
-      return res.json({
-        status: 'not_configured',
-        message: 'Salesforce not configured',
-        history: []
-      });
-    }
-
-    // In a real application, this would come from your database
-    // For now, we'll return some sample sync history
-    const sampleHistory = [
-      {
-        id: 1,
-        type: 'account_created',
-        entity_name: 'Demo Company',
-        salesforce_id: 'ACC001',
-        timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        status: 'success',
-        user_email: req.user.email
-      },
-      {
-        id: 2,
-        type: 'contact_created',
-        entity_name: 'John Doe',
-        salesforce_id: 'CON001',
-        timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-        status: 'success',
-        user_email: req.user.email
-      },
-      {
-        id: 3,
-        type: 'account_created',
-        entity_name: 'Tech Solutions Inc',
-        salesforce_id: 'ACC002',
-        timestamp: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-        status: 'success',
-        user_email: req.user.email
-      }
-    ];
-
-    res.json({
-      status: 'success',
-      history: sampleHistory,
-      total: sampleHistory.length
-    });
-
-  } catch (error) {
-    console.error('❌ Salesforce sync history error:', error);
-    res.status(500).json({ 
-      status: 'error',
-      message: 'Error getting Salesforce sync history', 
-      error: error.message 
-    });
-  }
-});
-
-/**
- * Debug endpoint for Salesforce configuration (Public - No Auth Required)
- * GET /api/salesforce/debug/config
- */
-router.get('/debug/config', (req, res) => {
-  res.json({
-    environment: process.env.NODE_ENV,
-    salesforce: {
-      clientId: process.env.SALESFORCE_CLIENT_ID ? 'SET' : 'NOT SET',
-      clientSecret: process.env.SALESFORCE_CLIENT_SECRET ? 'SET' : 'NOT SET',
-      redirectUri: process.env.SALESFORCE_REDIRECT_URI || 'NOT SET',
-      instanceUrl: process.env.SALESFORCE_INSTANCE_URL || 'NOT SET',
-      frontendUrl: process.env.FRONTEND_URL || 'NOT SET',
-      isSandbox: process.env.SALESFORCE_IS_SANDBOX || 'NOT SET',
-      isSandboxBoolean: process.env.SALESFORCE_IS_SANDBOX === 'true'
-    },
-    endpoints: {
-      auth_endpoint: getSalesforceAuthEndpoint(),
-      oauth_endpoint: getSalesforceOAuthEndpoint()
-    },
-    host: req.get('host'),
-    protocol: req.protocol,
-    defaultRedirectUri: `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`,
-    headers: {
-      'x-forwarded-proto': req.get('x-forwarded-proto'),
-      'x-forwarded-host': req.get('x-forwarded-host'),
-      'host': req.get('host'),
-      'user-agent': req.get('user-agent')
-    },
-    url_analysis: {
-      original_url: req.originalUrl,
-      base_url: req.baseUrl,
-      full_url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
-      is_https_forwarded: req.get('x-forwarded-proto') === 'https',
-      should_use_https: req.get('x-forwarded-proto') === 'https' || req.protocol === 'https'
-    }
-  });
-});
-
-/**
- * Test Salesforce authentication with detailed logging
- * GET /api/salesforce/debug/test-auth
- */
-router.get('/debug/test-auth', async (req, res) => {
-  try {
-    console.log('🔍 Testing Salesforce authentication...');
-    
-    // Check credentials
-    const clientId = process.env.SALESFORCE_CLIENT_ID;
-    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
-    
-    if (!clientId || !clientSecret) {
-      return res.json({
-        status: 'error',
-        message: 'Missing credentials',
-        debug: {
-          clientId: clientId ? 'SET' : 'NOT SET',
-          clientSecret: clientSecret ? 'SET' : 'NOT SET'
-        }
-      });
-    }
-    
-    console.log('Client ID preview:', clientId.substring(0, 10) + '...');
-    console.log('Client Secret preview:', clientSecret.substring(0, 5) + '...');
-    
-    // Test authentication
-    const authEndpoint = getSalesforceAuthEndpoint();
-    console.log('Using auth endpoint:', authEndpoint);
-    
-    const tokenResponse = await fetch(authEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: clientId,
-        client_secret: clientSecret,
-      })
-    });
-    
-    const responseText = await tokenResponse.text();
-    
-    if (tokenResponse.ok) {
-      const tokenData = JSON.parse(responseText);
-      return res.json({
-        status: 'success',
-        message: 'Authentication successful!',
-        instance_url: tokenData.instance_url,
-        token_type: tokenData.token_type,
-        debug: {
-          response_status: tokenResponse.status,
-          has_access_token: !!tokenData.access_token
-        }
-      });
+    if (tokenData.access_token) {
+      // ¡ÉXITO! Token obtenido
+      console.log('🎉 OAUTH SUCCESS! Token received');
+      
+      // TODO: Aquí puedes guardar el token en la base de datos asociado al usuario
+      // Por ahora, redirigimos con éxito
+      
+      return res.redirect(`${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?success=oauth_complete&instance=${encodeURIComponent(tokenData.instance_url || '')}`);
     } else {
-      console.error('Auth failed:', responseText);
-      
-      try {
-        const errorData = JSON.parse(responseText);
-        return res.json({
-          status: 'error',
-          message: 'Authentication failed',
-          error: errorData,
-          debug: {
-            response_status: tokenResponse.status,
-            statusText: tokenResponse.statusText,
-            raw_response: responseText
-          }
-        });
-      } catch (e) {
-        return res.json({
-          status: 'error',
-          message: 'Authentication failed - Invalid response format',
-          debug: {
-            response_status: tokenResponse.status,
-            statusText: tokenResponse.statusText,
-            raw_response: responseText
-          }
-        });
-      }
+      // Error en intercambio de token
+      console.error('❌ Token exchange failed:', tokenData);
+      return res.redirect(`${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?error=token_exchange_failed&details=${encodeURIComponent(JSON.stringify(tokenData))}`);
     }
     
   } catch (error) {
-    console.error('Debug test error:', error);
+    console.error('❌ OAuth callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?error=callback_exception&message=${encodeURIComponent(error.message)}`);
+  }
+});
+
+/**
+ * 📋 LIST ACCOUNTS
+ * GET /api/salesforce/accounts
+ * Listar cuentas de Salesforce (requiere token)
+ */
+router.get('/accounts', authenticateToken, async (req, res) => {
+  try {
+    console.log('📋 [List Accounts] User:', req.user.id);
+    
+    // TODO: Aquí deberías obtener el token del usuario desde la base de datos
+    // Por ahora, retornamos un mensaje indicando que se necesita autenticación
+    
+    res.json({
+      status: 'info',
+      message: 'OAuth authentication required',
+      action: 'Please complete OAuth authentication first',
+      accounts: [],
+      user: req.user.id
+    });
+    
+  } catch (error) {
+    console.error('❌ List accounts error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Test failed',
+      message: 'Error listing Salesforce accounts',
       error: error.message
     });
   }
 });
 
 /**
- * Debug endpoint to see all accounts in Salesforce (No Auth Required for debugging)
- * GET /api/salesforce/debug/all-accounts
+ * 🆕 CREATE ACCOUNT
+ * POST /api/salesforce/accounts
+ * Crear nueva cuenta en Salesforce
  */
-router.get('/debug/all-accounts', async (req, res) => {
+router.post('/accounts', authenticateToken, async (req, res) => {
   try {
-    console.log('🔍 Debugging: Fetching ALL Salesforce accounts...');
+    console.log('🆕 [Create Account] User:', req.user.id);
+    console.log('🆕 [Create Account] Data:', req.body);
     
-    // Check credentials
-    const clientId = process.env.SALESFORCE_CLIENT_ID;
-    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
+    const { name, type, industry, description } = req.body;
     
-    if (!clientId || !clientSecret) {
-      return res.json({
+    if (!name) {
+      return res.status(400).json({
         status: 'error',
-        message: 'Missing Salesforce credentials',
-        accounts: []
+        message: 'Account name is required'
       });
     }
     
-    // Get access token
-    const authEndpoint = getSalesforceAuthEndpoint();
-    const tokenResponse = await fetch(authEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: clientId,
-        client_secret: clientSecret,
-      })
-    });
-    
-    if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text();
-      return res.json({
-        status: 'error',
-        message: 'Authentication failed',
-        error: errorData,
-        accounts: []
-      });
-    }
-    
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-    const instanceUrl = tokenData.instance_url;
-    
-    // Query ALL accounts with detailed info
-    const query = `SELECT Id, Name, Industry, Phone, Website, NumberOfEmployees, AnnualRevenue, CreatedDate, Description, LeadSource, CreatedBy.Name, CreatedBy.Email
-                   FROM Account 
-                   ORDER BY CreatedDate DESC 
-                   LIMIT 20`;
-    
-    const queryResponse = await fetch(`${instanceUrl}/services/data/v52.0/query?q=${encodeURIComponent(query)}`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!queryResponse.ok) {
-      const errorData = await queryResponse.json();
-      return res.json({
-        status: 'error',
-        message: 'Query failed',
-        error: errorData,
-        accounts: []
-      });
-    }
-    
-    const queryResult = await queryResponse.json();
-    
-    // Format accounts with full debug info
-    const accounts = queryResult.records.map(record => ({
-      id: record.Id,
-      name: record.Name,
-      industry: record.Industry,
-      phone: record.Phone,
-      website: record.Website,
-      employees: record.NumberOfEmployees,
-      revenue: record.AnnualRevenue,
-      created_date: record.CreatedDate,
-      description: record.Description,
-      lead_source: record.LeadSource,
-      created_by_name: record.CreatedBy?.Name,
-      created_by_email: record.CreatedBy?.Email,
-      url: `${instanceUrl}/lightning/r/Account/${record.Id}/view`,
-      is_forms_app: (record.LeadSource === 'Forms App' || record.LeadSource === 'Forms App Demo' || 
-                     (record.Description && record.Description.includes('Forms App')))
-    }));
-    
-    const formsAppCount = accounts.filter(acc => acc.is_forms_app).length;
+    // TODO: Aquí deberías usar el token del usuario para crear la cuenta
+    // Por ahora, retornamos un mensaje indicando que se necesita autenticación
     
     res.json({
-      status: 'success',
-      message: `Found ${accounts.length} accounts total, ${formsAppCount} from Forms App`,
-      accounts: accounts,
-      total: accounts.length,
-      forms_app_accounts: formsAppCount,
-      instance_url: instanceUrl,
-      debug_info: {
-        total_in_org: queryResult.totalSize,
-        query_used: query,
-        timestamp: new Date().toISOString()
-      }
+      status: 'info',
+      message: 'OAuth authentication required',
+      action: 'Please complete OAuth authentication first',
+      attempted_creation: {
+        name,
+        type,
+        industry,
+        description
+      },
+      user: req.user.id
     });
     
   } catch (error) {
-    console.error('❌ Debug accounts error:', error);
+    console.error('❌ Create account error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Debug failed',
-      error: error.message,
-      accounts: []
-    });
-  }
-});
-
-/**
- * Enhanced demo endpoint with step-by-step logging
- * POST /api/salesforce/debug/create-account-verbose
- */
-router.post('/debug/create-account-verbose', async (req, res) => {
-  try {
-    const { company, phone, website, industry, annualRevenue, numberOfEmployees } = req.body;
-    
-    console.log('🚀 VERBOSE: Starting account creation...');
-    console.log('📝 Company name:', company);
-    
-    // Step 1: Validate
-    if (!company) {
-      console.log('❌ VERBOSE: Missing company name');
-      return res.status(400).json({ 
-        status: 'error',
-        message: 'Company name is required',
-        step: 'validation'
-      });
-    }
-    
-    // Step 2: Check credentials
-    const clientId = process.env.SALESFORCE_CLIENT_ID;
-    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
-    
-    console.log('🔐 VERBOSE: Checking credentials...');
-    console.log('Client ID set:', !!clientId);
-    console.log('Client Secret set:', !!clientSecret);
-    
-    if (!clientId || !clientSecret) {
-      console.log('❌ VERBOSE: Missing credentials - will use simulation');
-      const simulatedAccount = {
-        id: `SIM_NO_CREDS_${Date.now()}`,
-        name: company,
-        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
-        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
-      };
-
-      return res.json({
-        status: 'success',
-        message: 'Account created (Simulation - No Credentials)',
-        integration: 'simulated',
-        salesforce: { instance_url: 'https://simulation.salesforce.com', account: simulatedAccount },
-        step: 'credentials_check',
-        demo_note: 'Simulation - No Salesforce credentials'
-      });
-    }
-    
-    // Step 3: Test authentication
-    console.log('🔑 VERBOSE: Attempting authentication...');
-    console.log('Using Client ID:', clientId.substring(0, 15) + '...');
-    
-    // Use correct Salesforce endpoint based on environment
-    const salesforceEndpoint = getSalesforceAuthEndpoint();
-    
-    console.log('🔗 VERBOSE: Using endpoint:', salesforceEndpoint);
-    
-    const tokenResponse = await fetch(salesforceEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: clientId,
-        client_secret: clientSecret,
-      })
-    });
-    
-    console.log('🔍 VERBOSE: Auth response status:', tokenResponse.status);
-    console.log('🔍 VERBOSE: Auth response OK:', tokenResponse.ok);
-    
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.log('❌ VERBOSE: Auth failed with error:', errorText);
-      
-      const simulatedAccount = {
-        id: `SIM_AUTH_FAIL_${Date.now()}`,
-        name: company,
-        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
-        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
-      };
-
-      return res.json({
-        status: 'success',
-        message: 'Account created (Simulation - Auth Failed)',
-        integration: 'simulated',
-        salesforce: { instance_url: 'https://simulation.salesforce.com', account: simulatedAccount },
-        step: 'authentication',
-        demo_note: 'Simulation - Authentication failed',
-        auth_error: errorText,
-        debug: {
-          response_status: tokenResponse.status,
-          client_id_preview: clientId.substring(0, 10) + '...',
-          has_client_secret: !!clientSecret
-        }
-      });
-    }
-    
-    // Step 4: Parse token
-    const tokenData = await tokenResponse.json();
-    console.log('✅ VERBOSE: Auth successful!');
-    console.log('🏢 VERBOSE: Instance URL:', tokenData.instance_url);
-    
-    // Step 5: Create account
-    const accountData = {
-      Name: company,
-      Website: website || null,
-      Phone: phone || null,
-      Industry: industry || null,
-      AnnualRevenue: annualRevenue ? parseFloat(annualRevenue) : null,
-      NumberOfEmployees: numberOfEmployees ? parseInt(numberOfEmployees) : null,
-      Type: 'Prospect',
-      Description: 'VERBOSE DEBUG account created via Forms App',
-      LeadSource: 'Forms App Demo'
-    };
-    
-    console.log('📤 VERBOSE: Creating account with data:', JSON.stringify(accountData, null, 2));
-    
-    const accountResponse = await fetch(`${tokenData.instance_url}/services/data/v52.0/sobjects/Account/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${tokenData.access_token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(accountData)
-    });
-    
-    console.log('📥 VERBOSE: Account creation response status:', accountResponse.status);
-    console.log('📥 VERBOSE: Account creation response OK:', accountResponse.ok);
-    
-    if (!accountResponse.ok) {
-      const errorData = await accountResponse.json();
-      console.log('❌ VERBOSE: Account creation failed:', JSON.stringify(errorData, null, 2));
-      
-      const simulatedAccount = {
-        id: `SIM_CREATE_FAIL_${Date.now()}`,
-        name: company,
-        url: `https://simulation.salesforce.com/Account/${Date.now()}`,
-        api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
-      };
-
-      return res.json({
-        status: 'success',
-        message: 'Account created (Simulation - Create Failed)',
-        integration: 'simulated',
-        salesforce: { instance_url: 'https://simulation.salesforce.com', account: simulatedAccount },
-        step: 'account_creation',
-        demo_note: 'Simulation - Account creation failed',
-        create_error: errorData
-      });
-    }
-    
-    const accountResult = await accountResponse.json();
-    console.log('🎉 VERBOSE: REAL account created successfully!');
-    console.log('🆔 VERBOSE: Account ID:', accountResult.id);
-    
-    return res.json({
-      status: 'success',
-      message: 'REAL Account created successfully!',
-      integration: 'real',
-      salesforce: {
-        instance_url: tokenData.instance_url,
-        account: {
-          id: accountResult.id,
-          name: company,
-          url: `${tokenData.instance_url}/lightning/r/Account/${accountResult.id}/view`,
-          api_url: `${tokenData.instance_url}/services/data/v52.0/sobjects/Account/${accountResult.id}`
-        }
-      },
-      step: 'success',
-      demo_note: 'REAL Salesforce integration - account actually created!'
-    });
-    
-  } catch (error) {
-    console.log('💥 VERBOSE: Unexpected error:', error.message);
-    console.log('📚 VERBOSE: Error stack:', error.stack);
-    
-    const simulatedAccount = {
-      id: `SIM_ERROR_${Date.now()}`,
-      name: company || 'Unknown Company',
-      url: `https://simulation.salesforce.com/Account/${Date.now()}`,
-      api_url: `https://simulation.api.salesforce.com/Account/${Date.now()}`
-    };
-
-    res.json({
-      status: 'success',
-      message: 'Account created (Simulation - Unexpected Error)',
-      integration: 'simulated',
-      salesforce: { instance_url: 'https://simulation.salesforce.com', account: simulatedAccount },
-      step: 'error_handling',
-      demo_note: 'Simulation - Unexpected error occurred',
-      unexpected_error: error.message
-    });
-  }
-});
-
-/**
- * Simple test endpoint for quick frontend debugging (No Auth Required)
- * GET /api/salesforce/debug/quick-test
- */
-router.get('/debug/quick-test', async (req, res) => {
-  try {
-    const clientId = process.env.SALESFORCE_CLIENT_ID;
-    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
-    
-    console.log('🔧 QUICK TEST: Starting...');
-    console.log('🔧 Environment:', process.env.NODE_ENV);
-    console.log('🔧 Client ID available:', !!clientId);
-    console.log('🔧 Client Secret available:', !!clientSecret);
-    
-    // DETAILED ENVIRONMENT VARIABLE DEBUGGING
-    console.log('🔧 DETAILED ENV DEBUG:');
-    console.log('  - All SALESFORCE env vars:');
-    Object.keys(process.env).forEach(key => {
-      if (key.startsWith('SALESFORCE_')) {
-        console.log(`    ${key}: ${process.env[key] ? `"${process.env[key]}"` : 'NOT SET'}`);
-      }
-    });
-    
-    console.log('🔧 SPECIFIC SANDBOX ANALYSIS:');
-    console.log('  - SALESFORCE_IS_SANDBOX raw:', JSON.stringify(process.env.SALESFORCE_IS_SANDBOX));
-    console.log('  - Type:', typeof process.env.SALESFORCE_IS_SANDBOX);
-    console.log('  - Equals "true":', process.env.SALESFORCE_IS_SANDBOX === 'true');
-    console.log('  - Equals "false":', process.env.SALESFORCE_IS_SANDBOX === 'false');
-    console.log('  - Boolean conversion:', Boolean(process.env.SALESFORCE_IS_SANDBOX));
-    
-    if (!clientId || !clientSecret) {
-      return res.json({
-        status: 'error',
-        message: 'Missing credentials',
-        details: {
-          client_id: !!clientId,
-          client_secret: !!clientSecret,
-          environment: process.env.NODE_ENV
-        }
-      });
-    }
-    
-    console.log('🔧 Attempting auth with credentials...');
-    
-    // Use correct Salesforce endpoint based on environment
-    const salesforceEndpoint = getSalesforceAuthEndpoint();
-    
-    console.log('🔧 FINAL ENDPOINT SELECTION:');
-    console.log('🔧 Using endpoint:', salesforceEndpoint);
-    console.log('🔧 Grant type: client_credentials');
-    
-    const response = await fetch(salesforceEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: clientId,
-        client_secret: clientSecret,
-      })
-    });
-    
-    const responseText = await response.text();
-    
-    console.log('🔧 Response status:', response.status);
-    console.log('🔧 Response body:', responseText);
-    
-    if (response.ok) {
-      const data = JSON.parse(responseText);
-      return res.json({
-        status: 'success',
-        message: 'Authentication successful!',
-        instance_url: data.instance_url,
-        token_type: data.token_type,
-        details: {
-          status_code: response.status,
-          has_access_token: !!data.access_token
-        }
-      });
-    } else {
-      return res.json({
-        status: 'error',
-        message: 'Authentication failed',
-        error_response: responseText,
-        details: {
-          status_code: response.status,
-          client_id_preview: clientId.substring(0, 12) + '...',
-          grant_type_used: 'client_credentials',
-          recommendation: 'Your Connected App may not support client_credentials flow. Check OAuth settings in Salesforce.',
-          endpoint_used: salesforceEndpoint,
-          sandbox_detection: {
-            raw_value: process.env.SALESFORCE_IS_SANDBOX,
-            type: typeof process.env.SALESFORCE_IS_SANDBOX,
-            equals_true: process.env.SALESFORCE_IS_SANDBOX === 'true',
-            equals_false: process.env.SALESFORCE_IS_SANDBOX === 'false'
-          }
-        }
-      });
-    }
-    
-  } catch (error) {
-    console.log('🔧 QUICK TEST ERROR:', error);
-    res.json({
-      status: 'error',
-      message: 'Test failed',
+      message: 'Error creating Salesforce account',
       error: error.message
     });
   }
 });
 
 /**
- * Generate OAuth URL for manual authentication testing
- * GET /api/salesforce/debug/oauth-url
+ * 🔧 DEBUG CONFIGURATION
+ * GET /api/salesforce/debug
+ * Endpoint para debugging (solo en desarrollo)
  */
-router.get('/debug/oauth-url', (req, res) => {
+router.get('/debug', authenticateToken, async (req, res) => {
   try {
-    const clientId = process.env.SALESFORCE_CLIENT_ID;
-    
-    if (!clientId) {
-      return res.json({
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({
         status: 'error',
-        message: 'SALESFORCE_CLIENT_ID not configured'
+        message: 'Debug endpoint not available in production'
       });
     }
     
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
-    const authUrl = `${getSalesforceOAuthEndpoint()}?` +
-      `response_type=code&` +
-      `client_id=${clientId}&` +
-      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-      `scope=api%20refresh_token`;
+    console.log('🔧 [Debug] User:', req.user.id);
     
-    console.log('🔗 Generated OAuth URL for testing:', authUrl);
-    
-    res.json({
-      status: 'success',
-      oauth_url: authUrl,
-      instructions: 'Visit this URL in your browser to test OAuth flow',
-      redirect_uri: redirectUri,
-      client_id: clientId.substring(0, 12) + '...',
-      endpoint: getSalesforceOAuthEndpoint()
-    });
-    
-  } catch (error) {
-    console.error('OAuth URL generation error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to generate OAuth URL',
-      error: error.message
-    });
-  }
-});
-
-/**
- * Deep environment variables debugging (No Auth Required)
- * GET /api/salesforce/debug/env-deep
- */
-router.get('/debug/env-deep', (req, res) => {
-  try {
-    console.log('🔍 DEEP ENV DEBUG: Starting comprehensive environment analysis...');
-    
-    // Get all environment variables that start with SALESFORCE_
-    const salesforceEnvs = {};
-    Object.keys(process.env).forEach(key => {
-      if (key.startsWith('SALESFORCE_')) {
-        salesforceEnvs[key] = process.env[key];
-        console.log(`ENV: ${key} = "${process.env[key]}"`);
-      }
-    });
-    
-    // Focus on SALESFORCE_IS_SANDBOX
-    const sandboxVar = process.env.SALESFORCE_IS_SANDBOX;
-    console.log('🔍 SANDBOX VARIABLE DEEP ANALYSIS:');
-    console.log('  Raw value:', JSON.stringify(sandboxVar));
-    console.log('  Type:', typeof sandboxVar);
-    console.log('  Length:', sandboxVar ? sandboxVar.length : 'N/A');
-    console.log('  Trimmed:', sandboxVar ? `"${sandboxVar.trim()}"` : 'N/A');
-    console.log('  Lower case:', sandboxVar ? sandboxVar.toLowerCase() : 'N/A');
-    console.log('  === "true":', sandboxVar === 'true');
-    console.log('  === "false":', sandboxVar === 'false');
-    console.log('  Boolean(var):', Boolean(sandboxVar));
-    
-    // Test endpoint generation
-    console.log('🔍 ENDPOINT GENERATION TEST:');
-    const authEndpoint = getSalesforceAuthEndpoint();
-    const oauthEndpoint = getSalesforceOAuthEndpoint();
-    
-    const analysis = {
-      status: 'success',
-      message: 'Deep environment analysis complete',
+    const debugInfo = {
+      environment: process.env.NODE_ENV,
+      user: req.user.id,
       timestamp: new Date().toISOString(),
-      environment_variables: {
-        all_salesforce_vars: salesforceEnvs,
-        sandbox_analysis: {
-          raw_value: sandboxVar,
-          type: typeof sandboxVar,
-          length: sandboxVar ? sandboxVar.length : null,
-          trimmed: sandboxVar ? sandboxVar.trim() : null,
-          lowercase: sandboxVar ? sandboxVar.toLowerCase() : null,
-          equals_true: sandboxVar === 'true',
-          equals_false: sandboxVar === 'false',
-          boolean_conversion: Boolean(sandboxVar),
-          is_undefined: sandboxVar === undefined,
-          is_null: sandboxVar === null,
-          is_empty_string: sandboxVar === ''
-        }
+      salesforce_config: {
+        client_id: process.env.SALESFORCE_CLIENT_ID ? `${process.env.SALESFORCE_CLIENT_ID.substring(0, 20)}...` : 'NOT SET',
+        client_secret: process.env.SALESFORCE_CLIENT_SECRET ? 'SET' : 'NOT SET',
+        redirect_uri: process.env.SALESFORCE_REDIRECT_URI || 'DEFAULT',
+        is_sandbox: process.env.SALESFORCE_IS_SANDBOX || 'false',
+        login_url: process.env.SALESFORCE_LOGIN_URL || 'DEFAULT'
       },
-      endpoint_generation: {
-        auth_endpoint: authEndpoint,
-        oauth_endpoint: oauthEndpoint,
-        is_using_sandbox: authEndpoint.includes('test.salesforce.com'),
-        is_using_production: authEndpoint.includes('login.salesforce.com')
-      },
-      recommendations: []
+      endpoints: {
+        status: '/api/salesforce/status',
+        oauth_url: '/api/salesforce/oauth/url',
+        oauth_callback: '/api/salesforce/oauth/callback',
+        accounts_list: '/api/salesforce/accounts',
+        accounts_create: 'POST /api/salesforce/accounts'
+      }
     };
     
-    // Add recommendations based on analysis
-    if (!sandboxVar) {
-      analysis.recommendations.push('SALESFORCE_IS_SANDBOX is not set - this defaults to production (login.salesforce.com)');
-    } else if (sandboxVar === 'true') {
-      analysis.recommendations.push('SALESFORCE_IS_SANDBOX is "true" - using sandbox (test.salesforce.com)');
-    } else if (sandboxVar === 'false') {
-      analysis.recommendations.push('SALESFORCE_IS_SANDBOX is "false" - using production (login.salesforce.com)');
-    } else {
-      analysis.recommendations.push(`SALESFORCE_IS_SANDBOX has unexpected value "${sandboxVar}" - using production (login.salesforce.com)`);
-    }
-    
-    console.log('🔍 ANALYSIS COMPLETE');
-    console.log('Final endpoints:', { auth: authEndpoint, oauth: oauthEndpoint });
-    
-    res.json(analysis);
+    res.json({
+      status: 'success',
+      message: 'Debug information',
+      debug: debugInfo
+    });
     
   } catch (error) {
-    console.error('🔍 DEEP ENV DEBUG ERROR:', error);
+    console.error('❌ Debug error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Deep environment analysis failed',
-      error: error.message,
-      stack: error.stack
+      message: 'Error getting debug info',
+      error: error.message
     });
   }
 });
