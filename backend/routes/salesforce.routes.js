@@ -217,8 +217,10 @@ router.post('/demo-create-account', async (req, res) => {
     }
 
     console.log('🔐 Demo: Authenticating with REAL Salesforce...');
-    console.log('Client ID:', process.env.SALESFORCE_CLIENT_ID ? 'SET' : 'NOT SET');
-    console.log('Client Secret:', process.env.SALESFORCE_CLIENT_SECRET ? 'SET' : 'NOT SET');
+    console.log('Client ID:', process.env.SALESFORCE_CLIENT_ID ? `SET (${process.env.SALESFORCE_CLIENT_ID.substring(0, 10)}...)` : 'NOT SET');
+    console.log('Client Secret:', process.env.SALESFORCE_CLIENT_SECRET ? `SET (${process.env.SALESFORCE_CLIENT_SECRET.substring(0, 5)}...)` : 'NOT SET');
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Using endpoint: https://login.salesforce.com/services/oauth2/token');
 
     const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
       method: 'POST',
@@ -235,6 +237,16 @@ router.post('/demo-create-account', async (req, res) => {
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.text();
       console.error('❌ Demo: Salesforce authentication failed:', errorData);
+      console.error('Response status:', tokenResponse.status);
+      console.error('Response statusText:', tokenResponse.statusText);
+      
+      // Try to parse error details
+      try {
+        const errorJson = JSON.parse(errorData);
+        console.error('Error details:', errorJson);
+      } catch (e) {
+        console.error('Raw error response:', errorData);
+      }
       
       // Return simulated success instead of error for better UX
       console.log('🔄 Falling back to simulation mode due to auth failure');
@@ -255,7 +267,13 @@ router.post('/demo-create-account', async (req, res) => {
           account: simulatedAccount
         },
         demo_note: 'Simulation mode - Salesforce authentication failed',
-        original_error: errorData
+        original_error: errorData,
+        debug_info: {
+          status: tokenResponse.status,
+          statusText: tokenResponse.statusText,
+          client_id_set: !!process.env.SALESFORCE_CLIENT_ID,
+          client_secret_set: !!process.env.SALESFORCE_CLIENT_SECRET
+        }
       });
     }
 
@@ -755,6 +773,97 @@ router.get('/debug/config', (req, res) => {
     protocol: req.protocol,
     defaultRedirectUri: `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`
   });
+});
+
+/**
+ * Test Salesforce authentication with detailed logging
+ * GET /api/salesforce/debug/test-auth
+ */
+router.get('/debug/test-auth', async (req, res) => {
+  try {
+    console.log('🔍 Testing Salesforce authentication...');
+    
+    // Check credentials
+    const clientId = process.env.SALESFORCE_CLIENT_ID;
+    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
+    
+    if (!clientId || !clientSecret) {
+      return res.json({
+        status: 'error',
+        message: 'Missing credentials',
+        debug: {
+          clientId: clientId ? 'SET' : 'NOT SET',
+          clientSecret: clientSecret ? 'SET' : 'NOT SET'
+        }
+      });
+    }
+    
+    console.log('Client ID preview:', clientId.substring(0, 10) + '...');
+    console.log('Client Secret preview:', clientSecret.substring(0, 5) + '...');
+    
+    // Test authentication
+    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: clientId,
+        client_secret: clientSecret,
+      })
+    });
+    
+    const responseText = await tokenResponse.text();
+    
+    if (tokenResponse.ok) {
+      const tokenData = JSON.parse(responseText);
+      return res.json({
+        status: 'success',
+        message: 'Authentication successful!',
+        instance_url: tokenData.instance_url,
+        token_type: tokenData.token_type,
+        debug: {
+          response_status: tokenResponse.status,
+          has_access_token: !!tokenData.access_token
+        }
+      });
+    } else {
+      console.error('Auth failed:', responseText);
+      
+      try {
+        const errorData = JSON.parse(responseText);
+        return res.json({
+          status: 'error',
+          message: 'Authentication failed',
+          error: errorData,
+          debug: {
+            response_status: tokenResponse.status,
+            statusText: tokenResponse.statusText,
+            raw_response: responseText
+          }
+        });
+      } catch (e) {
+        return res.json({
+          status: 'error',
+          message: 'Authentication failed - Invalid response format',
+          debug: {
+            response_status: tokenResponse.status,
+            statusText: tokenResponse.statusText,
+            raw_response: responseText
+          }
+        });
+      }
+    }
+    
+  } catch (error) {
+    console.error('Debug test error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Test failed',
+      error: error.message
+    });
+  }
 });
 
 export default router;
