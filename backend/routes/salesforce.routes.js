@@ -363,6 +363,108 @@ router.get('/status', async (req, res) => {
 });
 
 /**
+ * Get created Salesforce accounts for the current user
+ * GET /api/salesforce/accounts
+ */
+router.get('/accounts', authenticateToken, async (req, res) => {
+  try {
+    const user = req.user;
+
+    // Check if Salesforce credentials are configured
+    const hasCredentials = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
+    
+    if (!hasCredentials) {
+      return res.json({
+        status: 'not_configured',
+        message: 'Salesforce not configured',
+        accounts: []
+      });
+    }
+
+    // Get access token
+    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: process.env.SALESFORCE_CLIENT_ID,
+        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      return res.json({
+        status: 'authentication_failed',
+        message: 'Failed to authenticate with Salesforce',
+        accounts: []
+      });
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+    const instanceUrl = tokenData.instance_url;
+
+    // Query accounts created by Forms App for this user
+    const query = `SELECT Id, Name, Industry, Phone, Website, NumberOfEmployees, AnnualRevenue, CreatedDate, Description 
+                   FROM Account 
+                   WHERE LeadSource = 'Forms App' OR LeadSource = 'Forms App Demo'
+                   ORDER BY CreatedDate DESC 
+                   LIMIT 50`;
+
+    const queryResponse = await fetch(`${instanceUrl}/services/data/v52.0/query?q=${encodeURIComponent(query)}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!queryResponse.ok) {
+      const errorData = await queryResponse.json();
+      return res.status(500).json({
+        status: 'error',
+        message: 'Failed to fetch accounts from Salesforce',
+        error: errorData
+      });
+    }
+
+    const queryResult = await queryResponse.json();
+    
+    // Format accounts for frontend
+    const accounts = queryResult.records.map(record => ({
+      id: record.Id,
+      name: record.Name,
+      company: record.Name,
+      industry: record.Industry,
+      phone: record.Phone,
+      website: record.Website,
+      employees: record.NumberOfEmployees,
+      revenue: record.AnnualRevenue,
+      created_date: record.CreatedDate,
+      description: record.Description,
+      url: `${instanceUrl}/lightning/r/Account/${record.Id}/view`
+    }));
+
+    res.json({
+      status: 'success',
+      accounts: accounts,
+      total: accounts.length,
+      instance_url: instanceUrl
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching Salesforce accounts:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error fetching Salesforce accounts',
+      error: error.message,
+      accounts: []
+    });
+  }
+});
+
+/**
  * OAuth Authorization Endpoint (Public - No Auth Required)
  * GET /api/salesforce/oauth/authorize
  */

@@ -218,6 +218,8 @@ const resources = {
       "integrations.tabs.dashboardDesc": "Overview and Salesforce metrics",
       "integrations.tabs.salesforce": "Salesforce CRM",
       "integrations.tabs.salesforceDesc": "Manual account and contact management",
+      "integrations.tabs.accounts": "Account Manager",
+      "integrations.tabs.accountsDesc": "View and manage created Salesforce accounts",
       "integrations.tabs.apiConfig": "API Configuration",
       "integrations.tabs.apiConfigDesc": "Token and credentials configuration",
       "integrations.tabs.security": "Security Settings",
@@ -453,6 +455,26 @@ const resources = {
             "cancel": "Cancel",
             "create": "Create Account",
             "creating": "Creating..."
+          },
+          "viewAccounts": "View Accounts",
+          "accountsPanel": {
+            "title": "Created Accounts",
+            "subtitle": "Manage your Salesforce accounts from here",
+            "noAccounts": "No accounts created yet",
+            "createFirst": "Create your first Salesforce account to get started"
+          },
+          "viewInSalesforce": "View in Salesforce",
+          "synced": "Synced",
+          "employees": "employees",
+          "noIndustry": "No industry",
+          "createdOn": "Created on",
+          "validation": {
+            "companyRequired": "Company name is required",
+            "companyTooShort": "Company name must be at least 2 characters",
+            "phoneInvalid": "Please enter a valid phone number",
+            "websiteInvalid": "Please enter a valid website URL (starting with http:// or https://)",
+            "revenueInvalid": "Please enter a valid revenue amount",
+            "formHasErrors": "Please correct the errors before submitting"
           }
         }
       },
@@ -699,6 +721,8 @@ const resources = {
       "integrations.tabs.dashboardDesc": "Descripción general y métricas de Salesforce",
       "integrations.tabs.salesforce": "Salesforce CRM",
       "integrations.tabs.salesforceDesc": "Gestión manual de cuentas y contactos",
+      "integrations.tabs.accounts": "Gestor de Cuentas",
+      "integrations.tabs.accountsDesc": "Ver y gestionar cuentas de Salesforce creadas",
       "integrations.tabs.apiConfig": "Configuración de API",
       "integrations.tabs.apiConfigDesc": "Configuración de token y credenciales",
       "integrations.tabs.security": "Configuración de Seguridad",
@@ -934,6 +958,26 @@ const resources = {
             "cancel": "Cancelar",
             "create": "Crear Cuenta",
             "creating": "Creando..."
+          },
+          "viewAccounts": "Ver Cuentas",
+          "accountsPanel": {
+            "title": "Cuentas Creadas",
+            "subtitle": "Gestiona tus cuentas de Salesforce desde aquí",
+            "noAccounts": "No hay cuentas creadas aún",
+            "createFirst": "Crea tu primera cuenta de Salesforce para comenzar"
+          },
+          "viewInSalesforce": "Ver en Salesforce",
+          "synced": "Sincronizado",
+          "employees": "empleados",
+          "noIndustry": "Sin industria",
+          "createdOn": "Creado el",
+          "validation": {
+            "companyRequired": "El nombre de la empresa es requerido",
+            "companyTooShort": "El nombre de la empresa debe tener al menos 2 caracteres",
+            "phoneInvalid": "Por favor ingrese un número de teléfono válido",
+            "websiteInvalid": "Por favor ingrese una URL válida (que comience con http:// o https://)",
+            "revenueInvalid": "Por favor ingrese una cantidad de ingresos válida",
+            "formHasErrors": "Por favor corrija los errores antes de enviar"
           }
         }
       },

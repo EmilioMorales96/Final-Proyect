@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   FiCloud, 
   FiPlus,
   FiSend,
   FiCheck,
-  FiUsers
+  FiUsers,
+  FiDatabase,
+  FiExternalLink,
+  FiRefreshCw,
+  FiXCircle,
+  FiCheckCircle,
+  FiLink,
+  FiTrendingUp
 } from 'react-icons/fi';
 import { 
   HiOutlineOfficeBuilding,
@@ -21,6 +28,9 @@ const SalesforceIntegration = () => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [createdAccounts, setCreatedAccounts] = useState([]);
+  const [showAccountsPanel, setShowAccountsPanel] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState({
     company: '',
     phone: '',
@@ -29,6 +39,31 @@ const SalesforceIntegration = () => {
     annualRevenue: '',
     numberOfEmployees: ''
   });
+
+  // Fetch created accounts on component mount
+  useEffect(() => {
+    fetchCreatedAccounts();
+  }, []);
+
+  const fetchCreatedAccounts = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/api/salesforce/accounts`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCreatedAccounts(data.accounts || []);
+      }
+    } catch (error) {
+      console.error('Error fetching accounts:', error);
+    }
+  };
 
   const industries = [
     { key: 'technology', label: t('industry.technology') },
@@ -57,10 +92,50 @@ const SalesforceIntegration = () => {
       ...prev,
       [name]: value
     }));
+
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.company.trim()) {
+      errors.company = t('integration.manual.validation.companyRequired');
+    } else if (formData.company.length < 2) {
+      errors.company = t('integration.manual.validation.companyTooShort');
+    }
+
+    if (formData.phone && !/^[+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/\s/g, ''))) {
+      errors.phone = t('integration.manual.validation.phoneInvalid');
+    }
+
+    if (formData.website && !/^https?:\/\/.+\..+/.test(formData.website)) {
+      errors.website = t('integration.manual.validation.websiteInvalid');
+    }
+
+    if (formData.annualRevenue && (isNaN(formData.annualRevenue) || Number(formData.annualRevenue) < 0)) {
+      errors.annualRevenue = t('integration.manual.validation.revenueInvalid');
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      toast.error(t('integration.manual.validation.formHasErrors'));
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -99,6 +174,9 @@ const SalesforceIntegration = () => {
           annualRevenue: '',
           numberOfEmployees: ''
         });
+        
+        // Refresh accounts list
+        fetchCreatedAccounts();
         
         // Show additional info in console for demo purposes
         console.log('🏢 REAL Salesforce Integration Result:', data);
@@ -178,21 +256,19 @@ const SalesforceIntegration = () => {
         </div>
       </div>
 
-      {/* Botón principal mejorado con animaciones y efectos avanzados */}
-      <div className="text-center py-12">
+      {/* Enhanced Action Buttons Section */}
+      <div className="flex justify-center space-x-6 py-8">
+        {/* Create Account Button */}
         <div className="relative inline-block">
           {/* Glow effect background */}
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-xl blur-lg opacity-30 group-hover:opacity-60 transition duration-500 animate-pulse"></div>
           
           <button
             onClick={() => setIsOpen(true)}
-            className="relative group inline-flex items-center justify-center space-x-4 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white px-12 py-6 rounded-xl font-bold text-xl shadow-2xl hover:shadow-blue-500/50 transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 active:scale-95 overflow-hidden"
+            className="relative group bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 text-white px-12 py-6 rounded-xl font-bold text-xl shadow-2xl hover:shadow-blue-500/50 dark:hover:shadow-blue-400/30 hover:scale-105 transform transition-all duration-500 border-2 border-white/20 backdrop-blur-sm overflow-hidden"
           >
-            {/* Animated background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transform -translate-x-full group-hover:translate-x-full transition-all duration-1000"></div>
+            {/* Animated background overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             
             {/* Icons and text with independent animations */}
             <div className="relative flex items-center space-x-4">
@@ -210,23 +286,162 @@ const SalesforceIntegration = () => {
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity duration-500"></div>
               </div>
             </div>
-            
-            {/* Floating particles effect */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-2 left-4 w-1 h-1 bg-white/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-all duration-700 delay-100"></div>
-              <div className="absolute top-4 right-6 w-1 h-1 bg-blue-200/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-all duration-700 delay-200"></div>
-              <div className="absolute bottom-3 left-8 w-1 h-1 bg-purple-200/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-all duration-700 delay-300"></div>
-            </div>
           </button>
         </div>
-        
-        {/* Tooltip mejorado con dark mode */}
-        <div className="mt-8 opacity-0 hover:opacity-100 transition-opacity duration-300">
-          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-lg">
-            💡 {t('integration.manual.subtitle')}
-          </p>
-        </div>
+
+        {/* View Accounts Button */}
+        <button
+          onClick={() => setShowAccountsPanel(!showAccountsPanel)}
+          className="group bg-gradient-to-r from-green-600 to-green-700 dark:from-green-700 dark:to-green-800 text-white px-8 py-6 rounded-xl font-bold text-xl shadow-xl hover:shadow-green-500/50 dark:hover:shadow-green-400/30 hover:scale-105 transform transition-all duration-300 border-2 border-white/20 backdrop-blur-sm flex items-center space-x-3"
+        >
+          <FiDatabase className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
+          <span>{t('integration.manual.viewAccounts')} ({createdAccounts.length})</span>
+          <FiExternalLink className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+        </button>
       </div>
+
+      {/* Accounts Management Panel */}
+      {showAccountsPanel && (
+        <div className="mt-12 bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow-2xl overflow-hidden">
+          <div className="bg-gradient-to-r from-green-600 to-green-700 dark:from-green-700 dark:to-green-800 px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-2 bg-white/20 rounded-xl">
+                  <FiDatabase className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">
+                    {t('integration.manual.accountsPanel.title')}
+                  </h3>
+                  <p className="text-green-100">
+                    {t('integration.manual.accountsPanel.subtitle')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={fetchCreatedAccounts}
+                  className="p-3 bg-white/20 rounded-xl hover:bg-white/30 transition-colors duration-200"
+                >
+                  <FiRefreshCw className="w-5 h-5 text-white" />
+                </button>
+                <button
+                  onClick={() => setShowAccountsPanel(false)}
+                  className="p-3 bg-white/20 rounded-xl hover:bg-white/30 transition-colors duration-200"
+                >
+                  <FiXCircle className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8">
+            {createdAccounts.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="inline-flex p-6 bg-gray-100 dark:bg-gray-700 rounded-2xl mb-6">
+                  <FiDatabase className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+                </div>
+                <h4 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                  {t('integration.manual.accountsPanel.noAccounts')}
+                </h4>
+                <p className="text-gray-500 dark:text-gray-500 mb-6">
+                  {t('integration.manual.accountsPanel.createFirst')}
+                </p>
+                <button
+                  onClick={() => {
+                    setShowAccountsPanel(false);
+                    setIsOpen(true);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors duration-200"
+                >
+                  {t('integration.manual.createButton')}
+                </button>
+              </div>
+            ) : (
+              <div className="grid gap-6">
+                {createdAccounts.map((account, index) => (
+                  <div 
+                    key={account.id || index}
+                    className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                          <HiOutlineOfficeBuilding className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <h5 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                            {account.name || account.company}
+                          </h5>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            ID: {account.id} • {account.industry || t('integration.manual.noIndustry')}
+                          </p>
+                          {account.created_date && (
+                            <p className="text-sm text-gray-500 dark:text-gray-500">
+                              {t('integration.manual.createdOn')}: {new Date(account.created_date).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        {account.url && (
+                          <a
+                            href={account.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                          >
+                            <FiExternalLink className="w-4 h-4" />
+                            <span>{t('integration.manual.viewInSalesforce')}</span>
+                          </a>
+                        )}
+                        <div className="flex items-center space-x-2 text-green-600 dark:text-green-400">
+                          <FiCheckCircle className="w-5 h-5" />
+                          <span className="text-sm font-medium">{t('integration.manual.synced')}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Account Details */}
+                    {(account.phone || account.website || account.employees || account.revenue) && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          {account.phone && (
+                            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                              <HiOutlinePhone className="w-4 h-4" />
+                              <span>{account.phone}</span>
+                            </div>
+                          )}
+                          {account.website && (
+                            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                              <FiLink className="w-4 h-4" />
+                              <a href={account.website} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-blue-400">
+                                {account.website}
+                              </a>
+                            </div>
+                          )}
+                          {account.employees && (
+                            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                              <HiOutlineUserGroup className="w-4 h-4" />
+                              <span>{account.employees} {t('integration.manual.employees')}</span>
+                            </div>
+                          )}
+                          {account.revenue && (
+                            <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+                              <FiTrendingUp className="w-4 h-4" />
+                              <span>${account.revenue}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Modal mejorado con mejor espaciado y dark mode */}
       <Modal open={isOpen} onClose={() => setIsOpen(false)}>
@@ -265,9 +480,23 @@ const SalesforceIntegration = () => {
                     value={formData.company}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-5 py-4 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-300 text-lg"
+                    className={`w-full px-5 py-4 border-2 ${
+                      formErrors.company 
+                        ? 'border-red-500 dark:border-red-400' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-4 ${
+                      formErrors.company 
+                        ? 'focus:ring-red-500/20 dark:focus:ring-red-400/20 focus:border-red-500 dark:focus:border-red-400' 
+                        : 'focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400'
+                    } transition-all duration-300 text-lg`}
                     placeholder={t('integration.manual.form.companyNamePlaceholder')}
                   />
+                  {formErrors.company && (
+                    <p className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                      <FiXCircle className="w-4 h-4 mr-1" />
+                      {formErrors.company}
+                    </p>
+                  )}
                 </div>
 
                 <div>

@@ -21,6 +21,7 @@ import {
 } from 'react-icons/hi';
 import SalesforceIntegration from '../../components/SalesforceIntegration';
 import SalesforceDashboard from '../../components/SalesforceDashboard';
+import SalesforceAccountManager from '../../components/SalesforceAccountManager';
 import FormInput from '../../components/forms/FormInput';
 import FormButton from '../../components/forms/FormButton';
 import FormCard from '../../components/forms/FormCard';
@@ -82,6 +83,14 @@ const AdminIntegrationsPage = () => {
       icon: <HiOutlineCloud className="w-6 h-6" />,
       color: 'indigo',
       component: <SalesforceIntegration />
+    },
+    {
+      id: 'accounts',
+      name: t('integrations.tabs.accounts'),
+      description: t('integrations.tabs.accountsDesc'),
+      icon: <FaChartLine className="w-6 h-6" />,
+      color: 'purple',
+      component: <SalesforceAccountManager />
     },
     {
       id: 'api-tokens',
