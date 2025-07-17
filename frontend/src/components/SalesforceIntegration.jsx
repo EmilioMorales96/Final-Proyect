@@ -98,62 +98,62 @@ const SalesforceIntegration = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header con información */}
-      <div className="text-center">
-        <div className="inline-flex p-4 bg-blue-100 rounded-full mb-4">
-          <FiCloud className="w-8 h-8 text-blue-600" />
+    <div className="space-y-12">
+      {/* Header con información - Más espaciado */}
+      <div className="text-center py-8">
+        <div className="inline-flex p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl mb-8 shadow-lg">
+          <FiCloud className="w-12 h-12 text-blue-600" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">
           {t('integration.manual.title')}
         </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <p className="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
           {t('integration.manual.subtitle')}
         </p>
       </div>
 
-      {/* Tarjetas de funcionalidades */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6 text-center hover:shadow-lg transition-shadow">
-          <div className="inline-flex p-3 bg-blue-100 rounded-lg mb-4">
-            <HiOutlineOfficeBuilding className="w-6 h-6 text-blue-600" />
+      {/* Tarjetas de funcionalidades - Con más espacio */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="group bg-white rounded-2xl border-2 border-gray-100 p-8 text-center hover:shadow-2xl hover:border-blue-200 transition-all duration-500 transform hover:-translate-y-2">
+          <div className="inline-flex p-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <HiOutlineOfficeBuilding className="w-8 h-8 text-blue-600" />
           </div>
-          <h3 className="font-semibold text-gray-900 mb-2">{t('integration.manual.features.createAccounts.title')}</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="font-bold text-xl text-gray-900 mb-4">{t('integration.manual.features.createAccounts.title')}</h3>
+          <p className="text-gray-600 leading-relaxed">
             {t('integration.manual.features.createAccounts.description')}
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 text-center hover:shadow-lg transition-shadow">
-          <div className="inline-flex p-3 bg-purple-100 rounded-lg mb-4">
-            <HiOutlineUserGroup className="w-6 h-6 text-purple-600" />
+        <div className="group bg-white rounded-2xl border-2 border-gray-100 p-8 text-center hover:shadow-2xl hover:border-purple-200 transition-all duration-500 transform hover:-translate-y-2">
+          <div className="inline-flex p-4 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <HiOutlineUserGroup className="w-8 h-8 text-purple-600" />
           </div>
-          <h3 className="font-semibold text-gray-900 mb-2">{t('integration.manual.features.manageContacts.title')}</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="font-bold text-xl text-gray-900 mb-4">{t('integration.manual.features.manageContacts.title')}</h3>
+          <p className="text-gray-600 leading-relaxed">
             {t('integration.manual.features.manageContacts.description')}
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 text-center hover:shadow-lg transition-shadow">
-          <div className="inline-flex p-3 bg-green-100 rounded-lg mb-4">
-            <FiCheck className="w-6 h-6 text-green-600" />
+        <div className="group bg-white rounded-2xl border-2 border-gray-100 p-8 text-center hover:shadow-2xl hover:border-green-200 transition-all duration-500 transform hover:-translate-y-2">
+          <div className="inline-flex p-4 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+            <FiCheck className="w-8 h-8 text-green-600" />
           </div>
-          <h3 className="font-semibold text-gray-900 mb-2">{t('integration.manual.features.autoValidation.title')}</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="font-bold text-xl text-gray-900 mb-4">{t('integration.manual.features.autoValidation.title')}</h3>
+          <p className="text-gray-600 leading-relaxed">
             {t('integration.manual.features.autoValidation.description')}
           </p>
         </div>
       </div>
 
       {/* Botón principal mejorado con animaciones y efectos avanzados */}
-      <div className="text-center">
+      <div className="text-center py-12">
         <div className="relative inline-block">
           {/* Glow effect background */}
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-xl blur-lg opacity-30 group-hover:opacity-60 transition duration-500 animate-pulse"></div>
           
           <button
             onClick={() => setIsOpen(true)}
-            className="relative group inline-flex items-center justify-center space-x-4 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white px-10 py-5 rounded-xl font-bold text-lg shadow-2xl hover:shadow-blue-500/50 transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 active:scale-95 overflow-hidden"
+            className="relative group inline-flex items-center justify-center space-x-4 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white px-12 py-6 rounded-xl font-bold text-xl shadow-2xl hover:shadow-blue-500/50 transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 active:scale-95 overflow-hidden"
           >
             {/* Animated background gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -164,17 +164,17 @@ const SalesforceIntegration = () => {
             {/* Icons and text with independent animations */}
             <div className="relative flex items-center space-x-4">
               <div className="relative">
-                <FiPlus className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
-                <div className="absolute inset-0 w-6 h-6 bg-white/20 rounded-full scale-0 group-hover:scale-150 group-hover:opacity-0 transition-all duration-500"></div>
+                <FiPlus className="w-7 h-7 group-hover:rotate-180 transition-transform duration-500" />
+                <div className="absolute inset-0 w-7 h-7 bg-white/20 rounded-full scale-0 group-hover:scale-150 group-hover:opacity-0 transition-all duration-500"></div>
               </div>
               
-              <span className="relative font-bold tracking-wide">
+              <span className="relative font-bold tracking-wide text-xl">
                 {t('integration.manual.createButton')}
               </span>
               
               <div className="relative">
-                <FiSend className="w-6 h-6 group-hover:translate-x-2 group-hover:-translate-y-1 transition-transform duration-500" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity duration-500"></div>
+                <FiSend className="w-7 h-7 group-hover:translate-x-2 group-hover:-translate-y-1 transition-transform duration-500" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity duration-500"></div>
               </div>
             </div>
             
@@ -188,40 +188,42 @@ const SalesforceIntegration = () => {
         </div>
         
         {/* Tooltip mejorado */}
-        <div className="mt-4 opacity-0 hover:opacity-100 transition-opacity duration-300">
-          <p className="text-sm text-gray-500 max-w-md mx-auto">
+        <div className="mt-8 opacity-0 hover:opacity-100 transition-opacity duration-300">
+          <p className="text-gray-500 max-w-md mx-auto text-lg">
             💡 {t('integration.manual.subtitle')}
           </p>
         </div>
       </div>
 
-      {/* Modal mejorado */}
+      {/* Modal mejorado con mejor espaciado */}
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-        <div className="p-8 max-w-2xl mx-auto">
-          {/* Header del modal */}
-          <div className="text-center mb-6">
-            <div className="inline-flex p-3 bg-blue-100 rounded-full mb-4">
-              <FiCloud className="w-8 h-8 text-blue-600" />
+        <div className="p-10 max-w-4xl mx-auto">
+          {/* Header del modal mejorado */}
+          <div className="text-center mb-10">
+            <div className="inline-flex p-5 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl mb-6 shadow-lg">
+              <FiCloud className="w-12 h-12 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
               {t('integration.manual.modal.title')}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
               {t('integration.manual.modal.subtitle')}
             </p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Información básica */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                <HiOutlineOfficeBuilding className="w-5 h-5 mr-2" />
+          <form onSubmit={handleSubmit} className="space-y-10">
+            {/* Información básica con mejor espaciado */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border border-gray-200">
+              <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center">
+                <div className="p-2 bg-blue-500 rounded-xl mr-4">
+                  <HiOutlineOfficeBuilding className="w-6 h-6 text-white" />
+                </div>
                 {t('integration.manual.sections.companyInfo')}
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
                     {t('integration.manual.form.companyName')} *
                   </label>
                   <input
@@ -230,20 +232,20 @@ const SalesforceIntegration = () => {
                     value={formData.company}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-lg"
                     placeholder={t('integration.manual.form.companyNamePlaceholder')}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
                     {t('integration.manual.form.industry')}
                   </label>
                   <select
                     name="industry"
                     value={formData.industry}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-lg"
                   >
                     <option value="">{t('integration.manual.form.selectIndustry')}</option>
                     {industries.map(industry => (
@@ -254,16 +256,18 @@ const SalesforceIntegration = () => {
               </div>
             </div>
 
-            {/* Información de contacto */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                <HiOutlinePhone className="w-5 h-5 mr-2" />
+            {/* Información de contacto con mejor espaciado */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border border-gray-200">
+              <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center">
+                <div className="p-2 bg-purple-500 rounded-xl mr-4">
+                  <HiOutlinePhone className="w-6 h-6 text-white" />
+                </div>
                 {t('integration.manual.sections.contactInfo')}
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
                     {t('integration.manual.form.phone')}
                   </label>
                   <input
@@ -271,13 +275,13 @@ const SalesforceIntegration = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 transition-all duration-300 text-lg"
                     placeholder={t('integration.manual.form.phonePlaceholder')}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
                     {t('integration.manual.form.website')}
                   </label>
                   <input
@@ -285,30 +289,32 @@ const SalesforceIntegration = () => {
                     name="website"
                     value={formData.website}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 transition-all duration-300 text-lg"
                     placeholder={t('integration.manual.form.websitePlaceholder')}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Información empresarial */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                <FiUsers className="w-5 h-5 mr-2" />
+            {/* Información empresarial con mejor espaciado */}
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border border-gray-200">
+              <h3 className="font-bold text-xl text-gray-900 mb-6 flex items-center">
+                <div className="p-2 bg-green-500 rounded-xl mr-4">
+                  <FiUsers className="w-6 h-6 text-white" />
+                </div>
                 {t('integration.manual.sections.businessData')}
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
                     {t('integration.manual.form.employees')}
                   </label>
                   <select
                     name="numberOfEmployees"
                     value={formData.numberOfEmployees}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 text-lg"
                   >
                     <option value="">{t('integration.manual.form.selectEmployees')}</option>
                     {employeeRanges.map(range => (
@@ -318,7 +324,7 @@ const SalesforceIntegration = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
                     {t('integration.manual.form.annualRevenue')}
                   </label>
                   <input
@@ -326,35 +332,35 @@ const SalesforceIntegration = () => {
                     name="annualRevenue"
                     value={formData.annualRevenue}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 text-lg"
                     placeholder={t('integration.manual.form.annualRevenuePlaceholder')}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Botones de acción */}
-            <div className="flex items-center justify-end space-x-4 pt-6 border-t">
+            {/* Botones de acción mejorados */}
+            <div className="flex items-center justify-end space-x-6 pt-8 border-t-2 border-gray-200">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 font-semibold text-lg"
               >
                 {t('integration.manual.buttons.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={loading || !formData.company}
-                className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 {loading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>{t('integration.manual.buttons.creating')}</span>
                   </>
                 ) : (
                   <>
-                    <FiCheck className="w-4 h-4" />
+                    <FiCheck className="w-5 h-5" />
                     <span>{t('integration.manual.buttons.create')}</span>
                   </>
                 )}

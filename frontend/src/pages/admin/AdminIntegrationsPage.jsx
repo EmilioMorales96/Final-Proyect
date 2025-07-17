@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { 
   FaCode, 
   FaCloud, 
@@ -8,21 +9,23 @@ import {
   FaChartLine,
   FaCog,
   FaLightbulb,
-  FaGlobe
+  FaArrowLeft
 } from 'react-icons/fa';
 import { 
   HiOutlineCloud,
   HiOutlineChartBar,
   HiOutlineCog,
   HiOutlineShieldCheck,
-  HiOutlineQuestionMarkCircle
+  HiOutlineQuestionMarkCircle,
+  HiArrowLeft
 } from 'react-icons/hi';
 import SalesforceIntegration from '../../components/SalesforceIntegration';
 import SalesforceDashboard from '../../components/SalesforceDashboard';
 import toast from 'react-hot-toast';
 
 const AdminIntegrationsPage = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Handle OAuth callback parameters
@@ -102,71 +105,72 @@ const AdminIntegrationsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header con gradiente Salesforce */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <HiOutlineCloud className="w-8 h-8" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">
-                  {t('integrations.title')}
-                </h1>
-                <p className="text-blue-100 mt-1">
-                  {t('integrations.subtitle')}
-                </p>
-              </div>
-            </div>
-            
-            {/* Language Selector */}
-            <div className="flex items-center space-x-2">
-              <FaGlobe className="w-5 h-5 text-blue-100" />
-              <select
-                value={i18n.language}
-                onChange={(e) => i18n.changeLanguage(e.target.value)}
-                className="bg-white/20 backdrop-blur-sm text-white border border-white/30 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Header mejorado con botón de retorno */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white shadow-2xl">
+        <div className="max-w-7xl mx-auto px-8 py-10">
+          {/* Botón de retorno y título */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-6">
+              {/* Botón de retorno al admin panel */}
+              <button
+                onClick={() => navigate('/admin')}
+                className="group flex items-center space-x-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl px-6 py-3 transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
-                <option value="es" className="text-gray-900">🇪🇸 Español</option>
-                <option value="en" className="text-gray-900">🇺🇸 English</option>
-              </select>
+                <HiArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
+                <span className="font-medium">{t('admin.back')}</span>
+              </button>
+              
+              <div className="flex items-center space-x-4">
+                <div className="p-4 bg-white/20 rounded-xl backdrop-blur-sm shadow-lg">
+                  <HiOutlineCloud className="w-10 h-10" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text">
+                    {t('integrations.title')}
+                  </h1>
+                  <p className="text-blue-100 mt-2 text-lg">
+                    {t('integrations.subtitle')}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
           
-          {/* Stats rápidas en el header */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-500 rounded-lg">
-                  <HiOutlineChartBar className="w-5 h-5 text-white" />
+          {/* Stats mejoradas con más espacio */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div className="bg-white/15 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/10">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-green-500/90 rounded-xl shadow-lg">
+                  <HiOutlineChartBar className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-100">{t('integrations.connectionStatus')}</p>
-                  <p className="text-lg font-semibold">{t('integrations.connected')}</p>
+                  <p className="text-sm text-blue-100 font-medium">{t('integrations.connectionStatus')}</p>
+                  <p className="text-xl font-bold text-white">{t('integrations.connected')}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-purple-500 rounded-lg">
-                  <FaLightbulb className="w-5 h-5 text-white" />
+            
+            <div className="bg-white/15 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/10">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-purple-500/90 rounded-xl shadow-lg">
+                  <FaLightbulb className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-100">{t('integrations.lastSync')}</p>
-                  <p className="text-lg font-semibold">2 {t('integrations.minutes')} {t('integrations.ago')}</p>
+                  <p className="text-sm text-blue-100 font-medium">{t('integrations.lastSync')}</p>
+                  <p className="text-xl font-bold text-white">2 {t('integrations.minutes')} {t('integrations.ago')}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-orange-500 rounded-lg">
-                  <FaChartLine className="w-5 h-5 text-white" />
+            
+            <div className="bg-white/15 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/10">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-orange-500/90 rounded-xl shadow-lg">
+                  <FaChartLine className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-blue-100">{t('integrations.syncedRecords')}</p>
-                  <p className="text-lg font-semibold">1,247</p>
+                  <p className="text-sm text-blue-100 font-medium">{t('integrations.syncedRecords')}</p>
+                  <p className="text-xl font-bold text-white">1,247</p>
                 </div>
               </div>
             </div>
@@ -174,52 +178,78 @@ const AdminIntegrationsPage = () => {
         </div>
       </div>
 
-      {/* Contenido principal */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Navegación con tarjetas mejoradas */}
-        <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Contenido principal con más espacio y mejor organización */}
+      <div className="max-w-7xl mx-auto px-8 py-12">
+        {/* Navegación con tarjetas mejoradas y más espaciadas */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+            Selecciona una sección para gestionar
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-8">
             {integrationTabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`group relative p-6 rounded-xl border-2 transition-all duration-300 text-left ${
+                className={`group relative p-8 rounded-2xl border-2 transition-all duration-500 text-left transform hover:scale-105 ${
                   activeTab === tab.id
-                    ? `border-${tab.color}-500 bg-${tab.color}-50 shadow-lg scale-105`
-                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md hover:-translate-y-1'
+                    ? `border-${tab.color}-500 bg-gradient-to-br from-${tab.color}-50 to-${tab.color}-100 shadow-xl scale-105 ring-4 ring-${tab.color}-200`
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-xl hover:-translate-y-2'
                 }`}
               >
-                <div className={`inline-flex p-3 rounded-lg mb-4 ${
+                <div className={`inline-flex p-4 rounded-xl mb-6 transition-all duration-300 ${
                   activeTab === tab.id 
-                    ? `bg-${tab.color}-500 text-white` 
-                    : `bg-gray-100 text-gray-600 group-hover:bg-${tab.color}-100 group-hover:text-${tab.color}-600`
+                    ? `bg-${tab.color}-500 text-white shadow-lg` 
+                    : `bg-gray-100 text-gray-600 group-hover:bg-${tab.color}-100 group-hover:text-${tab.color}-600 group-hover:scale-110`
                 }`}>
                   {tab.icon}
                 </div>
-                <h3 className={`font-semibold mb-2 ${
+                <h3 className={`font-bold text-lg mb-3 transition-colors duration-300 ${
                   activeTab === tab.id ? `text-${tab.color}-900` : 'text-gray-900'
                 }`}>
                   {tab.name}
                 </h3>
-                <p className={`text-sm ${
+                <p className={`text-sm leading-relaxed ${
                   activeTab === tab.id ? `text-${tab.color}-700` : 'text-gray-600'
                 }`}>
                   {tab.description}
                 </p>
                 
-                {/* Indicador activo */}
+                {/* Indicador activo mejorado */}
                 {activeTab === tab.id && (
-                  <div className={`absolute top-3 right-3 w-3 h-3 bg-${tab.color}-500 rounded-full animate-pulse`}></div>
+                  <div className={`absolute top-4 right-4 w-4 h-4 bg-${tab.color}-500 rounded-full animate-pulse shadow-lg`}>
+                    <div className={`absolute inset-0 w-4 h-4 bg-${tab.color}-400 rounded-full animate-ping`}></div>
+                  </div>
                 )}
+                
+                {/* Efecto de brillo en hover */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -skew-x-12 transform translate-x-full group-hover:translate-x-[-200%]"></div>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Panel de contenido con animación */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          <div className="p-8">
-            <div className="transition-all duration-500 ease-in-out">
+        {/* Panel de contenido con diseño mejorado */}
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden backdrop-blur-sm">
+          {/* Header del panel activo */}
+          <div className={`bg-gradient-to-r from-${integrationTabs.find(tab => tab.id === activeTab)?.color}-500 to-${integrationTabs.find(tab => tab.id === activeTab)?.color}-600 text-white p-8`}>
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                {integrationTabs.find(tab => tab.id === activeTab)?.icon}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">
+                  {integrationTabs.find(tab => tab.id === activeTab)?.name}
+                </h2>
+                <p className="text-white/90 mt-1">
+                  {integrationTabs.find(tab => tab.id === activeTab)?.description}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Contenido del panel con más padding */}
+          <div className="p-12">
+            <div className="transition-all duration-700 ease-in-out transform">
               {integrationTabs.find(tab => tab.id === activeTab)?.component}
             </div>
           </div>
