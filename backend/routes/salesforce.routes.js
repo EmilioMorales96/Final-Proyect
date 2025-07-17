@@ -362,4 +362,113 @@ router.get('/status', async (req, res) => {
   }
 });
 
+/**
+ * OAuth Authorization Endpoint (Public - No Auth Required)
+ * GET /api/salesforce/oauth/authorize
+ */
+router.get('/oauth/authorize', (req, res) => {
+  const clientId = process.env.SALESFORCE_CLIENT_ID;
+  const redirectUri = process.env.SALESFORCE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
+  
+  // Debug logging
+  console.log('🔧 OAuth Authorization Debug:');
+  console.log('CLIENT_ID:', clientId ? 'SET' : 'NOT SET');
+  console.log('REDIRECT_URI:', redirectUri);
+  console.log('Environment:', process.env.NODE_ENV);
+  
+  if (!clientId) {
+    return res.status(500).json({ 
+      error: 'Configuration Error',
+      message: 'SALESFORCE_CLIENT_ID not configured'
+    });
+  }
+  
+  const authUrl = `https://login.salesforce.com/services/oauth2/authorize?` +
+    `response_type=code&` +
+    `client_id=${clientId}&` +
+    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+    `scope=api%20refresh_token`;
+
+  console.log('🔗 Redirecting to Salesforce OAuth:', authUrl);
+  res.redirect(authUrl);
+});
+
+/**
+ * OAuth Callback Endpoint (Public - No Auth Required)
+ * GET /api/salesforce/oauth/callback
+ */
+router.get('/oauth/callback', async (req, res) => {
+  try {
+    const { code, error } = req.query;
+
+    if (error) {
+      console.error('OAuth error:', error);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=oauth_failed&details=${encodeURIComponent(error)}`);
+    }
+
+    if (!code) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=no_code`);
+    }
+
+    // Exchange code for access token
+    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
+    
+    console.log('🔄 Exchanging OAuth code for tokens...');
+    
+    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: process.env.SALESFORCE_CLIENT_ID,
+        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
+        redirect_uri: redirectUri,
+        code: code
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error('Token exchange error:', errorData);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=token_exchange_failed`);
+    }
+
+    const tokenData = await tokenResponse.json();
+    
+    console.log('✅ OAuth Success! Tokens received');
+    console.log('Instance URL:', tokenData.instance_url);
+    
+    // Here you would typically store the tokens in your database
+    // For now, we'll just redirect with success
+    
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?success=oauth_connected&instance=${encodeURIComponent(tokenData.instance_url)}`);
+
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/integrations?error=callback_failed`);
+  }
+});
+
+/**
+ * Debug endpoint for Salesforce configuration (Public - No Auth Required)
+ * GET /api/salesforce/debug/config
+ */
+router.get('/debug/config', (req, res) => {
+  res.json({
+    environment: process.env.NODE_ENV,
+    salesforce: {
+      clientId: process.env.SALESFORCE_CLIENT_ID ? 'SET' : 'NOT SET',
+      clientSecret: process.env.SALESFORCE_CLIENT_SECRET ? 'SET' : 'NOT SET',
+      redirectUri: process.env.SALESFORCE_REDIRECT_URI || 'NOT SET',
+      instanceUrl: process.env.SALESFORCE_INSTANCE_URL || 'NOT SET',
+      frontendUrl: process.env.FRONTEND_URL || 'NOT SET'
+    },
+    host: req.get('host'),
+    protocol: req.protocol,
+    defaultRedirectUri: `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`
+  });
+});
+
 export default router;
