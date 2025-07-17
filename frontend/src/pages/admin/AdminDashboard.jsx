@@ -12,7 +12,7 @@ export default function AdminDashboard() {
           <h1 className="text-4xl font-extrabold mb-10 text-center text-indigo-800 dark:text-indigo-300 drop-shadow">
             Admin Panel
           </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <Link
               to="/admin/users"
               className="rounded-xl shadow-lg dark:shadow-gray-900/50 bg-gradient-to-br from-indigo-100 to-white dark:from-indigo-900 dark:to-gray-800 hover:from-indigo-200 hover:to-indigo-50 dark:hover:from-indigo-800 dark:hover:to-gray-700 p-8 flex flex-col items-center transition-all duration-300 group border border-indigo-100 dark:border-indigo-800 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-xl dark:hover:shadow-gray-900/70"
@@ -53,6 +53,20 @@ export default function AdminDashboard() {
               </span>
               <span className="text-gray-600 dark:text-gray-400 text-center">
                 Manage Salesforce integration and API tokens.
+              </span>
+            </Link>
+            <Link
+              to="/admin/tickets"
+              className="rounded-xl shadow-lg dark:shadow-gray-900/50 bg-gradient-to-br from-green-100 to-white dark:from-green-900 dark:to-gray-800 hover:from-green-200 hover:to-green-50 dark:hover:from-green-800 dark:hover:to-gray-700 p-8 flex flex-col items-center transition-all duration-300 group border border-green-100 dark:border-green-800 hover:border-green-300 dark:hover:border-green-600 hover:shadow-xl dark:hover:shadow-gray-900/70"
+            >
+              <span className="text-6xl mb-4 transition-transform group-hover:scale-110 duration-300">
+                🎫
+              </span>
+              <span className="text-2xl font-semibold mb-2 text-green-800 dark:text-green-300">
+                Support Tickets
+              </span>
+              <span className="text-gray-600 dark:text-gray-400 text-center">
+                View support tickets and Dropbox files.
               </span>
             </Link>
           </div>

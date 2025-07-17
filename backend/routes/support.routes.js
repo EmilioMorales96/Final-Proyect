@@ -195,4 +195,73 @@ router.get('/test-connection', authenticateToken, async (req, res) => {
   }
 });
 
+/**
+ * List files in Dropbox FormsApp-Tickets folder
+ * GET /api/support/dropbox-files
+ */
+router.get('/dropbox-files', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
+    
+    if (!accessToken) {
+      return res.status(400).json({ message: 'Dropbox access token not configured' });
+    }
+
+    // List files in the FormsApp-Tickets folder
+    const listUrl = 'https://api.dropboxapi.com/2/files/list_folder';
+    
+    const response = await fetch(listUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        path: '/FormsApp-Tickets',
+        recursive: false,
+        include_media_info: false,
+        include_deleted: false,
+        include_has_explicit_shared_members: false
+      })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Filter only JSON files (support tickets)
+      const ticketFiles = result.entries.filter(file => 
+        file['.tag'] === 'file' && file.name.endsWith('.json')
+      );
+
+      res.json({
+        status: 'success',
+        message: `Found ${ticketFiles.length} ticket files in Dropbox`,
+        files: ticketFiles.map(file => ({
+          name: file.name,
+          size: file.size,
+          modified: file.server_modified,
+          path: file.path_display
+        })),
+        dropboxUrl: 'https://www.dropbox.com/home/Aplicaciones/FormsApp-PowerAutomate/FormsApp-Tickets',
+        totalFiles: ticketFiles.length
+      });
+    } else {
+      const errorText = await response.text();
+      throw new Error(`Dropbox API error: ${response.status} - ${errorText}`);
+    }
+
+  } catch (error) {
+    console.error('Dropbox files list error:', error);
+    res.status(500).json({ 
+      message: 'Failed to list Dropbox files', 
+      error: error.message 
+    });
+  }
+});
+
 export default router;

@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminIntegrationsPage from "./pages/admin/AdminIntegrationsPage.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import TemplateAnswersPage from "./pages/TemplateAnswersPage.jsx";
+import TicketViewer from "./components/TicketViewer.jsx";
 
 /**
  * Application routing configuration
@@ -63,6 +64,7 @@ export default function AppRoutes() {
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/forms" element={<AdminFormsPage />} />
           <Route path="/admin/integrations" element={<AdminIntegrationsPage />} />
+          <Route path="/admin/tickets" element={<TicketViewer />} />
         </Route>
       </Route>
     </Routes>
