@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   FiCloud, 
   FiRefreshCw,
@@ -23,6 +24,7 @@ import toast from 'react-hot-toast';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const SalesforceDashboard = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
 
   const [syncHistory, setSyncHistory] = useState([]);
@@ -112,7 +114,7 @@ const SalesforceDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        toast.error('Necesitas iniciar sesión primero');
+        toast.error(t('dashboard.salesforce.loginRequired'));
         return;
       }
 
@@ -130,17 +132,17 @@ const SalesforceDashboard = () => {
       });
 
       if (response.ok) {
-        toast.success('¡Conexión con Salesforce exitosa!');
+        toast.success(t('dashboard.salesforce.connectionSuccess'));
         setIsConnected(true);
         checkSalesforceConnection();
       } else if (response.status === 404) {
-        toast.error('Endpoint no encontrado. Verifica la configuración del servidor.');
+        toast.error(t('dashboard.salesforce.endpointNotFound'));
       } else {
         const data = await response.json();
-        toast.error(data.message || 'Error de conexión con Salesforce');
+        toast.error(data.message || t('dashboard.salesforce.connectionError'));
       }
     } catch (error) {
-      toast.error('Error de red. Verifica tu conexión.');
+      toast.error(t('dashboard.salesforce.networkError'));
       console.error('Connection test error:', error);
     } finally {
       setLoading(false);
@@ -150,19 +152,19 @@ const SalesforceDashboard = () => {
   const dashboardTabs = [
     {
       id: 'overview',
-      name: 'Vista General',
+      name: t('dashboard.salesforce.overview'),
       icon: <HiOutlineChartBar className="w-5 h-5" />,
       color: 'blue'
     },
     {
       id: 'connection',
-      name: 'Conexión',
+      name: t('dashboard.salesforce.connection'),
       icon: <FiLink className="w-5 h-5" />,
       color: 'purple'
     },
     {
       id: 'history',
-      name: 'Historial',
+      name: t('dashboard.salesforce.history'),
       icon: <FiClock className="w-5 h-5" />,
       color: 'indigo'
     }
@@ -204,10 +206,10 @@ const SalesforceDashboard = () => {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-medium text-yellow-900">
-                Salesforce no está conectado
+                {t('dashboard.salesforce.notConnected')}
               </h3>
               <p className="text-yellow-700 mt-1">
-                Para usar todas las funcionalidades, necesitas conectar tu cuenta de Salesforce.
+                {t('dashboard.salesforce.notConnectedDesc')}
               </p>
               <div className="mt-4 flex space-x-3">
                 <button
@@ -215,7 +217,7 @@ const SalesforceDashboard = () => {
                   className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
                 >
                   <FiUser className="w-4 h-4" />
-                  <span>Conectar con Salesforce</span>
+                  <span>{t('dashboard.salesforce.connectButton')}</span>
                   <FiExternalLink className="w-4 h-4" />
                 </button>
                 <button
@@ -224,7 +226,7 @@ const SalesforceDashboard = () => {
                   className="inline-flex items-center space-x-2 px-4 py-2 border border-yellow-300 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors"
                 >
                   <FiSettings className="w-4 h-4" />
-                  <span>Probar Conexión</span>
+                  <span>{t('dashboard.salesforce.testConnection')}</span>
                 </button>
               </div>
             </div>
@@ -235,33 +237,33 @@ const SalesforceDashboard = () => {
       {/* Estadísticas principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Cuentas Creadas"
+          title={t('dashboard.stats.accountsCreated')}
           value={stats?.totalAccounts || '0'}
-          subtitle="Total registradas"
+          subtitle={t('dashboard.stats.totalRegistered')}
           icon={<HiOutlineBriefcase className="w-6 h-6 text-blue-600" />}
           color="blue"
           trend={{ type: 'up', value: '+12%' }}
         />
         <StatCard
-          title="Contactos Activos"
+          title={t('dashboard.stats.activeContacts')}
           value={stats?.totalContacts || '0'}
-          subtitle="En Salesforce"
+          subtitle={t('dashboard.stats.inSalesforce')}
           icon={<HiOutlineUserGroup className="w-6 h-6 text-purple-600" />}
           color="purple"
           trend={{ type: 'up', value: '+8%' }}
         />
         <StatCard
-          title="Integraciones Exitosas"
+          title={t('dashboard.stats.successfulIntegrations')}
           value={stats?.successfulSyncs || '0'}
-          subtitle="Este mes"
+          subtitle={t('dashboard.stats.thisMonth')}
           icon={<FiDatabase className="w-6 h-6 text-green-600" />}
           color="green"
           trend={{ type: 'up', value: '+24%' }}
         />
         <StatCard
-          title="Tasa de Éxito"
+          title={t('dashboard.stats.successRate')}
           value="98.5%"
-          subtitle="Operaciones exitosas"
+          subtitle={t('dashboard.stats.successfulOperations')}
           icon={<FiZap className="w-6 h-6 text-orange-600" />}
           color="orange"
           trend={{ type: 'up', value: '+2%' }}
@@ -270,15 +272,15 @@ const SalesforceDashboard = () => {
 
       {/* Guía de inicio rápido */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Guía de Inicio Rápido</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('dashboard.quickStart.title')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-start space-x-3">
             <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-blue-600 font-semibold">1</span>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">Conectar Salesforce</h4>
-              <p className="text-sm text-gray-600">Autoriza la aplicación para acceder a tu cuenta de Salesforce</p>
+              <h4 className="font-medium text-gray-900">{t('dashboard.quickStart.step1.title')}</h4>
+              <p className="text-sm text-gray-600">{t('dashboard.quickStart.step1.desc')}</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
@@ -286,8 +288,8 @@ const SalesforceDashboard = () => {
               <span className="text-purple-600 font-semibold">2</span>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">Crear Cuentas</h4>
-              <p className="text-sm text-gray-600">Usa la integración manual para crear cuentas y contactos</p>
+              <h4 className="font-medium text-gray-900">{t('dashboard.quickStart.step2.title')}</h4>
+              <p className="text-sm text-gray-600">{t('dashboard.quickStart.step2.desc')}</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
@@ -295,8 +297,8 @@ const SalesforceDashboard = () => {
               <span className="text-green-600 font-semibold">3</span>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">Monitorear</h4>
-              <p className="text-sm text-gray-600">Revisa el historial y estadísticas de tus integraciones</p>
+              <h4 className="font-medium text-gray-900">{t('dashboard.quickStart.step3.title')}</h4>
+              <p className="text-sm text-gray-600">{t('dashboard.quickStart.step3.desc')}</p>
             </div>
           </div>
         </div>
@@ -307,7 +309,7 @@ const SalesforceDashboard = () => {
   const ConnectionTab = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Estado de Conexión con Salesforce</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('dashboard.connection.title')}</h3>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
@@ -315,13 +317,15 @@ const SalesforceDashboard = () => {
               <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
               <div>
                 <p className="font-medium text-gray-900">Estado de API</p>
-                <p className="text-sm text-gray-600">{isConnected ? 'Conectado y funcionando' : 'Desconectado o con errores'}</p>
+                <p className="text-sm text-gray-600">
+                  {isConnected ? t('dashboard.connection.connected') : t('dashboard.connection.disconnected')}
+                </p>
               </div>
             </div>
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
             }`}>
-              {isConnected ? 'Activo' : 'Inactivo'}
+              {isConnected ? t('dashboard.connection.statusActive') : t('dashboard.connection.statusInactive')}
             </span>
           </div>
 
@@ -331,7 +335,7 @@ const SalesforceDashboard = () => {
               className="w-full flex items-center justify-center space-x-2 p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <FiUser className="w-4 h-4" />
-              <span>Conectar / Reautorizar Salesforce</span>
+              <span>{t('dashboard.salesforce.connectButton')}</span>
               <FiExternalLink className="w-4 h-4" />
             </button>
             
@@ -341,7 +345,7 @@ const SalesforceDashboard = () => {
               className="w-full flex items-center justify-center space-x-2 p-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>{loading ? 'Probando...' : 'Probar Conexión'}</span>
+              <span>{loading ? t('dashboard.salesforce.testing') : t('dashboard.salesforce.testConnection')}</span>
             </button>
           </div>
         </div>
@@ -349,15 +353,15 @@ const SalesforceDashboard = () => {
 
       {/* Información de configuración */}
       <div className="bg-blue-50 rounded-xl p-6">
-        <h4 className="font-medium text-blue-900 mb-2">¿Necesitas ayuda con la configuración?</h4>
+        <h4 className="font-medium text-blue-900 mb-2">{t('dashboard.salesforce.configuration.helpTitle')}</h4>
         <p className="text-blue-700 text-sm mb-3">
-          Si tienes problemas para conectar con Salesforce, verifica que:
+          {t('dashboard.salesforce.configuration.helpText')}
         </p>
         <ul className="text-blue-700 text-sm space-y-1 list-disc list-inside">
-          <li>Tu Connected App esté configurado correctamente</li>
-          <li>Los permisos OAuth estén habilitados</li>
-          <li>La URL de callback esté registrada</li>
-          <li>Tengas acceso API en tu licencia de Salesforce</li>
+          <li>{t('dashboard.salesforce.configuration.connectedApp')}</li>
+          <li>{t('dashboard.salesforce.configuration.oauthPermissions')}</li>
+          <li>{t('dashboard.salesforce.configuration.callbackUrl')}</li>
+          <li>{t('dashboard.salesforce.configuration.apiAccess')}</li>
         </ul>
       </div>
     </div>
@@ -367,7 +371,7 @@ const SalesforceDashboard = () => {
     <div className="space-y-6">
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900">Historial de Actividades</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('dashboard.salesforce.history.title')}</h3>
         </div>
         
         {syncHistory.length > 0 ? (
@@ -375,10 +379,10 @@ const SalesforceDashboard = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resultado</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dashboard.salesforce.table.date')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dashboard.salesforce.table.type')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dashboard.salesforce.table.result')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('dashboard.salesforce.table.status')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -406,9 +410,9 @@ const SalesforceDashboard = () => {
         ) : (
           <div className="p-8 text-center">
             <FiClock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay actividad reciente</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('dashboard.salesforce.history.noActivity')}</h3>
             <p className="text-gray-600">
-              Las actividades de Salesforce aparecerán aquí una vez que comiences a usar la integración.
+              {t('dashboard.salesforce.history.noActivityDesc')}
             </p>
           </div>
         )}
