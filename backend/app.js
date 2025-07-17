@@ -22,6 +22,7 @@ import salesforceLogoutRoutes from './routes/salesforce-logout.routes.js';
 import salesforceDebugRoutes from './routes/salesforce-debug.routes.js';
 import salesforceVerifyRoutes from './routes/salesforce-verify.routes.js';
 import salesforceCallbackDebugRoutes from './routes/salesforce-callback-debug.routes.js';
+import salesforceFixRoutes from './routes/salesforce-fix.routes.js';
 import supportRoutes from './routes/support.routes.js';
 
 const app = express();
@@ -180,6 +181,7 @@ app.use('/api/salesforce/auth', salesforceLogoutRoutes);
 app.use('/api/salesforce', salesforceDebugRoutes);
 app.use('/api/salesforce/verify', salesforceVerifyRoutes);
 app.use('/api/salesforce', salesforceCallbackDebugRoutes);
+app.use('/api/salesforce/fix', salesforceFixRoutes);
 app.use('/api/support', supportRoutes);
 
 // Serve static files
