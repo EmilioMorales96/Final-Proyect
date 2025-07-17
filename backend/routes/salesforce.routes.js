@@ -449,10 +449,13 @@ router.get('/accounts', authenticateToken, async (req, res) => {
   try {
     const user = req.user;
 
+    console.log('🔍 Fetching Salesforce accounts for user:', user.email || user.username);
+
     // Check if Salesforce credentials are configured
     const hasCredentials = !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET);
     
     if (!hasCredentials) {
+      console.log('❌ No Salesforce credentials configured');
       return res.json({
         status: 'not_configured',
         message: 'Salesforce not configured',
@@ -474,10 +477,13 @@ router.get('/accounts', authenticateToken, async (req, res) => {
     });
 
     if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error('❌ Authentication failed:', errorData);
       return res.json({
         status: 'authentication_failed',
         message: 'Failed to authenticate with Salesforce',
-        accounts: []
+        accounts: [],
+        debug: { error: errorData }
       });
     }
 
@@ -485,14 +491,18 @@ router.get('/accounts', authenticateToken, async (req, res) => {
     const accessToken = tokenData.access_token;
     const instanceUrl = tokenData.instance_url;
 
-    // Query accounts created by Forms App for this user
-    const query = `SELECT Id, Name, Industry, Phone, Website, NumberOfEmployees, AnnualRevenue, CreatedDate, Description 
-                   FROM Account 
-                   WHERE LeadSource = 'Forms App' OR LeadSource = 'Forms App Demo'
-                   ORDER BY CreatedDate DESC 
-                   LIMIT 50`;
+    console.log('✅ Salesforce authentication successful');
+    console.log('🔗 Instance URL:', instanceUrl);
 
-    const queryResponse = await fetch(`${instanceUrl}/services/data/v52.0/query?q=${encodeURIComponent(query)}`, {
+    // Query ALL accounts first to see what's available, then filter
+    const broadQuery = `SELECT Id, Name, Industry, Phone, Website, NumberOfEmployees, AnnualRevenue, CreatedDate, Description, LeadSource, CreatedBy.Name 
+                        FROM Account 
+                        ORDER BY CreatedDate DESC 
+                        LIMIT 100`;
+
+    console.log('🔍 Executing broad query to see all accounts...');
+
+    const queryResponse = await fetch(`${instanceUrl}/services/data/v52.0/query?q=${encodeURIComponent(broadQuery)}`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
@@ -501,6 +511,7 @@ router.get('/accounts', authenticateToken, async (req, res) => {
 
     if (!queryResponse.ok) {
       const errorData = await queryResponse.json();
+      console.error('❌ Query failed:', errorData);
       return res.status(500).json({
         status: 'error',
         message: 'Failed to fetch accounts from Salesforce',
@@ -510,8 +521,28 @@ router.get('/accounts', authenticateToken, async (req, res) => {
 
     const queryResult = await queryResponse.json();
     
+    console.log(`📊 Total accounts found: ${queryResult.totalSize}`);
+    console.log(`📋 Records returned: ${queryResult.records.length}`);
+
+    // Log some sample records for debugging
+    if (queryResult.records.length > 0) {
+      console.log('📝 Sample accounts:');
+      queryResult.records.slice(0, 3).forEach((record, index) => {
+        console.log(`  ${index + 1}. ${record.Name} - LeadSource: ${record.LeadSource} - Created: ${record.CreatedDate}`);
+      });
+    }
+
+    // Filter accounts created by Forms App (more flexible filtering)
+    const formsAppAccounts = queryResult.records.filter(record => 
+      record.LeadSource === 'Forms App' || 
+      record.LeadSource === 'Forms App Demo' ||
+      (record.Description && record.Description.includes('Forms App'))
+    );
+
+    console.log(`🎯 Forms App accounts found: ${formsAppAccounts.length}`);
+    
     // Format accounts for frontend
-    const accounts = queryResult.records.map(record => ({
+    const accounts = formsAppAccounts.map(record => ({
       id: record.Id,
       name: record.Name,
       company: record.Name,
@@ -522,14 +553,46 @@ router.get('/accounts', authenticateToken, async (req, res) => {
       revenue: record.AnnualRevenue,
       created_date: record.CreatedDate,
       description: record.Description,
+      lead_source: record.LeadSource,
+      created_by: record.CreatedBy?.Name,
       url: `${instanceUrl}/lightning/r/Account/${record.Id}/view`
     }));
+
+    // Also include ALL recent accounts for debugging if no Forms App accounts found
+    const debugAccounts = formsAppAccounts.length === 0 ? 
+      queryResult.records.slice(0, 5).map(record => ({
+        id: record.Id,
+        name: record.Name,
+        company: record.Name,
+        industry: record.Industry,
+        phone: record.Phone,
+        website: record.Website,
+        employees: record.NumberOfEmployees,
+        revenue: record.AnnualRevenue,
+        created_date: record.CreatedDate,
+        description: record.Description,
+        lead_source: record.LeadSource,
+        created_by: record.CreatedBy?.Name,
+        url: `${instanceUrl}/lightning/r/Account/${record.Id}/view`
+      })) : [];
 
     res.json({
       status: 'success',
       accounts: accounts,
       total: accounts.length,
-      instance_url: instanceUrl
+      instance_url: instanceUrl,
+      debug: {
+        total_accounts_in_org: queryResult.totalSize,
+        records_queried: queryResult.records.length,
+        forms_app_accounts: formsAppAccounts.length,
+        recent_accounts_sample: debugAccounts,
+        query_used: broadQuery,
+        user_info: {
+          id: user.id,
+          email: user.email,
+          username: user.username
+        }
+      }
     });
 
   } catch (error) {
@@ -862,6 +925,124 @@ router.get('/debug/test-auth', async (req, res) => {
       status: 'error',
       message: 'Test failed',
       error: error.message
+    });
+  }
+});
+
+/**
+ * Debug endpoint to see all accounts in Salesforce (No Auth Required for debugging)
+ * GET /api/salesforce/debug/all-accounts
+ */
+router.get('/debug/all-accounts', async (req, res) => {
+  try {
+    console.log('🔍 Debugging: Fetching ALL Salesforce accounts...');
+    
+    // Check credentials
+    const clientId = process.env.SALESFORCE_CLIENT_ID;
+    const clientSecret = process.env.SALESFORCE_CLIENT_SECRET;
+    
+    if (!clientId || !clientSecret) {
+      return res.json({
+        status: 'error',
+        message: 'Missing Salesforce credentials',
+        accounts: []
+      });
+    }
+    
+    // Get access token
+    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: clientId,
+        client_secret: clientSecret,
+      })
+    });
+    
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      return res.json({
+        status: 'error',
+        message: 'Authentication failed',
+        error: errorData,
+        accounts: []
+      });
+    }
+    
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+    const instanceUrl = tokenData.instance_url;
+    
+    // Query ALL accounts with detailed info
+    const query = `SELECT Id, Name, Industry, Phone, Website, NumberOfEmployees, AnnualRevenue, CreatedDate, Description, LeadSource, CreatedBy.Name, CreatedBy.Email
+                   FROM Account 
+                   ORDER BY CreatedDate DESC 
+                   LIMIT 20`;
+    
+    const queryResponse = await fetch(`${instanceUrl}/services/data/v52.0/query?q=${encodeURIComponent(query)}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!queryResponse.ok) {
+      const errorData = await queryResponse.json();
+      return res.json({
+        status: 'error',
+        message: 'Query failed',
+        error: errorData,
+        accounts: []
+      });
+    }
+    
+    const queryResult = await queryResponse.json();
+    
+    // Format accounts with full debug info
+    const accounts = queryResult.records.map(record => ({
+      id: record.Id,
+      name: record.Name,
+      industry: record.Industry,
+      phone: record.Phone,
+      website: record.Website,
+      employees: record.NumberOfEmployees,
+      revenue: record.AnnualRevenue,
+      created_date: record.CreatedDate,
+      description: record.Description,
+      lead_source: record.LeadSource,
+      created_by_name: record.CreatedBy?.Name,
+      created_by_email: record.CreatedBy?.Email,
+      url: `${instanceUrl}/lightning/r/Account/${record.Id}/view`,
+      is_forms_app: (record.LeadSource === 'Forms App' || record.LeadSource === 'Forms App Demo' || 
+                     (record.Description && record.Description.includes('Forms App')))
+    }));
+    
+    const formsAppCount = accounts.filter(acc => acc.is_forms_app).length;
+    
+    res.json({
+      status: 'success',
+      message: `Found ${accounts.length} accounts total, ${formsAppCount} from Forms App`,
+      accounts: accounts,
+      total: accounts.length,
+      forms_app_accounts: formsAppCount,
+      instance_url: instanceUrl,
+      debug_info: {
+        total_in_org: queryResult.totalSize,
+        query_used: query,
+        timestamp: new Date().toISOString()
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Debug accounts error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Debug failed',
+      error: error.message,
+      accounts: []
     });
   }
 });
