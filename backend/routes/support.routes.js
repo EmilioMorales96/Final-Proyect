@@ -2,6 +2,7 @@ import express from 'express';
 import authenticateToken from '../middleware/auth.middleware.js';
 import fs from 'fs';
 import path from 'path';
+import { uploadToOneDrive, uploadToDropbox, testCloudStorageConnection } from '../utils/cloudStorage.js';
 
 const router = express.Router();
 
@@ -77,101 +78,48 @@ router.post('/create-ticket', authenticateToken, async (req, res) => {
 async function uploadToCloudStorage(filePath, fileName, ticketData) {
   try {
     const fileContent = fs.readFileSync(filePath);
+    let uploadResult = null;
 
     // Try OneDrive first
     if (process.env.ONEDRIVE_ACCESS_TOKEN) {
-      const oneDriveResult = await uploadToOneDrive(fileContent, fileName, ticketData);
-      if (oneDriveResult) return oneDriveResult;
+      try {
+        uploadResult = await uploadToOneDrive(fileContent, fileName, ticketData);
+        if (uploadResult && uploadResult.success) {
+          return uploadResult;
+        }
+      } catch (oneDriveError) {
+        console.error('OneDrive upload failed:', oneDriveError.message);
+      }
     }
 
     // Try Dropbox as fallback
     if (process.env.DROPBOX_ACCESS_TOKEN) {
-      const dropboxResult = await uploadToDropbox(fileContent, fileName, ticketData);
-      if (dropboxResult) return dropboxResult;
+      try {
+        uploadResult = await uploadToDropbox(fileContent, fileName, ticketData);
+        if (uploadResult && uploadResult.success) {
+          return uploadResult;
+        }
+      } catch (dropboxError) {
+        console.error('Dropbox upload failed:', dropboxError.message);
+      }
     }
 
-    return { success: false, message: 'No cloud storage configured' };
+    // If no tokens configured, return simulated success for development
+    if (!process.env.ONEDRIVE_ACCESS_TOKEN && !process.env.DROPBOX_ACCESS_TOKEN) {
+      console.log('⚠️ No cloud storage tokens configured - using simulated upload');
+      return {
+        success: true,
+        platform: 'Simulated',
+        message: 'File saved locally (cloud storage not configured)',
+        localPath: filePath
+      };
+    }
+
+    return { success: false, message: 'All cloud storage uploads failed' };
 
   } catch (error) {
     console.error('Cloud storage upload error:', error);
     return { success: false, error: error.message };
-  }
-}
-
-/**
- * Upload to OneDrive
- */
-async function uploadToOneDrive(fileContent, fileName, ticketData) {
-  try {
-    const uploadUrl = `https://graph.microsoft.com/v1.0/me/drive/root:/FormsApp-Tickets/${fileName}:/content`;
-    
-    const response = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${process.env.ONEDRIVE_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: fileContent
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      return {
-        success: true,
-        platform: 'OneDrive',
-        fileId: result.id,
-        webUrl: result.webUrl
-      };
-    } else {
-      const error = await response.text();
-      console.error('OneDrive upload error:', error);
-      return null;
-    }
-
-  } catch (error) {
-    console.error('OneDrive upload exception:', error);
-    return null;
-  }
-}
-
-/**
- * Upload to Dropbox
- */
-async function uploadToDropbox(fileContent, fileName, ticketData) {
-  try {
-    const uploadUrl = 'https://content.dropboxapi.com/2/files/upload';
-    
-    const response = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.DROPBOX_ACCESS_TOKEN}`,
-        'Content-Type': 'application/octet-stream',
-        'Dropbox-API-Arg': JSON.stringify({
-          path: `/FormsApp-Tickets/${fileName}`,
-          mode: 'add',
-          autorename: true
-        })
-      },
-      body: fileContent
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      return {
-        success: true,
-        platform: 'Dropbox',
-        fileId: result.id,
-        pathDisplay: result.path_display
-      };
-    } else {
-      const error = await response.text();
-      console.error('Dropbox upload error:', error);
-      return null;
-    }
-
-  } catch (error) {
-    console.error('Dropbox upload exception:', error);
-    return null;
   }
 }
 
@@ -215,6 +163,35 @@ router.get('/tickets', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error fetching tickets:', error);
     res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+});
+
+/**
+ * Test cloud storage connection
+ * GET /api/support/test-connection
+ */
+router.get('/test-connection', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const results = await testCloudStorageConnection();
+    
+    res.json({
+      status: 'completed',
+      message: 'Cloud storage connection test completed',
+      results: results,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Connection test error:', error);
+    res.status(500).json({ 
+      message: 'Connection test failed', 
+      error: error.message 
+    });
   }
 });
 

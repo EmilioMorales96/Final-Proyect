@@ -44,7 +44,12 @@ export const SupportTicket = ({ isOpen, onClose, templateTitle = null }) => {
         link: window.location.href,
         priority: formData.priority,
         summary: formData.summary,
-        admins: ['admin@formsapp.com'] // You can make this configurable
+        admins: ['admin@formsapp.com', 'support@formsapp.com'], // Multiple admin emails
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+        userId: user?.id || 'anonymous',
+        page: location.pathname,
+        referrer: document.referrer
       };
 
       const response = await fetch(`${API_URL}/api/support/create-ticket`, {

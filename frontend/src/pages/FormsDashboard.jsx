@@ -12,6 +12,7 @@ import TagCloud from "../components/TagCloud";
 import MarkdownRenderer from "../components/MarkdownRenderer";
 import confetti from "canvas-confetti";
 import { useTranslation } from "react-i18next";
+import FloatingHelpButton from "../components/FloatingHelpButton";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -557,6 +558,9 @@ export default function FormsDashboard() {
       />
 
       <TagCloud onTagClick={setTagFilter} />
+      
+      {/* Floating Help Button */}
+      <FloatingHelpButton />
     </div>
   );
 }

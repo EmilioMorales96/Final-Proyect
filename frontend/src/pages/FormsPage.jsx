@@ -17,6 +17,7 @@ import {
 import FormQuestion from "../components/FormQuestion";
 import DraggableQuestion from "../components/DraggableQuestion";
 import toast from "react-hot-toast";
+import FloatingHelpButton from "../components/FloatingHelpButton";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -544,6 +545,9 @@ export default function FormsPage() {
           </form>
         )}
       </div>
+      
+      {/* Floating Help Button */}
+      <FloatingHelpButton templateTitle={title} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TagCloud from "../components/TagCloud";
 import MarkdownRenderer from "../components/MarkdownRenderer";
+import FloatingHelpButton from "../components/FloatingHelpButton";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -193,6 +194,9 @@ export default function Home() {
           </div>
         </div>
       </div>
+      
+      {/* Floating Help Button */}
+      <FloatingHelpButton />
     </div>
   );
 }

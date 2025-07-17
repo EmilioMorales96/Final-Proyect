@@ -15,6 +15,7 @@ import tagRoutes from './routes/tag.routes.js';
 import formRoutes from './routes/form.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import salesforceRoutes from './routes/salesforce.routes.js';
+import supportRoutes from './routes/support.routes.js';
 
 const app = express();
 
@@ -168,6 +169,7 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/salesforce', salesforceRoutes);
+app.use('/api/support', supportRoutes);
 
 // Serve static files
 app.use('/uploads', express.static('uploads'));
