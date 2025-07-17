@@ -75,18 +75,20 @@ const SalesforceIntegration = () => {
       const data = await response.json();
 
       if (response.ok) {
-        const result = await response.json();
-        
-        // Show detailed success message
-        if (result.integration === 'simulated') {
-          toast.success(`✅ Demo: Account "${result.salesforce.account.name}" created in Salesforce!\n🎯 Account ID: ${result.salesforce.account.id}\n👤 Contact created successfully`, {
-            duration: 6000
-          });
-        } else {
-          toast.success(`✅ Real: Account "${result.salesforce.account.name}" created in Salesforce!\n🎯 Account ID: ${result.salesforce.account.id}`, {
-            duration: 6000
-          });
-        }
+        // Show success message for REAL integration only
+        toast.success(
+          `✅ REAL SALESFORCE: Account "${data.salesforce.account.name}" created!\n` +
+          `🎯 Account ID: ${data.salesforce.account.id}\n` +
+          `🔗 View in Salesforce: ${data.salesforce.account.url}`,
+          { 
+            duration: 10000,
+            style: {
+              background: '#d1fae5',
+              color: '#065f46',
+              border: '1px solid #10b981'
+            }
+          }
+        );
         
         setIsOpen(false);
         setFormData({
@@ -99,10 +101,26 @@ const SalesforceIntegration = () => {
         });
         
         // Show additional info in console for demo purposes
-        console.log('🏢 Salesforce Integration Result:', result);
-        
+        console.log('🏢 REAL Salesforce Integration Result:', data);
       } else {
-        toast.error(data.message || t('integration.manual.error'));
+        // Show error with setup instructions if Salesforce is not configured
+        if (data.setup_required) {
+          toast.error(
+            `❌ Salesforce Setup Required\n` +
+            `Please configure your Salesforce Connected App\n` +
+            `Check SALESFORCE_CONFIGURATION_GUIDE.md`,
+            { 
+              duration: 8000,
+              style: {
+                background: '#fef2f2',
+                color: '#991b1b',
+                border: '1px solid #f87171'
+              }
+            }
+          );
+        } else {
+          toast.error(data.message || t('integration.manual.error'));
+        }
       }
     } catch (error) {
       console.error('Salesforce integration error:', error);
