@@ -228,6 +228,8 @@ const resources = {
       // Salesforce Dashboard
       "dashboard.salesforce.title": "Salesforce Dashboard",
       "dashboard.salesforce.overview": "Overview",
+      "dashboard.salesforce.leadScoring": "Lead Scoring",
+      "dashboard.salesforce.emailAutomation": "Email Automation",
       "dashboard.salesforce.connection": "Connection",
       "dashboard.salesforce.history": "History",
       "dashboard.salesforce.notConnected": "Salesforce is not connected",
@@ -282,6 +284,156 @@ const resources = {
       "dashboard.salesforce.table.type": "Type",
       "dashboard.salesforce.table.result": "Result",
       "dashboard.salesforce.table.status": "Status",
+      
+      // Lead Scoring System
+      "leadScoring": {
+        "title": "Lead Scoring Dashboard",
+        "subtitle": "AI-powered lead qualification and routing",
+        "leadsAnalyzed": "leads analyzed",
+        "hotLeads": "Hot Leads (A)",
+        "warmLeads": "Warm Leads (B)", 
+        "coldLeads": "Cold Leads (C)",
+        "lowPriority": "Low Priority (D)",
+        "scoreRange": {
+          "hot": "Score 80+",
+          "warm": "Score 60-79",
+          "cold": "Score 40-59",
+          "low": "Score <40"
+        },
+        "priorityLeads": "Priority Leads",
+        "requiresAttention": "Requires immediate attention",
+        "noHighPriority": "No high-priority leads at the moment",
+        "leadDetails": "Lead Details",
+        "companyInformation": "Company Information",
+        "company": "Company",
+        "industry": "Industry", 
+        "employees": "Employees",
+        "revenue": "Revenue",
+        "scoreBreakdown": "Score Breakdown",
+        "industryScore": "Industry",
+        "companySizeScore": "Company Size",
+        "revenueScore": "Revenue",
+        "completionScore": "Form Completion",
+        "totalScore": "Total Score",
+        "actionRecommendations": "Action Recommendations",
+        "scheduledEmailSequence": "Scheduled Email Sequence",
+        "emailsScheduled": "emails scheduled",
+        "viewInSalesforce": "View in Salesforce",
+        "close": "Close"
+      },
+
+      // Email Automation System
+      "emailAutomation": {
+        "title": "Email Automation",
+        "subtitle": "Intelligent email sequences based on lead scoring",
+        "configure": "Configure",
+        "emailsSent": "Emails Sent",
+        "openRate": "Open Rate",
+        "clickRate": "Click Rate",
+        "conversionRate": "Conversion Rate",
+        "industryAverage": "Industry avg",
+        "leadsToCustomers": "Leads to customers",
+        "fromLastMonth": "from last month",
+        "activeSequences": "Active Sequences",
+        "running": "running",
+        "emailTemplates": "Email Templates",
+        "viewAll": "View All",
+        "variables": "variables",
+        "preview": "Preview",
+        "edit": "Edit",
+        "sequencePerformance": "Sequence Performance",
+        "sequence": "Sequence",
+        "sent": "Sent",
+        "replyRate": "Reply Rate",
+        "conversion": "Conversion",
+        "noActiveSequences": "No active email sequences",
+        "emailPreview": "Email Preview",
+        "subject": "Subject",
+        "sendTest": "Send Test",
+        "step": "Step",
+        "status": {
+          "active": "active",
+          "paused": "paused", 
+          "completed": "completed"
+        }
+      },
+      
+      // Salesforce Manual Integration
+      "integration": {
+        "manual": {
+          "title": "Salesforce CRM Integration",
+          "subtitle": "Create accounts and manage contacts in Salesforce directly from your application",
+          "createButton": "Create New Account",
+          "success": "Salesforce account created successfully!",
+          "error": "Error creating Salesforce account",
+          "connectionError": "Connection error. Please check your settings and try again.",
+          "modal": {
+            "title": "Create Salesforce Account",
+            "subtitle": "Fill in the company information to create a new account in Salesforce"
+          },
+          "features": {
+            "createAccounts": {
+              "title": "Create Company Accounts",
+              "description": "Add new companies directly to your Salesforce CRM with complete information"
+            },
+            "manageContacts": {
+              "title": "Manage Contacts",
+              "description": "Automatically create and link contacts to company accounts"
+            },
+            "autoValidation": {
+              "title": "Data Validation",
+              "description": "Automatic validation and enrichment of company data"
+            }
+          },
+          "sections": {
+            "companyInfo": "Company Information",
+            "contactInfo": "Contact Information", 
+            "businessData": "Business Data"
+          },
+          "form": {
+            "companyName": "Company Name",
+            "companyNamePlaceholder": "Enter company name",
+            "industry": "Industry",
+            "selectIndustry": "Select an industry",
+            "phone": "Phone Number",
+            "phonePlaceholder": "+1 (555) 123-4567",
+            "website": "Website",
+            "websitePlaceholder": "https://company.com",
+            "employees": "Number of Employees",
+            "selectEmployees": "Select employee range",
+            "annualRevenue": "Annual Revenue",
+            "annualRevenuePlaceholder": "Enter annual revenue in USD"
+          },
+          "buttons": {
+            "cancel": "Cancel",
+            "create": "Create Account",
+            "creating": "Creating..."
+          }
+        }
+      },
+
+      // Industries
+      "industry": {
+        "technology": "Technology",
+        "healthcare": "Healthcare",
+        "finance": "Finance",
+        "education": "Education",
+        "manufacturing": "Manufacturing",
+        "retail": "Retail",
+        "realEstate": "Real Estate",
+        "consulting": "Consulting",
+        "other": "Other"
+      },
+
+      // Employee ranges
+      "employees": {
+        "1-10": "1-10 employees",
+        "11-50": "11-50 employees", 
+        "51-200": "51-200 employees",
+        "201-500": "201-500 employees",
+        "501-1000": "501-1000 employees",
+        "1000+": "1000+ employees"
+      },
       
       // User blocking system
       "blocking": {
@@ -512,6 +664,8 @@ const resources = {
       // Salesforce Dashboard
       "dashboard.salesforce.title": "Panel de Salesforce",
       "dashboard.salesforce.overview": "Vista General",
+      "dashboard.salesforce.leadScoring": "Calificación de Leads",
+      "dashboard.salesforce.emailAutomation": "Automatización de Emails",
       "dashboard.salesforce.connection": "Conexión",
       "dashboard.salesforce.history": "Historial",
       "dashboard.salesforce.notConnected": "Salesforce no está conectado",
@@ -566,6 +720,156 @@ const resources = {
       "dashboard.salesforce.table.type": "Tipo",
       "dashboard.salesforce.table.result": "Resultado",
       "dashboard.salesforce.table.status": "Estado",
+      
+      // Lead Scoring System
+      "leadScoring": {
+        "title": "Dashboard de Calificación de Leads",
+        "subtitle": "Calificación y enrutamiento de leads con IA",
+        "leadsAnalyzed": "leads analizados",
+        "hotLeads": "Leads Calientes (A)",
+        "warmLeads": "Leads Tibios (B)", 
+        "coldLeads": "Leads Fríos (C)",
+        "lowPriority": "Baja Prioridad (D)",
+        "scoreRange": {
+          "hot": "Puntuación 80+",
+          "warm": "Puntuación 60-79",
+          "cold": "Puntuación 40-59",
+          "low": "Puntuación <40"
+        },
+        "priorityLeads": "Leads Prioritarios",
+        "requiresAttention": "Requiere atención inmediata",
+        "noHighPriority": "No hay leads de alta prioridad en este momento",
+        "leadDetails": "Detalles del Lead",
+        "companyInformation": "Información de la Empresa",
+        "company": "Empresa",
+        "industry": "Industria", 
+        "employees": "Empleados",
+        "revenue": "Ingresos",
+        "scoreBreakdown": "Desglose de Puntuación",
+        "industryScore": "Industria",
+        "companySizeScore": "Tamaño de Empresa",
+        "revenueScore": "Ingresos",
+        "completionScore": "Completado del Formulario",
+        "totalScore": "Puntuación Total",
+        "actionRecommendations": "Recomendaciones de Acción",
+        "scheduledEmailSequence": "Secuencia de Email Programada",
+        "emailsScheduled": "emails programados",
+        "viewInSalesforce": "Ver en Salesforce",
+        "close": "Cerrar"
+      },
+
+      // Email Automation System
+      "emailAutomation": {
+        "title": "Automatización de Emails",
+        "subtitle": "Secuencias inteligentes de email basadas en calificación de leads",
+        "configure": "Configurar",
+        "emailsSent": "Emails Enviados",
+        "openRate": "Tasa de Apertura",
+        "clickRate": "Tasa de Clics",
+        "conversionRate": "Tasa de Conversión",
+        "industryAverage": "Promedio industria",
+        "leadsToCustomers": "Leads a clientes",
+        "fromLastMonth": "del mes pasado",
+        "activeSequences": "Secuencias Activas",
+        "running": "ejecutándose",
+        "emailTemplates": "Plantillas de Email",
+        "viewAll": "Ver Todas",
+        "variables": "variables",
+        "preview": "Vista Previa",
+        "edit": "Editar",
+        "sequencePerformance": "Rendimiento de Secuencias",
+        "sequence": "Secuencia",
+        "sent": "Enviados",
+        "replyRate": "Tasa de Respuesta",
+        "conversion": "Conversión",
+        "noActiveSequences": "No hay secuencias de email activas",
+        "emailPreview": "Vista Previa del Email",
+        "subject": "Asunto",
+        "sendTest": "Enviar Prueba",
+        "step": "Paso",
+        "status": {
+          "active": "activo",
+          "paused": "pausado", 
+          "completed": "completado"
+        }
+      },
+      
+      // Salesforce Manual Integration
+      "integration": {
+        "manual": {
+          "title": "Integración con Salesforce CRM",
+          "subtitle": "Crea cuentas y gestiona contactos en Salesforce directamente desde tu aplicación",
+          "createButton": "Crear Nueva Cuenta",
+          "success": "¡Cuenta de Salesforce creada exitosamente!",
+          "error": "Error al crear cuenta en Salesforce",
+          "connectionError": "Error de conexión. Por favor verifica tu configuración e intenta de nuevo.",
+          "modal": {
+            "title": "Crear Cuenta en Salesforce",
+            "subtitle": "Completa la información de la empresa para crear una nueva cuenta en Salesforce"
+          },
+          "features": {
+            "createAccounts": {
+              "title": "Crear Cuentas de Empresa",
+              "description": "Añade nuevas empresas directamente a tu CRM de Salesforce con información completa"
+            },
+            "manageContacts": {
+              "title": "Gestionar Contactos",
+              "description": "Crea y vincula automáticamente contactos a las cuentas de empresa"
+            },
+            "autoValidation": {
+              "title": "Validación de Datos",
+              "description": "Validación automática y enriquecimiento de datos de empresa"
+            }
+          },
+          "sections": {
+            "companyInfo": "Información de la Empresa",
+            "contactInfo": "Información de Contacto", 
+            "businessData": "Datos Empresariales"
+          },
+          "form": {
+            "companyName": "Nombre de la Empresa",
+            "companyNamePlaceholder": "Ingrese el nombre de la empresa",
+            "industry": "Industria",
+            "selectIndustry": "Seleccione una industria",
+            "phone": "Número de Teléfono",
+            "phonePlaceholder": "+1 (555) 123-4567",
+            "website": "Sitio Web",
+            "websitePlaceholder": "https://empresa.com",
+            "employees": "Número de Empleados",
+            "selectEmployees": "Seleccione rango de empleados",
+            "annualRevenue": "Ingresos Anuales",
+            "annualRevenuePlaceholder": "Ingrese ingresos anuales en USD"
+          },
+          "buttons": {
+            "cancel": "Cancelar",
+            "create": "Crear Cuenta",
+            "creating": "Creando..."
+          }
+        }
+      },
+
+      // Industries
+      "industry": {
+        "technology": "Tecnología",
+        "healthcare": "Salud",
+        "finance": "Finanzas",
+        "education": "Educación",
+        "manufacturing": "Manufactura",
+        "retail": "Retail",
+        "realEstate": "Bienes Raíces",
+        "consulting": "Consultoría",
+        "other": "Otro"
+      },
+
+      // Employee ranges
+      "employees": {
+        "1-10": "1-10 empleados",
+        "11-50": "11-50 empleados", 
+        "51-200": "51-200 empleados",
+        "201-500": "201-500 empleados",
+        "501-1000": "501-1000 empleados",
+        "1000+": "1000+ empleados"
+      },
       
       // User blocking system
       "blocking": {

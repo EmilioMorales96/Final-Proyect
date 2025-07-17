@@ -12,14 +12,19 @@ import {
   FiLink,
   FiUser,
   FiSettings,
-  FiExternalLink
+  FiExternalLink,
+  FiTarget,
+  FiMail
 } from 'react-icons/fi';
 import { 
   HiOutlineChartBar,
   HiOutlineUserGroup,
-  HiOutlineBriefcase
+  HiOutlineBriefcase,
+  HiOutlinePhone
 } from 'react-icons/hi';
 import toast from 'react-hot-toast';
+import LeadScoringDashboard from './LeadScoringDashboard';
+import EmailAutomationDashboard from './EmailAutomationDashboard';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -157,10 +162,22 @@ const SalesforceDashboard = () => {
       color: 'blue'
     },
     {
+      id: 'leads',
+      name: t('dashboard.salesforce.leadScoring'),
+      icon: <FiTarget className="w-5 h-5" />,
+      color: 'green'
+    },
+    {
+      id: 'emails',
+      name: t('dashboard.salesforce.emailAutomation'),
+      icon: <FiMail className="w-5 h-5" />,
+      color: 'purple'
+    },
+    {
       id: 'connection',
       name: t('dashboard.salesforce.connection'),
       icon: <FiLink className="w-5 h-5" />,
-      color: 'purple'
+      color: 'orange'
     },
     {
       id: 'history',
@@ -421,9 +438,46 @@ const SalesforceDashboard = () => {
   );
 
   const renderTabContent = () => {
+    const mockLeads = [
+      {
+        id: 1,
+        company: 'Acme Corp',
+        industry: 'technology',
+        numberOfEmployees: '100-249',
+        annualRevenue: 2500000,
+        phone: '+1-555-0123',
+        website: 'https://acme.com',
+        behaviorData: { formSubmissions: 2, websiteVisits: 5, demoRequested: true }
+      },
+      {
+        id: 2,
+        company: 'TechStart Inc',
+        industry: 'technology',
+        numberOfEmployees: '50-99',
+        annualRevenue: 800000,
+        phone: '+1-555-0456',
+        website: 'https://techstart.com',
+        behaviorData: { formSubmissions: 1, websiteVisits: 3, demoRequested: false }
+      },
+      {
+        id: 3,
+        company: 'Global Manufacturing',
+        industry: 'manufacturing',
+        numberOfEmployees: '500-999',
+        annualRevenue: 15000000,
+        phone: '+1-555-0789',
+        website: 'https://globalmfg.com',
+        behaviorData: { formSubmissions: 1, websiteVisits: 8, demoRequested: true }
+      }
+    ];
+
     switch (activeTab) {
       case 'overview':
         return <OverviewTab />;
+      case 'leads':
+        return <LeadScoringDashboard leads={mockLeads} onLeadSelect={(lead) => console.log('Selected lead:', lead)} />;
+      case 'emails':
+        return <EmailAutomationDashboard leads={mockLeads} />;
       case 'connection':
         return <ConnectionTab />;
       case 'history':

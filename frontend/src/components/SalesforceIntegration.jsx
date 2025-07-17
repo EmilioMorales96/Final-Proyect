@@ -145,16 +145,54 @@ const SalesforceIntegration = () => {
         </div>
       </div>
 
-      {/* Botón principal mejorado */}
+      {/* Botón principal mejorado con animaciones y efectos avanzados */}
       <div className="text-center">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="group inline-flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-        >
-          <FiPlus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          <span>{t('integration.manual.createButton')}</span>
-          <FiSend className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
-        </button>
+        <div className="relative inline-block">
+          {/* Glow effect background */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-xl blur-lg opacity-30 group-hover:opacity-60 transition duration-500 animate-pulse"></div>
+          
+          <button
+            onClick={() => setIsOpen(true)}
+            className="relative group inline-flex items-center justify-center space-x-4 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 text-white px-10 py-5 rounded-xl font-bold text-lg shadow-2xl hover:shadow-blue-500/50 transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 active:scale-95 overflow-hidden"
+          >
+            {/* Animated background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-blue-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transform -translate-x-full group-hover:translate-x-full transition-all duration-1000"></div>
+            
+            {/* Icons and text with independent animations */}
+            <div className="relative flex items-center space-x-4">
+              <div className="relative">
+                <FiPlus className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
+                <div className="absolute inset-0 w-6 h-6 bg-white/20 rounded-full scale-0 group-hover:scale-150 group-hover:opacity-0 transition-all duration-500"></div>
+              </div>
+              
+              <span className="relative font-bold tracking-wide">
+                {t('integration.manual.createButton')}
+              </span>
+              
+              <div className="relative">
+                <FiSend className="w-6 h-6 group-hover:translate-x-2 group-hover:-translate-y-1 transition-transform duration-500" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-opacity duration-500"></div>
+              </div>
+            </div>
+            
+            {/* Floating particles effect */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-2 left-4 w-1 h-1 bg-white/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-all duration-700 delay-100"></div>
+              <div className="absolute top-4 right-6 w-1 h-1 bg-blue-200/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-all duration-700 delay-200"></div>
+              <div className="absolute bottom-3 left-8 w-1 h-1 bg-purple-200/60 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-all duration-700 delay-300"></div>
+            </div>
+          </button>
+        </div>
+        
+        {/* Tooltip mejorado */}
+        <div className="mt-4 opacity-0 hover:opacity-100 transition-opacity duration-300">
+          <p className="text-sm text-gray-500 max-w-md mx-auto">
+            💡 {t('integration.manual.subtitle')}
+          </p>
+        </div>
       </div>
 
       {/* Modal mejorado */}
@@ -209,7 +247,7 @@ const SalesforceIntegration = () => {
                   >
                     <option value="">{t('integration.manual.form.selectIndustry')}</option>
                     {industries.map(industry => (
-                      <option key={industry.value} value={industry.value}>{industry.label}</option>
+                      <option key={industry.key} value={industry.key}>{industry.label}</option>
                     ))}
                   </select>
                 </div>
@@ -274,7 +312,7 @@ const SalesforceIntegration = () => {
                   >
                     <option value="">{t('integration.manual.form.selectEmployees')}</option>
                     {employeeRanges.map(range => (
-                      <option key={range.value} value={range.value}>{range.label}</option>
+                      <option key={range.key} value={range.key}>{range.label}</option>
                     ))}
                   </select>
                 </div>
