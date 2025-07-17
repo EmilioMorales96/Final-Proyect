@@ -7,7 +7,7 @@ import session from 'express-session';
 import passport from './config/passport.js';
 import db from './models/index.js';
 
-// Import only essential routes to avoid path-to-regexp errors
+// Essential routes
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import likeRoutes from './routes/like.routes.js';
@@ -17,13 +17,12 @@ import templateRoutes from './routes/template.routes.js';
 import tagRoutes from './routes/tag.routes.js';
 import formRoutes from './routes/form.routes.js';
 import emailRoutes from './routes/email.routes.js';
+import supportRoutes from './routes/support.routes.js';
+
+// Salesforce routes
 import salesforceRoutes from './routes/salesforce.routes.js';
 import salesforceLogoutRoutes from './routes/salesforce-logout.routes.js';
-import salesforceDebugRoutes from './routes/salesforce-debug.routes.js';
-import salesforceVerifyRoutes from './routes/salesforce-verify.routes.js';
-import salesforceCallbackDebugRoutes from './routes/salesforce-callback-debug.routes.js';
-import salesforceFixRoutes from './routes/salesforce-fix.routes.js';
-import supportRoutes from './routes/support.routes.js';
+import salesforceBattleRoutes from './routes/salesforce-battle.routes.js';
 
 const app = express();
 
@@ -37,19 +36,19 @@ app.use(cors({
   credentials: true
 }));
 
-// Session configuration for Passport
+// Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-session-secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // Set to true in production with HTTPS
+  cookie: { secure: false }
 }));
 
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Basic health check
+// Health check endpoints
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Forms API is running', 
@@ -58,7 +57,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check endpoint
 app.get('/health', async (req, res) => {
   try {
     await db.sequelize.authenticate();
@@ -77,86 +75,7 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Debug endpoint for likes system
-app.get('/debug/likes', async (req, res) => {
-  try {
-    const { Like, Template, User } = db;
-    
-    const likeCount = await Like.count();
-    const templateCount = await Template.count();
-    const userCount = await User.count();
-    
-    res.json({
-      status: 'success',
-      timestamp: new Date().toISOString(),
-      statistics: {
-        totalLikes: likeCount,
-        totalTemplates: templateCount,
-        totalUsers: userCount
-      },
-      environment: {
-        nodeEnv: process.env.NODE_ENV,
-        hasDbConnection: true
-      }
-    });
-  } catch (error) {
-    console.error('Debug endpoint error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Debug endpoint failed',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
-// Migration endpoint to fix topic enum
-app.post('/debug/migrate-topic-enum', async (req, res) => {
-  try {
-    console.log('🔧 Starting topic enum migration...');
-    
-    // Step 1: Update all "General" values to "Other"
-    const [updateResult] = await db.sequelize.query(`
-      UPDATE "Templates" 
-      SET "topic" = 'Other' 
-      WHERE "topic" = 'General'
-      RETURNING id;
-    `);
-    
-    console.log(`Updated ${updateResult.length} templates from General to Other`);
-    
-    // Step 2: Update any other non-conforming values
-    const [updateResult2] = await db.sequelize.query(`
-      UPDATE "Templates" 
-      SET "topic" = 'Other' 
-      WHERE "topic" NOT IN ('Education', 'Quiz', 'Other')
-      RETURNING id;
-    `);
-    
-    console.log(`Updated ${updateResult2.length} templates with non-conforming values`);
-    
-    // Step 3: Try to sync the database now
-    await db.sequelize.sync({ alter: true });
-    
-    res.json({
-      status: 'success',
-      message: 'Topic enum migration completed successfully',
-      updatedRecords: updateResult.length + updateResult2.length,
-      timestamp: new Date().toISOString()
-    });
-    
-  } catch (error) {
-    console.error('Migration error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Migration failed',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
-
-// OAuth status check endpoint
+// OAuth status endpoint
 app.get('/api/auth/oauth/status', (req, res) => {
   res.json({
     google: {
@@ -166,7 +85,7 @@ app.get('/api/auth/oauth/status', (req, res) => {
   });
 });
 
-// Mount essential API routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/likes', likeRoutes);
@@ -176,15 +95,14 @@ app.use('/api/templates', templateRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/email', emailRoutes);
-app.use('/api/salesforce', salesforceRoutes);
-app.use('/api/salesforce/auth', salesforceLogoutRoutes);
-app.use('/api/salesforce', salesforceDebugRoutes);
-app.use('/api/salesforce/verify', salesforceVerifyRoutes);
-app.use('/api/salesforce', salesforceCallbackDebugRoutes);
-app.use('/api/salesforce/fix', salesforceFixRoutes);
 app.use('/api/support', supportRoutes);
 
-// Serve static files
+// Salesforce Routes
+app.use('/api/salesforce', salesforceRoutes);
+app.use('/api/salesforce/auth', salesforceLogoutRoutes);
+app.use('/api/salesforce', salesforceBattleRoutes);
+
+// Static files
 app.use('/uploads', express.static('uploads'));
 
 // 404 handler
