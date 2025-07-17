@@ -870,7 +870,20 @@ router.get('/debug/config', (req, res) => {
     },
     host: req.get('host'),
     protocol: req.protocol,
-    defaultRedirectUri: `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`
+    defaultRedirectUri: `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`,
+    headers: {
+      'x-forwarded-proto': req.get('x-forwarded-proto'),
+      'x-forwarded-host': req.get('x-forwarded-host'),
+      'host': req.get('host'),
+      'user-agent': req.get('user-agent')
+    },
+    url_analysis: {
+      original_url: req.originalUrl,
+      base_url: req.baseUrl,
+      full_url: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+      is_https_forwarded: req.get('x-forwarded-proto') === 'https',
+      should_use_https: req.get('x-forwarded-proto') === 'https' || req.protocol === 'https'
+    }
   });
 });
 
