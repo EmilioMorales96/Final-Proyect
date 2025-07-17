@@ -4,6 +4,26 @@ import authenticateToken from '../middleware/auth.middleware.js';
 const router = express.Router();
 
 /**
+ * Get the correct Salesforce authentication endpoint based on environment
+ */
+function getSalesforceAuthEndpoint() {
+  const isSandbox = process.env.SALESFORCE_IS_SANDBOX === 'true';
+  return isSandbox 
+    ? 'https://test.salesforce.com/services/oauth2/token'
+    : 'https://login.salesforce.com/services/oauth2/token';
+}
+
+/**
+ * Get the correct Salesforce OAuth authorize endpoint based on environment
+ */
+function getSalesforceOAuthEndpoint() {
+  const isSandbox = process.env.SALESFORCE_IS_SANDBOX === 'true';
+  return isSandbox 
+    ? 'https://test.salesforce.com/services/oauth2/authorize'
+    : 'https://login.salesforce.com/services/oauth2/authorize';
+}
+
+/**
  * REAL Salesforce Integration - Create Account and Contact
  * POST /api/salesforce/create-account
  * NO SIMULATION - ONLY REAL SALESFORCE INTEGRATION
@@ -34,7 +54,10 @@ router.post('/create-account', authenticateToken, async (req, res) => {
     console.log('🔐 Authenticating with Salesforce...');
 
     // Get Salesforce access token
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    const authEndpoint = getSalesforceAuthEndpoint();
+    console.log('Using auth endpoint:', authEndpoint);
+    
+    const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -220,9 +243,12 @@ router.post('/demo-create-account', async (req, res) => {
     console.log('Client ID:', process.env.SALESFORCE_CLIENT_ID ? `SET (${process.env.SALESFORCE_CLIENT_ID.substring(0, 10)}...)` : 'NOT SET');
     console.log('Client Secret:', process.env.SALESFORCE_CLIENT_SECRET ? `SET (${process.env.SALESFORCE_CLIENT_SECRET.substring(0, 5)}...)` : 'NOT SET');
     console.log('Environment:', process.env.NODE_ENV);
-    console.log('Using endpoint: https://login.salesforce.com/services/oauth2/token');
+    console.log('Is Sandbox:', process.env.SALESFORCE_IS_SANDBOX === 'true');
+    
+    const authEndpoint = getSalesforceAuthEndpoint();
+    console.log('Using endpoint:', authEndpoint);
 
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -396,7 +422,8 @@ router.get('/status', async (req, res) => {
     }
 
     // Test REAL authentication
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    const authEndpoint = getSalesforceAuthEndpoint();
+    const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -464,7 +491,8 @@ router.get('/accounts', authenticateToken, async (req, res) => {
     }
 
     // Get access token
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    const authEndpoint = getSalesforceAuthEndpoint();
+    const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -627,7 +655,7 @@ router.get('/oauth/authorize', (req, res) => {
     });
   }
   
-  const authUrl = `https://login.salesforce.com/services/oauth2/authorize?` +
+  const authUrl = `${getSalesforceOAuthEndpoint()}?` +
     `response_type=code&` +
     `client_id=${clientId}&` +
     `redirect_uri=${encodeURIComponent(redirectUri)}&` +
@@ -659,7 +687,8 @@ router.get('/oauth/callback', async (req, res) => {
     
     console.log('🔄 Exchanging OAuth code for tokens...');
     
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    const authEndpoint = getSalesforceAuthEndpoint();
+    const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -718,7 +747,8 @@ router.get('/stats', authenticateToken, async (req, res) => {
     }
 
     // Test connection
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    const authEndpoint = getSalesforceAuthEndpoint();
+    const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -865,7 +895,10 @@ router.get('/debug/test-auth', async (req, res) => {
     console.log('Client Secret preview:', clientSecret.substring(0, 5) + '...');
     
     // Test authentication
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    const authEndpoint = getSalesforceAuthEndpoint();
+    console.log('Using auth endpoint:', authEndpoint);
+    
+    const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -950,7 +983,8 @@ router.get('/debug/all-accounts', async (req, res) => {
     }
     
     // Get access token
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    const authEndpoint = getSalesforceAuthEndpoint();
+    const tokenResponse = await fetch(authEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -1099,7 +1133,12 @@ router.post('/debug/create-account-verbose', async (req, res) => {
     console.log('🔑 VERBOSE: Attempting authentication...');
     console.log('Using Client ID:', clientId.substring(0, 15) + '...');
     
-    const tokenResponse = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    // Use correct Salesforce endpoint based on environment
+    const salesforceEndpoint = getSalesforceAuthEndpoint();
+    
+    console.log('🔗 VERBOSE: Using endpoint:', salesforceEndpoint);
+    
+    const tokenResponse = await fetch(salesforceEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -1265,7 +1304,12 @@ router.get('/debug/quick-test', async (req, res) => {
     
     console.log('🔧 Attempting auth with credentials...');
     
-    const response = await fetch('https://login.salesforce.com/services/oauth2/token', {
+    // Use correct Salesforce endpoint based on environment
+    const salesforceEndpoint = getSalesforceAuthEndpoint();
+    
+    console.log('🔧 Using endpoint:', salesforceEndpoint);
+    
+    const response = await fetch(salesforceEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
