@@ -7,20 +7,45 @@ const router = express.Router();
  * Get the correct Salesforce authentication endpoint based on environment
  */
 function getSalesforceAuthEndpoint() {
+  const rawValue = process.env.SALESFORCE_IS_SANDBOX;
   const isSandbox = process.env.SALESFORCE_IS_SANDBOX === 'true';
-  return isSandbox 
+  
+  console.log('🔍 DEBUG getSalesforceAuthEndpoint():');
+  console.log('  - Raw SALESFORCE_IS_SANDBOX value:', JSON.stringify(rawValue));
+  console.log('  - Type of raw value:', typeof rawValue);
+  console.log('  - isSandbox boolean result:', isSandbox);
+  console.log('  - Comparison (rawValue === "true"):', rawValue === 'true');
+  
+  const endpoint = isSandbox 
     ? 'https://test.salesforce.com/services/oauth2/token'
     : 'https://login.salesforce.com/services/oauth2/token';
+    
+  console.log('  - Selected endpoint:', endpoint);
+  console.log('  - Will use SANDBOX?', isSandbox ? 'YES' : 'NO');
+  
+  return endpoint;
 }
 
 /**
  * Get the correct Salesforce OAuth authorize endpoint based on environment
  */
 function getSalesforceOAuthEndpoint() {
+  const rawValue = process.env.SALESFORCE_IS_SANDBOX;
   const isSandbox = process.env.SALESFORCE_IS_SANDBOX === 'true';
-  return isSandbox 
+  
+  console.log('🔍 DEBUG getSalesforceOAuthEndpoint():');
+  console.log('  - Raw SALESFORCE_IS_SANDBOX value:', JSON.stringify(rawValue));
+  console.log('  - Type of raw value:', typeof rawValue);
+  console.log('  - isSandbox boolean result:', isSandbox);
+  
+  const endpoint = isSandbox 
     ? 'https://test.salesforce.com/services/oauth2/authorize'
     : 'https://login.salesforce.com/services/oauth2/authorize';
+    
+  console.log('  - Selected endpoint:', endpoint);
+  console.log('  - Will use SANDBOX?', isSandbox ? 'YES' : 'NO');
+  
+  return endpoint;
 }
 
 /**
@@ -1309,6 +1334,22 @@ router.get('/debug/quick-test', async (req, res) => {
     console.log('🔧 Client ID available:', !!clientId);
     console.log('🔧 Client Secret available:', !!clientSecret);
     
+    // DETAILED ENVIRONMENT VARIABLE DEBUGGING
+    console.log('🔧 DETAILED ENV DEBUG:');
+    console.log('  - All SALESFORCE env vars:');
+    Object.keys(process.env).forEach(key => {
+      if (key.startsWith('SALESFORCE_')) {
+        console.log(`    ${key}: ${process.env[key] ? `"${process.env[key]}"` : 'NOT SET'}`);
+      }
+    });
+    
+    console.log('🔧 SPECIFIC SANDBOX ANALYSIS:');
+    console.log('  - SALESFORCE_IS_SANDBOX raw:', JSON.stringify(process.env.SALESFORCE_IS_SANDBOX));
+    console.log('  - Type:', typeof process.env.SALESFORCE_IS_SANDBOX);
+    console.log('  - Equals "true":', process.env.SALESFORCE_IS_SANDBOX === 'true');
+    console.log('  - Equals "false":', process.env.SALESFORCE_IS_SANDBOX === 'false');
+    console.log('  - Boolean conversion:', Boolean(process.env.SALESFORCE_IS_SANDBOX));
+    
     if (!clientId || !clientSecret) {
       return res.json({
         status: 'error',
@@ -1326,6 +1367,7 @@ router.get('/debug/quick-test', async (req, res) => {
     // Use correct Salesforce endpoint based on environment
     const salesforceEndpoint = getSalesforceAuthEndpoint();
     
+    console.log('🔧 FINAL ENDPOINT SELECTION:');
     console.log('🔧 Using endpoint:', salesforceEndpoint);
     console.log('🔧 Grant type: client_credentials');
     
@@ -1365,7 +1407,14 @@ router.get('/debug/quick-test', async (req, res) => {
           status_code: response.status,
           client_id_preview: clientId.substring(0, 12) + '...',
           grant_type_used: 'client_credentials',
-          recommendation: 'Your Connected App may not support client_credentials flow. Check OAuth settings in Salesforce.'
+          recommendation: 'Your Connected App may not support client_credentials flow. Check OAuth settings in Salesforce.',
+          endpoint_used: salesforceEndpoint,
+          sandbox_detection: {
+            raw_value: process.env.SALESFORCE_IS_SANDBOX,
+            type: typeof process.env.SALESFORCE_IS_SANDBOX,
+            equals_true: process.env.SALESFORCE_IS_SANDBOX === 'true',
+            equals_false: process.env.SALESFORCE_IS_SANDBOX === 'false'
+          }
         }
       });
     }
@@ -1419,6 +1468,96 @@ router.get('/debug/oauth-url', (req, res) => {
       status: 'error',
       message: 'Failed to generate OAuth URL',
       error: error.message
+    });
+  }
+});
+
+/**
+ * Deep environment variables debugging (No Auth Required)
+ * GET /api/salesforce/debug/env-deep
+ */
+router.get('/debug/env-deep', (req, res) => {
+  try {
+    console.log('🔍 DEEP ENV DEBUG: Starting comprehensive environment analysis...');
+    
+    // Get all environment variables that start with SALESFORCE_
+    const salesforceEnvs = {};
+    Object.keys(process.env).forEach(key => {
+      if (key.startsWith('SALESFORCE_')) {
+        salesforceEnvs[key] = process.env[key];
+        console.log(`ENV: ${key} = "${process.env[key]}"`);
+      }
+    });
+    
+    // Focus on SALESFORCE_IS_SANDBOX
+    const sandboxVar = process.env.SALESFORCE_IS_SANDBOX;
+    console.log('🔍 SANDBOX VARIABLE DEEP ANALYSIS:');
+    console.log('  Raw value:', JSON.stringify(sandboxVar));
+    console.log('  Type:', typeof sandboxVar);
+    console.log('  Length:', sandboxVar ? sandboxVar.length : 'N/A');
+    console.log('  Trimmed:', sandboxVar ? `"${sandboxVar.trim()}"` : 'N/A');
+    console.log('  Lower case:', sandboxVar ? sandboxVar.toLowerCase() : 'N/A');
+    console.log('  === "true":', sandboxVar === 'true');
+    console.log('  === "false":', sandboxVar === 'false');
+    console.log('  Boolean(var):', Boolean(sandboxVar));
+    
+    // Test endpoint generation
+    console.log('🔍 ENDPOINT GENERATION TEST:');
+    const authEndpoint = getSalesforceAuthEndpoint();
+    const oauthEndpoint = getSalesforceOAuthEndpoint();
+    
+    const analysis = {
+      status: 'success',
+      message: 'Deep environment analysis complete',
+      timestamp: new Date().toISOString(),
+      environment_variables: {
+        all_salesforce_vars: salesforceEnvs,
+        sandbox_analysis: {
+          raw_value: sandboxVar,
+          type: typeof sandboxVar,
+          length: sandboxVar ? sandboxVar.length : null,
+          trimmed: sandboxVar ? sandboxVar.trim() : null,
+          lowercase: sandboxVar ? sandboxVar.toLowerCase() : null,
+          equals_true: sandboxVar === 'true',
+          equals_false: sandboxVar === 'false',
+          boolean_conversion: Boolean(sandboxVar),
+          is_undefined: sandboxVar === undefined,
+          is_null: sandboxVar === null,
+          is_empty_string: sandboxVar === ''
+        }
+      },
+      endpoint_generation: {
+        auth_endpoint: authEndpoint,
+        oauth_endpoint: oauthEndpoint,
+        is_using_sandbox: authEndpoint.includes('test.salesforce.com'),
+        is_using_production: authEndpoint.includes('login.salesforce.com')
+      },
+      recommendations: []
+    };
+    
+    // Add recommendations based on analysis
+    if (!sandboxVar) {
+      analysis.recommendations.push('SALESFORCE_IS_SANDBOX is not set - this defaults to production (login.salesforce.com)');
+    } else if (sandboxVar === 'true') {
+      analysis.recommendations.push('SALESFORCE_IS_SANDBOX is "true" - using sandbox (test.salesforce.com)');
+    } else if (sandboxVar === 'false') {
+      analysis.recommendations.push('SALESFORCE_IS_SANDBOX is "false" - using production (login.salesforce.com)');
+    } else {
+      analysis.recommendations.push(`SALESFORCE_IS_SANDBOX has unexpected value "${sandboxVar}" - using production (login.salesforce.com)`);
+    }
+    
+    console.log('🔍 ANALYSIS COMPLETE');
+    console.log('Final endpoints:', { auth: authEndpoint, oauth: oauthEndpoint });
+    
+    res.json(analysis);
+    
+  } catch (error) {
+    console.error('🔍 DEEP ENV DEBUG ERROR:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Deep environment analysis failed',
+      error: error.message,
+      stack: error.stack
     });
   }
 });
