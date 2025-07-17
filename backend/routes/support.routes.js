@@ -265,6 +265,126 @@ router.get('/dropbox-files', authenticateToken, async (req, res) => {
 });
 
 /**
+ * Public endpoint to list tickets (for demo purposes)
+ * GET /api/support/public-tickets
+ */
+router.get('/public-tickets', async (req, res) => {
+  try {
+    const ticketsDir = path.join(process.cwd(), 'uploads', 'tickets');
+    
+    if (!fs.existsSync(ticketsDir)) {
+      return res.json({ status: 'success', tickets: [], message: 'No tickets found' });
+    }
+
+    const files = fs.readdirSync(ticketsDir);
+    const tickets = [];
+
+    for (const file of files) {
+      if (file.endsWith('.json')) {
+        try {
+          const filePath = path.join(ticketsDir, file);
+          const content = fs.readFileSync(filePath, 'utf8');
+          const ticket = JSON.parse(content);
+          tickets.push({
+            id: ticket.id,
+            summary: ticket.summary,
+            priority: ticket.priority,
+            reportedBy: ticket.reportedBy,
+            createdAt: ticket.createdAt,
+            status: ticket.status,
+            fileName: file
+          });
+        } catch (error) {
+          console.error(`Error reading ticket file ${file}:`, error);
+        }
+      }
+    }
+
+    // Sort by creation date, newest first
+    tickets.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({
+      status: 'success',
+      tickets: tickets,
+      total: tickets.length,
+      message: `Found ${tickets.length} tickets`
+    });
+
+  } catch (error) {
+    console.error('Public tickets list error:', error);
+    res.status(500).json({ 
+      message: 'Failed to list tickets', 
+      error: error.message 
+    });
+  }
+});
+
+/**
+ * Public endpoint to list Dropbox files (for demo purposes)
+ * GET /api/support/public-dropbox-files
+ */
+router.get('/public-dropbox-files', async (req, res) => {
+  try {
+    const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
+    
+    if (!accessToken) {
+      return res.status(400).json({ message: 'Dropbox access token not configured' });
+    }
+
+    // List files in the FormsApp-Tickets folder
+    const listUrl = 'https://api.dropboxapi.com/2/files/list_folder';
+    
+    const response = await fetch(listUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        path: '/FormsApp-Tickets',
+        recursive: false,
+        include_media_info: false,
+        include_deleted: false,
+        include_has_explicit_shared_members: false
+      })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Filter only JSON files (support tickets)
+      const ticketFiles = result.entries.filter(file => 
+        file['.tag'] === 'file' && file.name.endsWith('.json')
+      );
+
+      res.json({
+        status: 'success',
+        message: `Found ${ticketFiles.length} ticket files in Dropbox`,
+        files: ticketFiles.map(file => ({
+          name: file.name,
+          size: file.size,
+          modified: file.server_modified,
+          path: file.path_display,
+          id: file.id
+        })),
+        dropboxUrl: 'https://www.dropbox.com/home/Aplicaciones/FormsApp-PowerAutomate/FormsApp-Tickets',
+        totalFiles: ticketFiles.length
+      });
+    } else {
+      const errorText = await response.text();
+      throw new Error(`Dropbox API error: ${response.status} - ${errorText}`);
+    }
+
+  } catch (error) {
+    console.error('Public Dropbox files list error:', error);
+    res.status(500).json({ 
+      message: 'Failed to list Dropbox files', 
+      error: error.message 
+    });
+  }
+});
+
+/**
  * Test endpoint para verificar integración (solo para desarrollo)
  * POST /api/support/test-ticket
  */
