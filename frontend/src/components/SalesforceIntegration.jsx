@@ -444,32 +444,32 @@ const SalesforceIntegration = () => {
       )}
 
       {/* Modal mejorado con mejor espaciado y dark mode */}
-      <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-        <div className="p-10 max-w-4xl mx-auto">
+      <Modal open={isOpen} onClose={() => setIsOpen(false)} size="4xl">
+        <div className="p-8 md:p-10">
           {/* Header del modal mejorado con dark mode */}
-          <div className="text-center mb-10">
-            <div className="inline-flex p-5 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-2xl mb-6 shadow-lg">
-              <FiCloud className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+          <div className="text-center mb-8">
+            <div className="inline-flex p-4 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-2xl mb-6 shadow-lg">
+              <FiCloud className="w-10 h-10 md:w-12 md:h-12 text-blue-600 dark:text-blue-400" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               {t('integration.manual.modal.title')}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
               {t('integration.manual.modal.subtitle')}
             </p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-10">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Información básica con mejor espaciado y dark mode */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 border border-gray-200 dark:border-gray-600">
-              <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-6 flex items-center">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 md:p-8 border border-gray-200 dark:border-gray-600">
+              <h3 className="font-bold text-lg md:text-xl text-gray-900 dark:text-gray-100 mb-6 flex items-center">
                 <div className="p-2 bg-blue-500 dark:bg-blue-600 rounded-xl mr-4">
-                  <HiOutlineOfficeBuilding className="w-6 h-6 text-white" />
+                  <HiOutlineOfficeBuilding className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
                 {t('integration.manual.sections.companyInfo')}
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     {t('integration.manual.form.companyName')} *
@@ -480,7 +480,7 @@ const SalesforceIntegration = () => {
                     value={formData.company}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-5 py-4 border-2 ${
+                    className={`w-full px-4 md:px-5 py-3 md:py-4 border-2 ${
                       formErrors.company 
                         ? 'border-red-500 dark:border-red-400' 
                         : 'border-gray-300 dark:border-gray-600'
@@ -488,7 +488,7 @@ const SalesforceIntegration = () => {
                       formErrors.company 
                         ? 'focus:ring-red-500/20 dark:focus:ring-red-400/20 focus:border-red-500 dark:focus:border-red-400' 
                         : 'focus:ring-blue-500/20 dark:focus:ring-blue-400/20 focus:border-blue-500 dark:focus:border-blue-400'
-                    } transition-all duration-300 text-lg`}
+                    } transition-all duration-300 text-base md:text-lg`}
                     placeholder={t('integration.manual.form.companyNamePlaceholder')}
                   />
                   {formErrors.company && (
