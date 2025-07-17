@@ -1308,6 +1308,7 @@ router.get('/debug/quick-test', async (req, res) => {
     const salesforceEndpoint = getSalesforceAuthEndpoint();
     
     console.log('🔧 Using endpoint:', salesforceEndpoint);
+    console.log('🔧 Grant type: client_credentials');
     
     const response = await fetch(salesforceEndpoint, {
       method: 'POST',
@@ -1343,7 +1344,9 @@ router.get('/debug/quick-test', async (req, res) => {
         error_response: responseText,
         details: {
           status_code: response.status,
-          client_id_preview: clientId.substring(0, 12) + '...'
+          client_id_preview: clientId.substring(0, 12) + '...',
+          grant_type_used: 'client_credentials',
+          recommendation: 'Your Connected App may not support client_credentials flow. Check OAuth settings in Salesforce.'
         }
       });
     }
@@ -1353,6 +1356,49 @@ router.get('/debug/quick-test', async (req, res) => {
     res.json({
       status: 'error',
       message: 'Test failed',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Generate OAuth URL for manual authentication testing
+ * GET /api/salesforce/debug/oauth-url
+ */
+router.get('/debug/oauth-url', (req, res) => {
+  try {
+    const clientId = process.env.SALESFORCE_CLIENT_ID;
+    
+    if (!clientId) {
+      return res.json({
+        status: 'error',
+        message: 'SALESFORCE_CLIENT_ID not configured'
+      });
+    }
+    
+    const redirectUri = `${req.protocol}://${req.get('host')}/api/salesforce/oauth/callback`;
+    const authUrl = `${getSalesforceOAuthEndpoint()}?` +
+      `response_type=code&` +
+      `client_id=${clientId}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `scope=api%20refresh_token`;
+    
+    console.log('🔗 Generated OAuth URL for testing:', authUrl);
+    
+    res.json({
+      status: 'success',
+      oauth_url: authUrl,
+      instructions: 'Visit this URL in your browser to test OAuth flow',
+      redirect_uri: redirectUri,
+      client_id: clientId.substring(0, 12) + '...',
+      endpoint: getSalesforceOAuthEndpoint()
+    });
+    
+  } catch (error) {
+    console.error('OAuth URL generation error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to generate OAuth URL',
       error: error.message
     });
   }
