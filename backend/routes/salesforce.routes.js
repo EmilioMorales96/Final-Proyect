@@ -860,7 +860,13 @@ router.get('/debug/config', (req, res) => {
       clientSecret: process.env.SALESFORCE_CLIENT_SECRET ? 'SET' : 'NOT SET',
       redirectUri: process.env.SALESFORCE_REDIRECT_URI || 'NOT SET',
       instanceUrl: process.env.SALESFORCE_INSTANCE_URL || 'NOT SET',
-      frontendUrl: process.env.FRONTEND_URL || 'NOT SET'
+      frontendUrl: process.env.FRONTEND_URL || 'NOT SET',
+      isSandbox: process.env.SALESFORCE_IS_SANDBOX || 'NOT SET',
+      isSandboxBoolean: process.env.SALESFORCE_IS_SANDBOX === 'true'
+    },
+    endpoints: {
+      auth_endpoint: getSalesforceAuthEndpoint(),
+      oauth_endpoint: getSalesforceOAuthEndpoint()
     },
     host: req.get('host'),
     protocol: req.protocol,
