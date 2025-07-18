@@ -6,11 +6,9 @@ import db from '../models/index.js';
  * Verifies the token and attaches user info to the request
  */
 export default async function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  console.log('Auth middleware - Headers:', req.headers['authorization'] ? 'Token present' : 'No token');
-
+  // Read token from cookie
+  const token = req.cookies?.token;
+  console.log('Auth middleware - Cookie:', token ? 'Token present' : 'No token');
   if (!token) {
     console.log('Auth middleware - No token provided');
     return res.status(401).json({ message: 'No token provided' });

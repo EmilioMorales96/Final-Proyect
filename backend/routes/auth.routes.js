@@ -1,3 +1,12 @@
+// Logout: limpia la cookie JWT
+router.post("/logout", (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  });
+  res.json({ message: "Logged out" });
+});
 import express from 'express';
 import db from "../models/index.js";
 import bcrypt from "bcrypt";
@@ -66,7 +75,14 @@ router.post("/login", async (req, res) => {
       process.env.JWT_SECRET || "secretkey",
       { expiresIn: "2h" }
     );
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
+    // Set JWT as HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 2 * 60 * 60 * 1000 // 2 hours
+    });
+    res.json({ user: { id: user.id, username: user.username, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ message: "Login error.", error: err.message });
   }

@@ -23,6 +23,8 @@ import supportRoutes from './routes/support.routes.js';
 
 const app = express();
 
+import cookieParser from 'cookie-parser';
+
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -32,13 +34,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(morgan('dev'));
-
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-session-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false }
-}));
+app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 

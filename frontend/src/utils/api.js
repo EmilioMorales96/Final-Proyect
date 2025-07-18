@@ -1,3 +1,4 @@
+export default api;
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 // Helper to build full URL
@@ -6,16 +7,10 @@ function buildUrl(path) {
   return `${BASE_URL}${path}`;
 }
 
-// Helper to get auth token from localStorage (adapt if you use context/cookies)
-function getToken() {
-  return localStorage.getItem("token");
-}
 
 // Default headers for JSON requests
 function getHeaders(isJson = true) {
   const headers = {};
-  const token = getToken();
-  if (token) headers["Authorization"] = `Bearer ${token}`;
   if (isJson) headers["Content-Type"] = "application/json";
   return headers;
 }
@@ -37,8 +32,9 @@ async function handleResponse(res) {
 }
 
 const api = {
+
   // GET request
-  async get(path) {
+  get: async function(path) {
     const res = await fetch(buildUrl(path), {
       method: "GET",
       headers: getHeaders(),
@@ -48,7 +44,7 @@ const api = {
   },
 
   // POST request (JSON)
-  async post(path, body = {}) {
+  post: async function(path, body = {}) {
     const res = await fetch(buildUrl(path), {
       method: "POST",
       headers: getHeaders(),
@@ -59,7 +55,7 @@ const api = {
   },
 
   // PUT request (JSON)
-  async put(path, body = {}) {
+  put: async function(path, body = {}) {
     const res = await fetch(buildUrl(path), {
       method: "PUT",
       headers: getHeaders(),
@@ -70,7 +66,7 @@ const api = {
   },
 
   // PATCH request (JSON)
-  async patch(path, body = {}) {
+  patch: async function(path, body = {}) {
     const res = await fetch(buildUrl(path), {
       method: "PATCH",
       headers: getHeaders(),
@@ -81,7 +77,7 @@ const api = {
   },
 
   // DELETE request
-  async delete(path) {
+  delete: async function(path) {
     const res = await fetch(buildUrl(path), {
       method: "DELETE",
       headers: getHeaders(),
@@ -90,8 +86,17 @@ const api = {
     return handleResponse(res);
   },
 
+  // Logout request
+  logout: async function() {
+    const res = await fetch(buildUrl('/api/auth/logout'), {
+      method: 'POST',
+      credentials: 'include'
+    });
+    return handleResponse(res);
+  },
+
   // POST/PUT with FormData (for file uploads)
-  async upload(path, formData, method = "POST") {
+  upload: async function(path, formData, method = "POST") {
     const headers = getHeaders(false); // Don't set Content-Type for FormData
     const res = await fetch(buildUrl(path), {
       method,
@@ -100,7 +105,5 @@ const api = {
       body: formData,
     });
     return handleResponse(res);
-  },
+  }
 };
-
-export default api;

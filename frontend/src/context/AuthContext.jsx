@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState } from "react";
 
 /**
  * Authentication context for managing user authentication state
@@ -8,64 +8,37 @@ const AuthContext = createContext();
 
 /**
  * Authentication provider component
- * Manages authentication state and persistence in localStorage
  * 
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Child components
  * @returns {JSX.Element} Auth context provider
  */
 export function AuthProvider({ children }) {
-  // Initialize user state from localStorage
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
-  
-  // Initialize token state from localStorage
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [user, setUser] = useState(null);
 
-  // Persist authentication state to localStorage
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("user");
-    }
-    if (token) {
-      localStorage.setItem("token", token);
-    } else {
-      localStorage.removeItem("token");
-    }
-  }, [user, token]);
-
-  /**
-   * Login function - sets user and token state
-   * @param {Object} userData - User data object
-   * @param {string} tokenData - Authentication token
-   */
-  function login(userData, tokenData) {
+  // Login solo actualiza el usuario
+  function login(userData) {
     setUser(userData);
-    setToken(tokenData);
   }
 
-  /**
-   * Logout function - clears authentication state and redirects to login
-   */
-  function logout() {
+  // Logout llama a api.logout y redirige
+  async function logout() {
+    try {
+      // Llama al endpoint para limpiar la cookie
+      await import('../utils/api.js').then(m => m.default.logout());
+    } catch (e) {
+      // Ignorar error de red
+    }
     setUser(null);
-    setToken(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
     window.location.href = "/login";
   }
 
   return (
     <AuthContext.Provider value={{ 
       user, 
-      token, 
       login, 
       logout, 
-      isAuthenticated: !!token 
+      isAuthenticated: !!user 
     }}>
       {children}
     </AuthContext.Provider>
@@ -73,4 +46,3 @@ export function AuthProvider({ children }) {
 }
 
 export default AuthContext;
-export { AuthContext };
