@@ -108,10 +108,29 @@ const SalesforceDashboard = () => {
     }
   };
 
-  const handleSalesforceAuth = () => {
-    // Usar nuestro endpoint de autorización del backend
-    const authUrl = `${API_URL}/api/salesforce/oauth/authorize`;
-    window.open(authUrl, '_blank', 'width=600,height=400');
+  const handleSalesforceAuth = async () => {
+    // Usar el endpoint correcto para obtener la URL de autorización
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/salesforce/oauth/url`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.oauth_url) {
+          window.open(data.oauth_url, '_blank', 'width=600,height=700');
+        } else {
+          toast.error(t('dashboard.salesforce.oauthUrlError'));
+        }
+      } else {
+        toast.error(t('dashboard.salesforce.oauthUrlError'));
+      }
+    } catch (error) {
+      toast.error(t('dashboard.salesforce.oauthUrlError'));
+      console.error('Error getting Salesforce OAuth URL:', error);
+    }
   };
 
   const testConnection = async () => {
