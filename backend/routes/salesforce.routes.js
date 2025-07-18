@@ -18,6 +18,41 @@ router.get('/oauth/callback', async (req, res) => {
     });
   }
 });
+// Endpoint básico para autenticación Salesforce
+// Endpoint mejorado para iniciar el flujo OAuth de Salesforce
+router.get('/auth', authenticateToken, async (req, res) => {
+  try {
+    // Verificar configuración
+    if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Salesforce no está configurado. Falta CLIENT_ID o CLIENT_SECRET.'
+      });
+    }
+
+    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
+    const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
+
+    // Construir URL OAuth
+    const authUrl = new URL(`${loginUrl}/services/oauth2/authorize`);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('client_id', process.env.SALESFORCE_CLIENT_ID);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', 'api refresh_token offline_access');
+    authUrl.searchParams.set('state', `user_${req.user.id}_${Date.now()}`);
+    authUrl.searchParams.set('prompt', 'consent');
+
+    // Redirigir al usuario a la URL de autorización
+    return res.redirect(authUrl.toString());
+  } catch (error) {
+    console.error('❌ [Salesforce Auth] Error iniciando OAuth:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error iniciando autenticación OAuth',
+      error: error.message
+    });
+  }
+});
 
 router.get('/test', async (req, res) => {
   try {
