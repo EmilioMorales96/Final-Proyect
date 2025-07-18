@@ -104,7 +104,6 @@ router.get('/status', authenticateToken, async (req, res) => {
 router.get('/oauth/url', authenticateToken, async (req, res) => {
   try {
     console.log('🔗 [OAuth URL] Generating for user:', req.user.id);
-    
     // Verificar configuración
     if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
       return res.status(400).json({
@@ -112,11 +111,39 @@ router.get('/oauth/url', authenticateToken, async (req, res) => {
         message: 'Salesforce not configured. Missing CLIENT_ID or CLIENT_SECRET.'
       });
     }
-    
+
     const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
     const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
-    
-    // Construir URL OAuth
+
+    // --- PKCE Implementation ---
+    // Generate code_verifier
+    function base64URLEncode(str) {
+      return str.toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    }
+    function sha256(buffer) {
+      const crypto = require('crypto');
+      return crypto.createHash('sha256').update(buffer).digest();
+    }
+    function generateCodeVerifier(length = 64) {
+      const crypto = require('crypto');
+      return base64URLEncode(crypto.randomBytes(length));
+    }
+
+    const code_verifier = generateCodeVerifier();
+    const code_challenge = base64URLEncode(sha256(code_verifier));
+
+    // Store code_verifier in session or DB (for demo, attach to user in-memory)
+    // In production, use Redis, DB, or JWT claims
+    if (!global.salesforcePKCE) global.salesforcePKCE = {};
+    global.salesforcePKCE[req.user.id] = {
+      code_verifier,
+      created: Date.now()
+    };
+
+    // Construir URL OAuth con PKCE
     const authUrl = new URL(`${loginUrl}/services/oauth2/authorize`);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('client_id', process.env.SALESFORCE_CLIENT_ID);
@@ -124,12 +151,14 @@ router.get('/oauth/url', authenticateToken, async (req, res) => {
     authUrl.searchParams.set('scope', 'api refresh_token offline_access');
     authUrl.searchParams.set('state', `user_${req.user.id}_${Date.now()}`);
     authUrl.searchParams.set('prompt', 'consent');
-    
-    console.log('✅ OAuth URL generated successfully');
-    
+    authUrl.searchParams.set('code_challenge', code_challenge);
+    authUrl.searchParams.set('code_challenge_method', 'S256');
+
+    console.log('✅ OAuth URL with PKCE generated successfully');
+
     res.json({
       status: 'success',
-      message: 'OAuth URL generated',
+      message: 'OAuth URL generated (PKCE)',
       oauth_url: authUrl.toString(),
       instructions: [
         '1. Clic en la URL para autorizar',
@@ -140,10 +169,11 @@ router.get('/oauth/url', authenticateToken, async (req, res) => {
       configuration: {
         client_id: process.env.SALESFORCE_CLIENT_ID.substring(0, 20) + '...',
         redirect_uri: redirectUri,
-        login_url: loginUrl
+        login_url: loginUrl,
+        code_challenge,
+        code_challenge_method: 'S256'
       }
     });
-    
   } catch (error) {
     console.error('❌ OAuth URL generation error:', error);
     res.status(500).json({
