@@ -1,3 +1,10 @@
+import express from 'express';
+import authenticateToken from '../middleware/auth.middleware.js';
+import db from '../models/index.js';
+import crypto from 'crypto';
+
+const router = express.Router();
+
 /**
  * HEALTH CHECK ENDPOINT
  * GET /api/salesforce/health
@@ -10,13 +17,6 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-import express from 'express';
-import authenticateToken from '../middleware/auth.middleware.js';
-import db from '../models/index.js';
-import crypto from 'crypto';
-
-const router = express.Router();
-// ...existing code...
 
 
 /**
