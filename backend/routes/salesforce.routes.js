@@ -257,6 +257,23 @@ router.get('/oauth/callback', async (req, res) => {
       });
     }
 
+    // Extract userId from state (format: user_<id>_timestamp)
+    let userId = null;
+    if (state && state.startsWith('user_')) {
+      const parts = state.split('_');
+      if (parts.length >= 2) {
+        userId = parseInt(parts[1], 10);
+      }
+    }
+
+    // Retrieve code_verifier for this user (PKCE)
+    let code_verifier = null;
+    if (userId && global.salesforcePKCE && global.salesforcePKCE[userId]) {
+      code_verifier = global.salesforcePKCE[userId].code_verifier;
+      // Clean up after use
+      delete global.salesforcePKCE[userId];
+    }
+
     // Exchange code for token
     const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
     const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
@@ -266,7 +283,8 @@ router.get('/oauth/callback', async (req, res) => {
       client_id: process.env.SALESFORCE_CLIENT_ID,
       client_secret: process.env.SALESFORCE_CLIENT_SECRET,
       redirect_uri: redirectUri,
-      code: code
+      code: code,
+      ...(code_verifier ? { code_verifier } : {})
     });
 
     const tokenResponse = await fetch(`${loginUrl}/services/oauth2/token`, {
@@ -280,15 +298,6 @@ router.get('/oauth/callback', async (req, res) => {
     const tokenData = await tokenResponse.json();
 
     if (tokenData.access_token) {
-      // Extract userId from state (format: user_<id>_timestamp)
-      let userId = null;
-      if (state && state.startsWith('user_')) {
-        const parts = state.split('_');
-        if (parts.length >= 2) {
-          userId = parseInt(parts[1], 10);
-        }
-      }
-
       // Persist token for user
       if (userId) {
         await db.SalesforceToken.upsert({
