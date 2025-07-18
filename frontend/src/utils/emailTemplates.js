@@ -186,6 +186,19 @@ export async function scheduleEmailSequence({ sequenceKey, lead, variables = {},
   return scheduled;
 }
 
+
+/**
+ * Email analytics placeholder (replace with real analytics in production)
+ */
+export const EMAIL_ANALYTICS = {
+  sent: 0,
+  opened: 0,
+  clicked: 0,
+  bounced: 0,
+  lastSent: null,
+  lastOpened: null
+};
+
 export default {
   EMAIL_CATEGORIES,
   createEmailTemplate,
@@ -193,5 +206,6 @@ export default {
   getEmailTemplateById,
   sendEmail,
   getEmailSequence,
-  scheduleEmailSequence
+  scheduleEmailSequence,
+  EMAIL_ANALYTICS
 };
