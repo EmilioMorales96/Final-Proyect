@@ -19,8 +19,8 @@ import formRoutes from './routes/form.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import supportRoutes from './routes/support.routes.js';
 
-// Salesforce Routes - Clean Version
-import salesforceRoutes from './routes/salesforce-clean.routes.js';
+// Salesforce Routes - Using existing file
+import salesforceRoutes from './routes/salesforce.routes.js';
 
 const app = express();
 

@@ -4,12 +4,16 @@ import authenticateToken from '../middleware/auth.middleware.js';
 const router = express.Router();
 
 // 🎯 SALESFORCE INTEGRATION - CLEAN VERSION
-// ====================/**
+// ====================
+/**
  * 🔄 OAUTH CALLBACK - ENHANCED DEBUG
  * GET /api/salesforce/oauth/callback
  * Manejar callback de autorización OAuth con debugging mejorado
  */
-router.get('/oauth/callback', async (req, res) => {===============
+router.get('/oauth/callback', async (req, res) => {
+  // TODO: Implement OAuth callback logic here
+  res.send('OAuth callback endpoint');
+});
 
 /**
  * 🧪 PUBLIC TEST ENDPOINT
