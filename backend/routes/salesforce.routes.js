@@ -1,5 +1,6 @@
 import express from 'express';
 import authenticateToken from '../middleware/auth.middleware.js';
+import db from '../models/index.js';
 
 const router = express.Router();
 
@@ -355,31 +356,35 @@ router.get('/oauth/callback', async (req, res) => {
     if (tokenData.access_token) {
       // ¡ÉXITO! Token obtenido
       console.log('🎉 [OAuth Callback] OAUTH SUCCESS! Token received');
-      
-      const successDebug = {
-        ...debugInfo,
-        success: true,
-        token_received: true,
-        instance_url: tokenData.instance_url,
-        token_type: tokenData.token_type,
-        scope: tokenData.scope
-      };
-      
-      return res.send(`
-        <html>
-          <head><title>OAuth Success!</title></head>
-          <body>
-            <h1>🎉 OAuth Callback Success!</h1>
-            <h2>✅ Token recibido exitosamente</h2>
-            <p><strong>Instance URL:</strong> ${tokenData.instance_url}</p>
-            <p><strong>Token Type:</strong> ${tokenData.token_type}</p>
-            <p><strong>Scope:</strong> ${tokenData.scope}</p>
-            <h3>📋 Debug Information:</h3>
-            <pre>${JSON.stringify(successDebug, null, 2)}</pre>
-            <p><a href="${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?success=oauth_complete">← Volver a Integrations</a></p>
-          </body>
-        </html>
-      `);
+
+      // Persistir el token en la base de datos
+      let userId = null;
+      // Extraer el userId del parámetro state si está presente (formato: user_<id>_timestamp)
+      if (state && state.startsWith('user_')) {
+        const parts = state.split('_');
+        if (parts.length >= 2) {
+          userId = parseInt(parts[1], 10);
+        }
+      }
+
+      if (userId) {
+        // Guardar o actualizar el token para el usuario
+        await db.SalesforceToken.upsert({
+          userId,
+          accessToken: tokenData.access_token,
+          refreshToken: tokenData.refresh_token || null,
+          instanceUrl: tokenData.instance_url || null,
+          tokenType: tokenData.token_type || null,
+          scope: tokenData.scope || null,
+          expiresIn: tokenData.expires_in || null
+        });
+        console.log('✅ [OAuth Callback] Token guardado para el usuario:', userId);
+      } else {
+        console.warn('⚠️ [OAuth Callback] No se pudo extraer el userId del parámetro state:', state);
+      }
+
+      // Mejorar la redirección para el frontend
+      return res.redirect(`${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?success=oauth_connected`);
     } else {
       // Error en intercambio de token
       console.error('❌ [OAuth Callback] Token exchange failed:', tokenData);
@@ -445,16 +450,50 @@ router.get('/accounts', authenticateToken, async (req, res) => {
   try {
     console.log('📋 [List Accounts] User:', req.user.id);
     
-    // TODO: Aquí deberías obtener el token del usuario desde la base de datos
-    // Por ahora, retornamos un mensaje indicando que se necesita autenticación
-    
-    res.json({
-      status: 'info',
-      message: 'OAuth authentication required',
-      action: 'Please complete OAuth authentication first',
-      accounts: [],
-      user: req.user.id
-    });
+    // Obtener el token de Salesforce del usuario
+    const tokenRecord = await db.SalesforceToken.findOne({ where: { userId: req.user.id } });
+    if (!tokenRecord || !tokenRecord.accessToken) {
+      return res.json({
+        status: 'info',
+        message: 'OAuth authentication required',
+        action: 'Please complete OAuth authentication first',
+        accounts: [],
+        user: req.user.id
+      });
+    }
+
+    // Llamar a Salesforce para obtener cuentas reales
+    try {
+      const response = await fetch(`${tokenRecord.instanceUrl}/services/data/v58.0/query?q=SELECT+Id,Name,Industry,Phone,Website+FROM+Account+LIMIT+10`, {
+        headers: {
+          'Authorization': `Bearer ${tokenRecord.accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (data.records) {
+        return res.json({
+          status: 'success',
+          message: 'Accounts fetched from Salesforce',
+          accounts: data.records,
+          user: req.user.id
+        });
+      } else {
+        return res.json({
+          status: 'error',
+          message: 'No accounts found or error in Salesforce response',
+          details: data,
+          user: req.user.id
+        });
+      }
+    } catch (err) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Error fetching accounts from Salesforce',
+        error: err.message,
+        user: req.user.id
+      });
+    }
     
   } catch (error) {
     console.error('❌ List accounts error:', error);
