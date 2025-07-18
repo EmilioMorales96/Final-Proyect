@@ -1,4 +1,6 @@
+
 import express from 'express';
+const router = express.Router();
 
 // Logout: limpia la cookie JWT
 router.post("/logout", (req, res) => {
