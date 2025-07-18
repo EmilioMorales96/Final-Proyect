@@ -145,13 +145,18 @@ const SalesforceIntegration = () => {
 
     try {
       const token = localStorage.getItem('token');
+      const payload = {
+        ...formData,
+        name: formData.company
+      };
+      delete payload.company;
       const response = await fetch(`${API_URL}/api/salesforce/accounts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
