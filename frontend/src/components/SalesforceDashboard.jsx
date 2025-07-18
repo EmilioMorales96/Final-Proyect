@@ -142,7 +142,7 @@ const SalesforceDashboard = () => {
         return;
       }
 
-      const response = await fetch(`${API_URL}/api/salesforce/create-account`, {
+      const response = await fetch(`${API_URL}/api/salesforce/accounts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
