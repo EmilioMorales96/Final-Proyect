@@ -1,55 +1,51 @@
-
 /**
- * Smart Lead Scoring System
- * Realistic weights and logic for production use
+ * 🎯 Smart Lead Scoring System
+ * Inspired by HubSpot and Salesforce Einstein
+ * Automatically scores leads based on multiple factors
  */
 
-
-// Industry scoring weights (based on real conversion rates, adjust as needed)
+// Industry scoring weights (based on conversion rates)
 const INDUSTRY_WEIGHTS = {
-  'technology': 20,
-  'finance': 18,
-  'healthcare': 17,
-  'manufacturing': 15,
-  'education': 12,
-  'retail': 10,
-  'construction': 8,
-  'agriculture': 6,
+  'technology': 25,
+  'finance': 22,
+  'healthcare': 20,
+  'manufacturing': 18,
+  'education': 15,
+  'retail': 12,
+  'construction': 10,
+  'agriculture': 8,
   'other': 5
 };
 
-
-// Company size scoring (employees, based on real B2B conversion data)
+// Company size scoring (employees)
 const COMPANY_SIZE_WEIGHTS = {
-  '1000+': 20,
-  '500-999': 18,
-  '250-499': 15,
-  '100-249': 12,
-  '50-99': 10,
-  '10-49': 7,
+  '1000+': 30,
+  '500-999': 25,
+  '250-499': 20,
+  '100-249': 15,
+  '50-99': 12,
+  '10-49': 8,
   '1-9': 5
 };
 
-
-// Revenue scoring brackets (realistic for LATAM/US SMB/Enterprise)
+// Revenue scoring brackets
 const REVENUE_WEIGHTS = {
-  'over_10m': 20,
-  '5m_10m': 17,
-  '1m_5m': 14,
-  '500k_1m': 10,
-  '100k_500k': 7,
-  'under_100k': 3
+  'over_10m': 30,
+  '5m_10m': 25,
+  '1m_5m': 20,
+  '500k_1m': 15,
+  '100k_500k': 10,
+  'under_100k': 5
 };
 
-
-// Engagement scoring factors (real user actions, not demo)
+// Engagement scoring factors
 const ENGAGEMENT_WEIGHTS = {
-  formCompletion: 5,
-  websiteVisits: 3,
-  emailOpens: 2,
-  contentDownloads: 5,
-  demoRequests: 10,
-  multipleFormSubmissions: 7
+  formCompletion: 10,
+  websiteVisits: 5,
+  emailOpens: 3,
+  contentDownloads: 8,
+  demoRequests: 20,
+  multipleFormSubmissions: 15
 };
 
 /**
@@ -62,32 +58,30 @@ export const calculateLeadScore = (leadData, behaviorData = {}) => {
   let totalScore = 0;
   const scoreBreakdown = {};
 
-
-  // 1. Industry Score
-  const industryScore = INDUSTRY_WEIGHTS[leadData.industry?.toLowerCase()] || 0;
+  // 1. Industry Score (25% weight)
+  const industryScore = INDUSTRY_WEIGHTS[leadData.industry?.toLowerCase()] || 5;
   totalScore += industryScore;
   scoreBreakdown.industry = industryScore;
 
-  // 2. Company Size Score
-  const sizeScore = COMPANY_SIZE_WEIGHTS[leadData.numberOfEmployees] || 0;
+  // 2. Company Size Score (30% weight)
+  const sizeScore = COMPANY_SIZE_WEIGHTS[leadData.numberOfEmployees] || 5;
   totalScore += sizeScore;
   scoreBreakdown.companySize = sizeScore;
 
-  // 3. Revenue Score
+  // 3. Revenue Score (25% weight)
   const revenueScore = getRevenueScore(leadData.annualRevenue);
   totalScore += revenueScore;
   scoreBreakdown.revenue = revenueScore;
 
-  // 4. Form Completion Score
+  // 4. Form Completion Score (10% weight)
   const completionScore = calculateCompletionScore(leadData);
   totalScore += completionScore;
   scoreBreakdown.completion = completionScore;
 
-  // 5. Behavioral Score
+  // 5. Behavioral Score (10% weight)
   const behaviorScore = calculateBehaviorScore(behaviorData);
   totalScore += behaviorScore;
   scoreBreakdown.behavior = behaviorScore;
-
 
   // Determine lead grade
   const grade = getLeadGrade(totalScore);
@@ -165,55 +159,58 @@ const calculateBehaviorScore = (behaviorData) => {
 /**
  * Determine lead grade (A, B, C, D)
  */
-
-// Realistic grading for production
 const getLeadGrade = (score) => {
-  if (score >= 50) return 'A';
-  if (score >= 35) return 'B';
-  if (score >= 20) return 'C';
+  if (score >= 80) return 'A';
+  if (score >= 60) return 'B';
+  if (score >= 40) return 'C';
   return 'D';
 };
 
 /**
  * Determine lead priority level
  */
-
 const getLeadPriority = (score) => {
-  if (score >= 50) return 'Hot';
-  if (score >= 35) return 'Warm';
-  if (score >= 20) return 'Cold';
+  if (score >= 80) return 'Hot';
+  if (score >= 60) return 'Warm';
+  if (score >= 40) return 'Cold';
   return 'Low';
 };
 
 /**
  * Get action recommendations based on score
  */
-
 const getRecommendations = (score) => {
-  if (score >= 50) {
+  if (score >= 80) {
     return [
-      'Contact immediately',
+      'Contact within 1 hour',
       'Assign to senior sales rep',
-      'Schedule onboarding call',
-      'Send welcome email'
+      'Schedule executive demo',
+      'Send premium welcome sequence',
+      'Create opportunity in Salesforce'
     ];
   }
-  if (score >= 35) {
+  
+  if (score >= 60) {
     return [
       'Contact within 24 hours',
-      'Send follow-up email',
-      'Add to nurturing sequence'
+      'Send personalized follow-up',
+      'Add to nurturing sequence',
+      'Provide industry-specific content'
     ];
   }
-  if (score >= 20) {
+  
+  if (score >= 40) {
     return [
       'Add to email nurturing campaign',
       'Send educational content',
-      'Monitor engagement'
+      'Monitor engagement',
+      'Follow up in 1 week'
     ];
   }
+  
   return [
     'Add to long-term nurturing',
+    'Send quarterly newsletters',
     'Monitor for behavior changes'
   ];
 };
@@ -221,10 +218,10 @@ const getRecommendations = (score) => {
 /**
  * Get routing recommendation
  */
-
 const getRoutingRecommendation = (score, leadData) => {
   const revenue = leadData.annualRevenue || 0;
-  if (score >= 50) {
+  
+  if (score >= 80) {
     if (revenue >= 5000000) {
       return {
         team: 'Enterprise Sales',
@@ -234,20 +231,22 @@ const getRoutingRecommendation = (score, leadData) => {
       };
     }
     return {
-      team: 'Sales',
-      rep: 'Account Executive',
-      sla: '4 hours',
+      team: 'Inside Sales',
+      rep: 'Senior Sales Rep',
+      sla: '2 hours',
       priority: 'High'
     };
   }
-  if (score >= 35) {
+  
+  if (score >= 60) {
     return {
-      team: 'Sales',
+      team: 'Inside Sales',
       rep: 'Sales Development Rep',
       sla: '24 hours',
       priority: 'Medium'
     };
   }
+  
   return {
     team: 'Marketing',
     rep: 'Marketing Qualified Lead',
@@ -282,41 +281,4 @@ export const getScoreDistribution = (scores) => {
 /**
  * Export utilities for other components
  */
-
-import { sendEmail, EMAIL_TEMPLATES } from './emailTemplates';
-
-/**
- * Send recommended email based on lead score and data
- * @param {Object} leadData - Lead information from form
- * @param {Object} behaviorData - User behavior data (optional)
- * @param {string} to - Recipient email address
- * @returns {Promise<Object>} Email send result
- */
-export async function sendLeadScoringEmail({ leadData, behaviorData = {}, to }) {
-  const scoring = calculateLeadScore(leadData, behaviorData);
-  let templateId;
-  // Select template based on grade
-  switch (scoring.grade) {
-    case 'A':
-      templateId = 'user_welcome';
-      break;
-    case 'B':
-      templateId = 'user_onboarding';
-      break;
-    case 'C':
-      templateId = 'password_reset_followup'; // Example: replace with nurturing template
-      break;
-    default:
-      templateId = 'password_reset'; // Example: replace with low-priority template
-  }
-  // Prepare variables for template
-  const variables = {
-    firstName: leadData.firstName || leadData.company || 'User',
-    resetLink: leadData.resetLink || '',
-    ...leadData
-  };
-  // Send email using template
-  return await sendEmail({ to, templateId, variables });
-}
-
 export { INDUSTRY_WEIGHTS, COMPANY_SIZE_WEIGHTS, REVENUE_WEIGHTS };

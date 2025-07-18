@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   FiCloud, 
@@ -26,38 +26,25 @@ import toast from 'react-hot-toast';
 import LeadScoringDashboard from './LeadScoringDashboard';
 import EmailAutomationDashboard from './EmailAutomationDashboard';
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 const SalesforceDashboard = () => {
   const { t } = useTranslation();
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Estados
+  const [isConnected, setIsConnected] = useState(false);
+  const [stats, setStats] = useState({});
+  const [syncHistory, setSyncHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const [syncHistory, setSyncHistory] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-
-
-  useEffect(() => {
-    checkSalesforceConnection();
-    fetchSyncHistory();
-    fetchStats();
-  }, []);
-
-  // Helper to determine connection from backend response
+  // Función para parsear el estado de conexión
   const parseConnectionStatus = (data) => {
-    // If backend returns ready_for_oauth or similar, use it
-    if (data && typeof data.ready_for_oauth !== 'undefined') {
-      return !!data.ready_for_oauth;
-    }
-    // Fallback: if status is success and configuration exists
-    if (data && data.status === 'success') {
-      return true;
-    }
-    return false;
+    // Personaliza según la respuesta real de tu API
+    return data && data.connected === true;
   };
 
-  const checkSalesforceConnection = async () => {
+  // Funciones principales
+  const checkSalesforceConnection = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -79,19 +66,17 @@ const SalesforceDashboard = () => {
       console.error('Error checking Salesforce connection:', error);
       setIsConnected(false);
     }
-  };
+  }, [API_URL]);
 
-  const fetchSyncHistory = async () => {
+  const fetchSyncHistory = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-
       const response = await fetch(`${API_URL}/api/salesforce/sync-history`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
       if (response.ok) {
         const data = await response.json();
         setSyncHistory(data.history || []);
@@ -99,19 +84,17 @@ const SalesforceDashboard = () => {
     } catch (error) {
       console.error('Error fetching sync history:', error);
     }
-  };
+  }, [API_URL]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-
       const response = await fetch(`${API_URL}/api/salesforce/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats || {});
@@ -119,55 +102,35 @@ const SalesforceDashboard = () => {
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
-  };
+  }, [API_URL]);
 
-  const handleSalesforceAuth = async () => {
-    // Usar el endpoint correcto para obtener la URL de autorización
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/salesforce/oauth/url`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.oauth_url) {
-          window.open(data.oauth_url, '_blank', 'width=600,height=700');
-        } else {
-          toast.error(t('dashboard.salesforce.oauthUrlError'));
-        }
-      } else {
-        toast.error(t('dashboard.salesforce.oauthUrlError'));
-      }
-    } catch (error) {
-      toast.error(t('dashboard.salesforce.oauthUrlError'));
-      console.error('Error getting Salesforce OAuth URL:', error);
-    }
-  };
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    checkSalesforceConnection();
+    fetchStats();
+    fetchSyncHistory();
+  }, [checkSalesforceConnection, fetchStats, fetchSyncHistory]);
 
-  const testConnection = async () => {
+  const testConnection = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        toast.error(t('dashboard.salesforce.loginRequired'));
+        toast.error(t('dashboard.salesforce.networkError'));
+        setLoading(false);
         return;
       }
-
-      const response = await fetch(`${API_URL}/api/salesforce/accounts`, {
+      const response = await fetch(`${API_URL}/api/salesforce/test-connection`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          name: 'Test Company',
           phone: '+1234567890',
           industry: 'Technology'
         })
       });
-
       if (response.ok) {
         toast.success(t('dashboard.salesforce.connectionSuccess'));
         setIsConnected(true);
@@ -184,43 +147,50 @@ const SalesforceDashboard = () => {
     } finally {
       setLoading(false);
     }
+  }, [API_URL, t, checkSalesforceConnection]);
+
+  // ...existing code...
+
+  // Función para manejar la autenticación con Salesforce
+  const handleSalesforceAuth = () => {
+    window.location.href = `${API_URL}/api/salesforce/auth`;
   };
 
   const dashboardTabs = [
     {
       id: 'overview',
       name: t('dashboard.salesforce.overview'),
-      icon: <HiOutlineChartBar className="w-6 h-6" />,
+      icon: <HiOutlineChartBar className="w-5 h-5" />,
       color: 'blue'
     },
     {
       id: 'leads',
       name: t('dashboard.salesforce.leadScoring'),
-      icon: <FiTarget className="w-6 h-6" />,
+      icon: <FiTarget className="w-5 h-5" />,
       color: 'green'
     },
     {
       id: 'emails',
       name: t('dashboard.salesforce.emailAutomation'),
-      icon: <FiMail className="w-6 h-6" />,
+      icon: <FiMail className="w-5 h-5" />,
       color: 'purple'
     },
     {
       id: 'connection',
       name: t('dashboard.salesforce.connection'),
-      icon: <FiLink className="w-6 h-6" />,
+      icon: <FiLink className="w-5 h-5" />,
       color: 'orange'
     },
     {
       id: 'history',
       name: t('dashboard.salesforce.history'),
-      icon: <FiClock className="w-6 h-6" />,
+      icon: <FiClock className="w-5 h-5" />,
       color: 'indigo'
     }
   ];
 
   const StatCard = ({ title, value, subtitle, icon, color, trend }) => (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -232,12 +202,12 @@ const SalesforceDashboard = () => {
             <div className={`flex items-center mt-2 text-sm ${
               trend.type === 'up' ? 'text-green-600' : 'text-red-600'
             }`}>
-              <FiTrendingUp className="w-5 h-5 mr-1" />
+              <FiTrendingUp className="w-4 h-4 mr-1" />
               <span>{trend.value}</span>
             </div>
           )}
         </div>
-        <div className={`flex items-center justify-center p-3 bg-${color}-100 rounded-lg`} style={{ minWidth: 48, minHeight: 48 }}>
+        <div className={`p-3 bg-${color}-100 rounded-lg`}>
           {icon}
         </div>
       </div>
@@ -469,39 +439,47 @@ const SalesforceDashboard = () => {
     </div>
   );
 
-
-  // Obtener leads reales desde la API (puedes ajustar el endpoint y lógica según tu backend)
-  const [leads, setLeads] = useState([]);
-  useEffect(() => {
-    fetchLeads();
-  }, []);
-
-  const fetchLeads = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      const response = await fetch(`${API_URL}/api/salesforce/leads`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setLeads(data.leads || []);
-      }
-    } catch (error) {
-      console.error('Error fetching leads:', error);
-    }
-  };
-
   const renderTabContent = () => {
+    const mockLeads = [
+      {
+        id: 1,
+        company: 'Acme Corp',
+        industry: 'technology',
+        numberOfEmployees: '100-249',
+        annualRevenue: 2500000,
+        phone: '+1-555-0123',
+        website: 'https://acme.com',
+        behaviorData: { formSubmissions: 2, websiteVisits: 5, demoRequested: true }
+      },
+      {
+        id: 2,
+        company: 'TechStart Inc',
+        industry: 'technology',
+        numberOfEmployees: '50-99',
+        annualRevenue: 800000,
+        phone: '+1-555-0456',
+        website: 'https://techstart.com',
+        behaviorData: { formSubmissions: 1, websiteVisits: 3, demoRequested: false }
+      },
+      {
+        id: 3,
+        company: 'Global Manufacturing',
+        industry: 'manufacturing',
+        numberOfEmployees: '500-999',
+        annualRevenue: 15000000,
+        phone: '+1-555-0789',
+        website: 'https://globalmfg.com',
+        behaviorData: { formSubmissions: 1, websiteVisits: 8, demoRequested: true }
+      }
+    ];
+
     switch (activeTab) {
       case 'overview':
         return <OverviewTab />;
       case 'leads':
-        return <LeadScoringDashboard leads={leads} onLeadSelect={(lead) => console.log('Selected lead:', lead)} />;
+        return <LeadScoringDashboard leads={mockLeads} onLeadSelect={(lead) => console.log('Selected lead:', lead)} />;
       case 'emails':
-        return <EmailAutomationDashboard leads={leads} />;
+        return <EmailAutomationDashboard leads={mockLeads} />;
       case 'connection':
         return <ConnectionTab />;
       case 'history':

@@ -11,7 +11,6 @@ import FavoriteModel from './Favorite.js';
 import LikeModel from './Like.js';
 import CommentModel from './Comment.js';
 import QuestionModel from './question.model.js';
-import SalesforceTokenModel from './salesforce.token.model.js';
 
 // Database object to hold sequelize instance and models
 const db = {};
@@ -27,7 +26,6 @@ db.Favorite = FavoriteModel(sequelize, DataTypes);
 db.Like = LikeModel(sequelize, DataTypes);
 db.Comment = CommentModel(sequelize, DataTypes);
 db.Question = QuestionModel(sequelize, DataTypes);
-db.SalesforceToken = SalesforceTokenModel(sequelize, DataTypes);
 
 // Define model associations
 
@@ -80,9 +78,5 @@ db.Template.hasMany(db.Form, { foreignKey: "templateId" });
 // Question relationships
 db.Question.belongsTo(db.Template, { foreignKey: "templateId" });
 db.Template.hasMany(db.Question, { foreignKey: "templateId" });
-
-// SalesforceToken relationships
-db.User.hasOne(db.SalesforceToken, { foreignKey: 'userId', as: 'salesforceToken' });
-db.SalesforceToken.belongsTo(db.User, { foreignKey: 'userId', as: 'user' });
 
 export default db;

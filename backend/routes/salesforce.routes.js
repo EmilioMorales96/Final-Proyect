@@ -1,46 +1,40 @@
 import express from 'express';
 import authenticateToken from '../middleware/auth.middleware.js';
-import db from '../models/index.js';
-import crypto from 'crypto';
 
 const router = express.Router();
 
-/**
- * HEALTH CHECK ENDPOINT
- * GET /api/salesforce/health
- * Returns a simple status for deployment verification
- */
-router.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'Salesforce routes are active',
-    timestamp: new Date().toISOString()
-  });
+
+
+router.get('/oauth/callback', async (req, res) => {
+  try {
+    console.log('🔄 [OAuth Callback] Received callback for user:', req.user.id);
+    // Manejar el callback de OAuth aquí
+  } catch (error) {
+    console.error('❌ [OAuth Callback] Error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error handling OAuth callback',
+      error: error.message
+    });
+  }
 });
 
-
-/**
- * PUBLIC TEST ENDPOINT
- * GET /api/salesforce/test
- * Returns current Salesforce configuration status for debugging.
- * No authentication required.
- */
 router.get('/test', async (req, res) => {
   try {
-    // Gather configuration status
+    console.log('🧪 [Public Test] Checking configuration...');
+    
     const config = {
-      client_id_configured: Boolean(process.env.SALESFORCE_CLIENT_ID),
-      client_secret_configured: Boolean(process.env.SALESFORCE_CLIENT_SECRET),
+      client_id_configured: !!process.env.SALESFORCE_CLIENT_ID,
+      client_secret_configured: !!process.env.SALESFORCE_CLIENT_SECRET,
       redirect_uri: process.env.SALESFORCE_REDIRECT_URI || 'DEFAULT',
       is_sandbox: process.env.SALESFORCE_IS_SANDBOX || 'false',
       login_url: process.env.SALESFORCE_LOGIN_URL || 'DEFAULT',
       environment: process.env.NODE_ENV || 'development'
     };
-
-    // Respond with configuration and endpoint info
+    
     res.json({
       status: 'success',
-      message: 'Salesforce public test endpoint',
+      message: 'Clean Salesforce System - Public Test',
       timestamp: new Date().toISOString(),
       configuration: config,
       ready: config.client_id_configured && config.client_secret_configured,
@@ -54,30 +48,26 @@ router.get('/test', async (req, res) => {
         test: 'GET /api/salesforce/test (public)'
       }
     });
+    
   } catch (error) {
-    // Error handling
-    console.error('[Salesforce Test] Error:', error);
+    console.error('❌ Public test error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Error in public test endpoint',
+      message: 'Error in public test',
       error: error.message
     });
   }
 });
 
-
 /**
- * STATUS ENDPOINT
+ * 📊 STATUS ENDPOINT
  * GET /api/salesforce/status
- * Returns Salesforce configuration status for the authenticated user.
- * Requires authentication.
+ * Verificar estado de configuración
  */
 router.get('/status', authenticateToken, async (req, res) => {
   try {
-    // Log user making the request
-    console.log('[Salesforce Status] User:', req.user.id);
-
-    // Build configuration status object
+    console.log('📊 [Salesforce Status] User:', req.user.id);
+    
     const config = {
       client_id: process.env.SALESFORCE_CLIENT_ID ? 'CONFIGURED ✅' : 'MISSING ❌',
       client_secret: process.env.SALESFORCE_CLIENT_SECRET ? 'CONFIGURED ✅' : 'MISSING ❌',
@@ -85,18 +75,17 @@ router.get('/status', authenticateToken, async (req, res) => {
       is_sandbox: process.env.SALESFORCE_IS_SANDBOX || 'false',
       login_url: process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com'
     };
-
-    // Respond with configuration status
+    
     res.json({
       status: 'success',
       message: 'Salesforce configuration status',
       user: req.user.id,
       configuration: config,
-      ready_for_oauth: Boolean(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET)
+      ready_for_oauth: !!(process.env.SALESFORCE_CLIENT_ID && process.env.SALESFORCE_CLIENT_SECRET)
     });
+    
   } catch (error) {
-    // Error handling
-    console.error('[Salesforce Status] Error:', error);
+    console.error('❌ Status error:', error);
     res.status(500).json({
       status: 'error',
       message: 'Error getting Salesforce status',
@@ -105,53 +94,27 @@ router.get('/status', authenticateToken, async (req, res) => {
   }
 });
 
-
 /**
- * OAUTH URL ENDPOINT
+ * 🔗 GENERATE OAUTH URL
  * GET /api/salesforce/oauth/url
- * Generates Salesforce OAuth authorization URL with PKCE for the authenticated user.
- * Requires authentication.
+ * Generar URL de autorización OAuth
  */
 router.get('/oauth/url', authenticateToken, async (req, res) => {
   try {
-    // Ensure required configuration is present
+    console.log('🔗 [OAuth URL] Generating for user:', req.user.id);
+    
+    // Verificar configuración
     if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
       return res.status(400).json({
         status: 'error',
         message: 'Salesforce not configured. Missing CLIENT_ID or CLIENT_SECRET.'
       });
     }
-
-    // Prepare OAuth parameters
+    
     const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
     const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
-
-    // PKCE: Generate code_verifier and code_challenge
-    function base64URLEncode(buffer) {
-      return Buffer.from(buffer)
-        .toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-    }
-    function sha256(buffer) {
-      return crypto.createHash('sha256').update(buffer).digest();
-    }
-    function generateCodeVerifier(length = 64) {
-      return base64URLEncode(crypto.randomBytes(length));
-    }
-
-    const code_verifier = generateCodeVerifier();
-    const code_challenge = base64URLEncode(sha256(code_verifier));
-
-    // Store code_verifier for later token exchange (in-memory for demo)
-    if (!global.salesforcePKCE) global.salesforcePKCE = {};
-    global.salesforcePKCE[req.user.id] = {
-      code_verifier,
-      created: Date.now()
-    };
-
-    // Build OAuth URL
+    
+    // Construir URL OAuth
     const authUrl = new URL(`${loginUrl}/services/oauth2/authorize`);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('client_id', process.env.SALESFORCE_CLIENT_ID);
@@ -159,76 +122,28 @@ router.get('/oauth/url', authenticateToken, async (req, res) => {
     authUrl.searchParams.set('scope', 'api refresh_token offline_access');
     authUrl.searchParams.set('state', `user_${req.user.id}_${Date.now()}`);
     authUrl.searchParams.set('prompt', 'consent');
-    authUrl.searchParams.set('code_challenge', code_challenge);
-    authUrl.searchParams.set('code_challenge_method', 'S256');
-
-    // Respond with OAuth URL and PKCE info
+    
+    console.log('✅ OAuth URL generated successfully');
+    
     res.json({
       status: 'success',
-      message: 'OAuth URL generated (PKCE)',
+      message: 'OAuth URL generated',
       oauth_url: authUrl.toString(),
-      configuration: {
-        client_id: process.env.SALESFORCE_CLIENT_ID.substring(0, 20) + '...',
-        redirect_uri: redirectUri,
-        login_url: loginUrl,
-        code_challenge,
-        code_challenge_method: 'S256'
-      }
-    });
-  } catch (error) {
-    // Error handling
-    console.error('[OAuth URL] Generation error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Error generating OAuth URL',
-      error: error.message
-    });
-  }
-});
-
-
-/**
- * OAUTH URL PUBLIC ENDPOINT
- * GET /api/salesforce/oauth-url-public
- * Generates Salesforce OAuth authorization URL for public testing (no PKCE, no auth required).
- */
-router.get('/oauth-url-public', async (req, res) => {
-  try {
-    // Ensure required configuration is present
-    if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Salesforce not configured. Missing CLIENT_ID or CLIENT_SECRET.'
-      });
-    }
-
-    // Prepare OAuth parameters
-    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
-    const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
-
-    // Build OAuth URL (no PKCE)
-    const authUrl = new URL(`${loginUrl}/services/oauth2/authorize`);
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('client_id', process.env.SALESFORCE_CLIENT_ID);
-    authUrl.searchParams.set('redirect_uri', redirectUri);
-    authUrl.searchParams.set('scope', 'api refresh_token offline_access');
-    authUrl.searchParams.set('state', `public_test_${Date.now()}`);
-    authUrl.searchParams.set('prompt', 'consent');
-
-    // Respond with OAuth URL
-    res.json({
-      status: 'success',
-      message: 'OAuth URL generated for public testing',
-      oauth_url: authUrl.toString(),
+      instructions: [
+        '1. Clic en la URL para autorizar',
+        '2. Iniciar sesión en Salesforce',
+        '3. Aceptar permisos',
+        '4. Serás redirigido automáticamente'
+      ],
       configuration: {
         client_id: process.env.SALESFORCE_CLIENT_ID.substring(0, 20) + '...',
         redirect_uri: redirectUri,
         login_url: loginUrl
       }
     });
+    
   } catch (error) {
-    // Error handling
-    console.error('[OAuth URL Public] Generation error:', error);
+    console.error('❌ OAuth URL generation error:', error);
     res.status(500).json({
       status: 'error',
       message: 'Error generating OAuth URL',
@@ -237,68 +152,193 @@ router.get('/oauth-url-public', async (req, res) => {
   }
 });
 
+/**
+ * 🔗 GENERATE OAUTH URL - PUBLIC VERSION
+ * GET /api/salesforce/oauth-url-public
+ * Generar URL de autorización OAuth (versión pública para testing)
+ */
+router.get('/oauth-url-public', async (req, res) => {
+  try {
+    console.log('🔗 [OAuth URL Public] Generating...');
+    
+    // Verificar configuración
+    if (!process.env.SALESFORCE_CLIENT_ID || !process.env.SALESFORCE_CLIENT_SECRET) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Salesforce not configured. Missing CLIENT_ID or CLIENT_SECRET.'
+      });
+    }
+    
+    const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
+    const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
+    
+    // Construir URL OAuth
+    const authUrl = new URL(`${loginUrl}/services/oauth2/authorize`);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('client_id', process.env.SALESFORCE_CLIENT_ID);
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', 'api refresh_token offline_access');
+    authUrl.searchParams.set('state', `clean_test_${Date.now()}`);
+    authUrl.searchParams.set('prompt', 'consent');
+    
+    console.log('✅ OAuth URL generated successfully (PUBLIC)');
+    
+    res.json({
+      status: 'success',
+      message: 'OAuth URL generated - Clean System',
+      oauth_url: authUrl.toString(),
+      instructions: [
+        '🔗 COPY Y PEGA LA URL EN TU NAVEGADOR',
+        '1. Clic en la URL para autorizar',
+        '2. Iniciar sesión en Salesforce',
+        '3. Aceptar permisos',
+        '4. Serás redirigido automáticamente'
+      ],
+      configuration: {
+        client_id: process.env.SALESFORCE_CLIENT_ID.substring(0, 20) + '...',
+        redirect_uri: redirectUri,
+        login_url: loginUrl
+      },
+      important_note: 'ASEGÚRATE de que en tu Salesforce Connected App el Callback URL sea EXACTAMENTE: ' + redirectUri
+    });
+    
+  } catch (error) {
+    console.error('❌ OAuth URL generation error (PUBLIC):', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error generating OAuth URL',
+      error: error.message
+    });
+  }
+});
 
 /**
- * OAUTH CALLBACK ENDPOINT
+ * 🔄 OAUTH CALLBACK - ENHANCED DEBUG VERSION
  * GET /api/salesforce/oauth/callback
- * Handles Salesforce OAuth callback, exchanges code for token, and persists token for user.
+ * Manejar callback de autorización OAuth con debugging mejorado
  */
 router.get('/oauth/callback', async (req, res) => {
   try {
     const { code, state, error, error_description } = req.query;
-
-    // If OAuth error, respond with error message
+    
+    console.log('🔄 [OAuth Callback] DETAILED DEBUG:');
+    console.log('  - Full URL:', req.url);
+    console.log('  - Query Params:', JSON.stringify(req.query, null, 2));
+    console.log('  - Code received:', code ? 'YES ✅' : 'NO ❌');
+    console.log('  - State:', state);
+    console.log('  - Error:', error);
+    console.log('  - Error Description:', error_description);
+    console.log('  - Headers:', JSON.stringify(req.headers, null, 2));
+    
+    // Crear respuesta de debug
+    const debugInfo = {
+      timestamp: new Date().toISOString(),
+      callback_received: true,
+      query_params: req.query,
+      code_present: !!code,
+      error_present: !!error,
+      state_received: state,
+      redirect_uri_used: process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback',
+      client_id_configured: !!process.env.SALESFORCE_CLIENT_ID,
+      client_secret_configured: !!process.env.SALESFORCE_CLIENT_SECRET
+    };
+    
+    // Si hay error OAuth, mostrar debug completo
     if (error) {
-      return res.status(400).json({
-        status: 'error',
-        message: `OAuth error: ${error}`,
-        description: error_description || null
-      });
-    }
-
-    // If no code, respond with error
-    if (!code) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'No authorization code received',
-        possible_causes: [
-          'User cancelled authorization',
-          'OAuth flow error',
-          'Incorrect Connected App configuration'
+      console.error('❌ [OAuth Callback] OAuth Error Detected:', error, error_description);
+      
+      const errorDebug = {
+        ...debugInfo,
+        oauth_error: error,
+        oauth_error_description: error_description,
+        common_errors: {
+          'invalid_client_id': 'Consumer Key incorrecto o no existe',
+          'invalid_redirect_uri': 'Callback URL no coincide con configuración de Salesforce',
+          'access_denied': 'Usuario canceló la autorización',
+          'invalid_request': 'Parámetros de solicitud incorrectos',
+          'unsupported_response_type': 'Tipo de respuesta no soportado'
+        },
+        fix_suggestions: error === 'invalid_redirect_uri' ? [
+          'Verificar que en Salesforce Connected App el Callback URL sea EXACTAMENTE:',
+          process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback',
+          'No debe tener espacios, mayúsculas diferentes, o caracteres extra'
+        ] : error === 'invalid_client_id' ? [
+          'Verificar Consumer Key en Salesforce',
+          'Asegurar que la Connected App esté habilitada',
+          'Verificar que no hay espacios en la configuración'
+        ] : [
+          'Revisar configuración de Connected App en Salesforce',
+          'Verificar permisos y scopes configurados'
         ]
-      });
+      };
+      
+      // Mostrar error en formato HTML para debugging
+      return res.send(`
+        <html>
+          <head><title>OAuth Callback Error - Debug</title></head>
+          <body>
+            <h1>🔍 OAuth Callback Debug - Error Detected</h1>
+            <h2>❌ Error: ${error}</h2>
+            <p><strong>Description:</strong> ${error_description || 'No description provided'}</p>
+            <h3>📋 Debug Information:</h3>
+            <pre>${JSON.stringify(errorDebug, null, 2)}</pre>
+            <h3>🔧 Suggested Fixes:</h3>
+            <ul>
+              ${errorDebug.fix_suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+            </ul>
+            <p><a href="${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations">← Volver a Integrations</a></p>
+          </body>
+        </html>
+      `);
     }
-
-    // Extract userId from state (format: user_<id>_timestamp)
-    let userId = null;
-    if (state && state.startsWith('user_')) {
-      const parts = state.split('_');
-      if (parts.length >= 2) {
-        userId = parseInt(parts[1], 10);
-      }
+    
+    // Si no hay código de autorización
+    if (!code) {
+      console.error('❌ [OAuth Callback] No authorization code received');
+      
+      const noCodeDebug = {
+        ...debugInfo,
+        issue: 'No authorization code received',
+        possible_causes: [
+          'Usuario canceló la autorización',
+          'Error en el flujo OAuth',
+          'Configuración incorrecta de Connected App'
+        ]
+      };
+      
+      return res.send(`
+        <html>
+          <head><title>OAuth Callback - No Code</title></head>
+          <body>
+            <h1>🔍 OAuth Callback Debug - No Authorization Code</h1>
+            <h2>❌ No se recibió código de autorización</h2>
+            <h3>📋 Debug Information:</h3>
+            <pre>${JSON.stringify(noCodeDebug, null, 2)}</pre>
+            <p><a href="${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations">← Volver a Integrations</a></p>
+          </body>
+        </html>
+      `);
     }
-
-    // Retrieve code_verifier for this user (PKCE)
-    let code_verifier = null;
-    if (userId && global.salesforcePKCE && global.salesforcePKCE[userId]) {
-      code_verifier = global.salesforcePKCE[userId].code_verifier;
-      // Clean up after use
-      delete global.salesforcePKCE[userId];
-    }
-
-    // Exchange code for token
+    
+    // Tenemos código! Intentar intercambio por token
     const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
     const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
-
+    
+    console.log('🔄 [OAuth Callback] Exchanging code for token...');
+    console.log('  - Login URL:', loginUrl);
+    console.log('  - Redirect URI:', redirectUri);
+    console.log('  - Client ID:', process.env.SALESFORCE_CLIENT_ID?.substring(0, 20) + '...');
+    
     const tokenRequestBody = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: process.env.SALESFORCE_CLIENT_ID,
       client_secret: process.env.SALESFORCE_CLIENT_SECRET,
       redirect_uri: redirectUri,
-      code: code,
-      ...(code_verifier ? { code_verifier } : {})
+      code: code
     });
-
+    
+    console.log('🔄 [OAuth Callback] Token request body:', tokenRequestBody.toString());
+    
     const tokenResponse = await fetch(`${loginUrl}/services/oauth2/token`, {
       method: 'POST',
       headers: {
@@ -306,40 +346,92 @@ router.get('/oauth/callback', async (req, res) => {
       },
       body: tokenRequestBody
     });
-
+    
     const tokenData = await tokenResponse.json();
-
+    console.log('🎯 [OAuth Callback] Token Response Status:', tokenResponse.status);
+    console.log('🎯 [OAuth Callback] Token Response Data:', JSON.stringify(tokenData, null, 2));
+    
     if (tokenData.access_token) {
-      // Persist token for user
-      if (userId) {
-        await db.SalesforceToken.upsert({
-          userId,
-          accessToken: tokenData.access_token,
-          refreshToken: tokenData.refresh_token || null,
-          instanceUrl: tokenData.instance_url || null,
-          tokenType: tokenData.token_type || null,
-          scope: tokenData.scope || null,
-          expiresIn: tokenData.expires_in || null
-        });
-      }
-
-      // Redirect to frontend with success
-      return res.redirect(`${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?success=oauth_connected`);
+      // ¡ÉXITO! Token obtenido
+      console.log('🎉 [OAuth Callback] OAUTH SUCCESS! Token received');
+      
+      const successDebug = {
+        ...debugInfo,
+        success: true,
+        token_received: true,
+        instance_url: tokenData.instance_url,
+        token_type: tokenData.token_type,
+        scope: tokenData.scope
+      };
+      
+      return res.send(`
+        <html>
+          <head><title>OAuth Success!</title></head>
+          <body>
+            <h1>🎉 OAuth Callback Success!</h1>
+            <h2>✅ Token recibido exitosamente</h2>
+            <p><strong>Instance URL:</strong> ${tokenData.instance_url}</p>
+            <p><strong>Token Type:</strong> ${tokenData.token_type}</p>
+            <p><strong>Scope:</strong> ${tokenData.scope}</p>
+            <h3>📋 Debug Information:</h3>
+            <pre>${JSON.stringify(successDebug, null, 2)}</pre>
+            <p><a href="${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations?success=oauth_complete">← Volver a Integrations</a></p>
+          </body>
+        </html>
+      `);
     } else {
-      // Token exchange failed
-      return res.status(400).json({
-        status: 'error',
-        message: 'Token exchange failed',
-        token_response: tokenData
-      });
+      // Error en intercambio de token
+      console.error('❌ [OAuth Callback] Token exchange failed:', tokenData);
+      
+      const tokenErrorDebug = {
+        ...debugInfo,
+        token_exchange_failed: true,
+        token_response: tokenData,
+        response_status: tokenResponse.status
+      };
+      
+      return res.send(`
+        <html>
+          <head><title>OAuth Token Exchange Failed</title></head>
+          <body>
+            <h1>🔍 OAuth Callback Debug - Token Exchange Failed</h1>
+            <h2>❌ Error intercambiando código por token</h2>
+            <p><strong>Response Status:</strong> ${tokenResponse.status}</p>
+            <h3>📋 Token Response:</h3>
+            <pre>${JSON.stringify(tokenData, null, 2)}</pre>
+            <h3>📋 Full Debug Information:</h3>
+            <pre>${JSON.stringify(tokenErrorDebug, null, 2)}</pre>
+            <p><a href="${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations">← Volver a Integrations</a></p>
+          </body>
+        </html>
+      `);
     }
+    
   } catch (error) {
-    // General error handling
-    return res.status(500).json({
-      status: 'error',
-      message: 'Exception during OAuth callback',
-      error: error.message
-    });
+    console.error('❌ [OAuth Callback] Exception occurred:', error);
+    
+    const exceptionDebug = {
+      timestamp: new Date().toISOString(),
+      exception: true,
+      error_message: error.message,
+      error_stack: error.stack,
+      query_params: req.query,
+      url: req.url
+    };
+    
+    return res.send(`
+      <html>
+        <head><title>OAuth Callback Exception</title></head>
+        <body>
+          <h1>🔍 OAuth Callback Debug - Exception</h1>
+          <h2>❌ Excepción durante el callback</h2>
+          <p><strong>Error:</strong> ${error.message}</p>
+          <h3>📋 Debug Information:</h3>
+          <pre>${JSON.stringify(exceptionDebug, null, 2)}</pre>
+          <p><a href="${process.env.FRONTEND_URL || 'https://frontend-9ajm.onrender.com'}/admin/integrations">← Volver a Integrations</a></p>
+        </body>
+      </html>
+    `);
   }
 });
 
@@ -352,50 +444,16 @@ router.get('/accounts', authenticateToken, async (req, res) => {
   try {
     console.log('📋 [List Accounts] User:', req.user.id);
     
-    // Obtener el token de Salesforce del usuario
-    const tokenRecord = await db.SalesforceToken.findOne({ where: { userId: req.user.id } });
-    if (!tokenRecord || !tokenRecord.accessToken) {
-      return res.json({
-        status: 'info',
-        message: 'OAuth authentication required',
-        action: 'Please complete OAuth authentication first',
-        accounts: [],
-        user: req.user.id
-      });
-    }
-
-    // Llamar a Salesforce para obtener cuentas reales
-    try {
-      const response = await fetch(`${tokenRecord.instanceUrl}/services/data/v58.0/query?q=SELECT+Id,Name,Industry,Phone,Website+FROM+Account+LIMIT+10`, {
-        headers: {
-          'Authorization': `Bearer ${tokenRecord.accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const data = await response.json();
-      if (data.records) {
-        return res.json({
-          status: 'success',
-          message: 'Accounts fetched from Salesforce',
-          accounts: data.records,
-          user: req.user.id
-        });
-      } else {
-        return res.json({
-          status: 'error',
-          message: 'No accounts found or error in Salesforce response',
-          details: data,
-          user: req.user.id
-        });
-      }
-    } catch (err) {
-      return res.status(500).json({
-        status: 'error',
-        message: 'Error fetching accounts from Salesforce',
-        error: err.message,
-        user: req.user.id
-      });
-    }
+    // TODO: Aquí deberías obtener el token del usuario desde la base de datos
+    // Por ahora, retornamos un mensaje indicando que se necesita autenticación
+    
+    res.json({
+      status: 'info',
+      message: 'OAuth authentication required',
+      action: 'Please complete OAuth authentication first',
+      accounts: [],
+      user: req.user.id
+    });
     
   } catch (error) {
     console.error('❌ List accounts error:', error);
@@ -602,69 +660,61 @@ router.get('/auth-callback', async (req, res) => {
           },
           body: tokenData
         });
-        
+
         const tokenResult = await tokenResponse.json();
-        
-        if (tokenResponse.ok) {
+
+        if (tokenResponse.ok && tokenResult.access_token) {
           console.log('🎉 [OAuth Alternative Callback] Token exchange successful!');
-          
-          return res.send(`
+          return res.status(200).send(`
             <html>
               <head><title>OAuth Success - Alternative Callback</title></head>
               <body>
                 <h1>🎉 OAuth Authorization Successful!</h1>
                 <h2>✅ Token Exchange Completed</h2>
-                <h3>📋 Success Information:</h3>
                 <pre>${JSON.stringify({
                   timestamp: new Date().toISOString(),
                   endpoint: '/api/salesforce/auth-callback',
                   status: 'success',
-                  access_token_received: !!tokenResult.access_token,
+                  access_token_received: true,
                   instance_url: tokenResult.instance_url,
                   token_type: tokenResult.token_type
                 }, null, 2)}</pre>
-                <h3>🔧 Next Steps:</h3>
-                <ul>
-                  <li>Integration is now working!</li>
-                  <li>Access token obtained successfully</li>
-                  <li>You can now use Salesforce API endpoints</li>
-                </ul>
+                <p>Access token obtained successfully. You can now use Salesforce API endpoints.</p>
               </body>
             </html>
           `);
         } else {
           console.error('❌ [OAuth Alternative Callback] Token exchange failed:', tokenResult);
-          
-          return res.send(`
+          return res.status(400).send(`
             <html>
               <head><title>Token Exchange Error</title></head>
               <body>
                 <h1>❌ Token Exchange Failed</h1>
-                <h3>📋 Error Information:</h3>
                 <pre>${JSON.stringify({
                   timestamp: new Date().toISOString(),
                   endpoint: '/api/salesforce/auth-callback',
-                  token_error: tokenResult
+                  error: tokenResult.error || 'Unknown error',
+                  error_description: tokenResult.error_description || '',
+                  token_response: tokenResult
                 }, null, 2)}</pre>
+                <p>Verifica la configuración de tu Connected App, client_id, client_secret y callback URL.</p>
               </body>
             </html>
           `);
         }
-        
       } catch (fetchError) {
         console.error('❌ [OAuth Alternative Callback] Fetch error:', fetchError);
-        
-        return res.send(`
+        return res.status(500).send(`
           <html>
             <head><title>Network Error</title></head>
             <body>
               <h1>❌ Network Error During Token Exchange</h1>
-              <h3>📋 Error Information:</h3>
               <pre>${JSON.stringify({
                 timestamp: new Date().toISOString(),
                 endpoint: '/api/salesforce/auth-callback',
                 network_error: fetchError.message
               }, null, 2)}</pre>
+              <p>Revisa tu conexión a internet y la URL de Salesforce.</p>
             </body>
           </html>
         `);
@@ -690,57 +740,5 @@ router.get('/auth-callback', async (req, res) => {
   }
 });
 
-
-/**
- * 🧑‍💼 GET LEADS
- * GET /api/salesforce/leads
- * Fetch real leads from Salesforce for the authenticated user
- */
-router.get('/leads', authenticateToken, async (req, res) => {
-  try {
-    // Get Salesforce token for user
-    const tokenRecord = await db.SalesforceToken.findOne({ where: { userId: req.user.id } });
-    if (!tokenRecord || !tokenRecord.accessToken || !tokenRecord.instanceUrl) {
-      return res.status(401).json({
-        status: 'error',
-        message: 'Salesforce OAuth authentication required',
-        leads: [],
-        user: req.user.id
-      });
-    }
-
-    // Query Salesforce for leads
-    const query = 'SELECT Id, Name, Company, Status, Email FROM Lead LIMIT 20';
-    const response = await fetch(`${tokenRecord.instanceUrl}/services/data/v58.0/query?q=' + encodeURIComponent(query)`, {
-      headers: {
-        'Authorization': `Bearer ${tokenRecord.accessToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    const data = await response.json();
-    if (data.records) {
-      return res.json({
-        status: 'success',
-        message: 'Leads fetched from Salesforce',
-        leads: data.records,
-        user: req.user.id
-      });
-    } else {
-      return res.status(404).json({
-        status: 'error',
-        message: 'No leads found or error in Salesforce response',
-        details: data,
-        user: req.user.id
-      });
-    }
-  } catch (error) {
-    console.error('❌ Error fetching leads:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Error fetching Salesforce leads',
-      error: error.message
-    });
-  }
-});
 
 export default router;
