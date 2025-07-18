@@ -1,3 +1,5 @@
+import express from 'express';
+
 // Logout: limpia la cookie JWT
 router.post("/logout", (req, res) => {
   res.clearCookie('token', {
@@ -7,14 +9,6 @@ router.post("/logout", (req, res) => {
   });
   res.json({ message: "Logged out" });
 });
-import express from 'express';
-import db from "../models/index.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import passport from '../config/passport.js';
-
-const router = express.Router();
-const { User } = db;
 
 /**
  * Register a new user
