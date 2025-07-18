@@ -678,4 +678,57 @@ router.get('/auth-callback', async (req, res) => {
   }
 });
 
+
+/**
+ * 🧑‍💼 GET LEADS
+ * GET /api/salesforce/leads
+ * Fetch real leads from Salesforce for the authenticated user
+ */
+router.get('/leads', authenticateToken, async (req, res) => {
+  try {
+    // Get Salesforce token for user
+    const tokenRecord = await db.SalesforceToken.findOne({ where: { userId: req.user.id } });
+    if (!tokenRecord || !tokenRecord.accessToken || !tokenRecord.instanceUrl) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Salesforce OAuth authentication required',
+        leads: [],
+        user: req.user.id
+      });
+    }
+
+    // Query Salesforce for leads
+    const query = 'SELECT Id, Name, Company, Status, Email FROM Lead LIMIT 20';
+    const response = await fetch(`${tokenRecord.instanceUrl}/services/data/v58.0/query?q=' + encodeURIComponent(query)`, {
+      headers: {
+        'Authorization': `Bearer ${tokenRecord.accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await response.json();
+    if (data.records) {
+      return res.json({
+        status: 'success',
+        message: 'Leads fetched from Salesforce',
+        leads: data.records,
+        user: req.user.id
+      });
+    } else {
+      return res.status(404).json({
+        status: 'error',
+        message: 'No leads found or error in Salesforce response',
+        details: data,
+        user: req.user.id
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error fetching leads:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error fetching Salesforce leads',
+      error: error.message
+    });
+  }
+});
+
 export default router;

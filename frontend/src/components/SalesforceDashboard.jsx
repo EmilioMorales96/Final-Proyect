@@ -456,47 +456,39 @@ const SalesforceDashboard = () => {
     </div>
   );
 
-  const renderTabContent = () => {
-    const mockLeads = [
-      {
-        id: 1,
-        company: 'Acme Corp',
-        industry: 'technology',
-        numberOfEmployees: '100-249',
-        annualRevenue: 2500000,
-        phone: '+1-555-0123',
-        website: 'https://acme.com',
-        behaviorData: { formSubmissions: 2, websiteVisits: 5, demoRequested: true }
-      },
-      {
-        id: 2,
-        company: 'TechStart Inc',
-        industry: 'technology',
-        numberOfEmployees: '50-99',
-        annualRevenue: 800000,
-        phone: '+1-555-0456',
-        website: 'https://techstart.com',
-        behaviorData: { formSubmissions: 1, websiteVisits: 3, demoRequested: false }
-      },
-      {
-        id: 3,
-        company: 'Global Manufacturing',
-        industry: 'manufacturing',
-        numberOfEmployees: '500-999',
-        annualRevenue: 15000000,
-        phone: '+1-555-0789',
-        website: 'https://globalmfg.com',
-        behaviorData: { formSubmissions: 1, websiteVisits: 8, demoRequested: true }
-      }
-    ];
 
+  // Obtener leads reales desde la API (puedes ajustar el endpoint y lógica según tu backend)
+  const [leads, setLeads] = useState([]);
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  const fetchLeads = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const response = await fetch(`${API_URL}/api/salesforce/leads`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLeads(data.leads || []);
+      }
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+    }
+  };
+
+  const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
         return <OverviewTab />;
       case 'leads':
-        return <LeadScoringDashboard leads={mockLeads} onLeadSelect={(lead) => console.log('Selected lead:', lead)} />;
+        return <LeadScoringDashboard leads={leads} onLeadSelect={(lead) => console.log('Selected lead:', lead)} />;
       case 'emails':
-        return <EmailAutomationDashboard leads={mockLeads} />;
+        return <EmailAutomationDashboard leads={leads} />;
       case 'connection':
         return <ConnectionTab />;
       case 'history':

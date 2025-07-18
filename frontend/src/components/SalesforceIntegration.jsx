@@ -65,6 +65,8 @@ const SalesforceIntegration = () => {
     }
   };
 
+
+  // Industry options (real, no demo)
   const industries = [
     { key: 'technology', label: t('industry.technology') },
     { key: 'healthcare', label: t('industry.healthcare') },
@@ -72,17 +74,20 @@ const SalesforceIntegration = () => {
     { key: 'education', label: t('industry.education') },
     { key: 'manufacturing', label: t('industry.manufacturing') },
     { key: 'retail', label: t('industry.retail') },
-    { key: 'realEstate', label: t('industry.realEstate') },
-    { key: 'consulting', label: t('industry.consulting') },
+    { key: 'construction', label: t('industry.construction') },
+    { key: 'agriculture', label: t('industry.agriculture') },
     { key: 'other', label: t('industry.other') }
   ];
 
+
+  // Employee ranges (real, no demo)
   const employeeRanges = [
-    { key: '1-10', label: t('employees.1-10') },
-    { key: '11-50', label: t('employees.11-50') },
-    { key: '51-200', label: t('employees.51-200') },
-    { key: '201-500', label: t('employees.201-500') },
-    { key: '501-1000', label: t('employees.501-1000') },
+    { key: '1-9', label: t('employees.1-9') },
+    { key: '10-49', label: t('employees.10-49') },
+    { key: '50-99', label: t('employees.50-99') },
+    { key: '100-249', label: t('employees.100-249') },
+    { key: '250-499', label: t('employees.250-499') },
+    { key: '500-999', label: t('employees.500-999') },
     { key: '1000+', label: t('employees.1000+') }
   ];
 
@@ -223,15 +228,16 @@ const SalesforceIntegration = () => {
         </p>
       </div>
 
-      {/* Tarjetas de funcionalidades - Con más espacio y dark mode */}
+
+      {/* Tarjetas de funcionalidades - Solo información real, sin demo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="group bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-100 dark:border-gray-700 p-8 text-center hover:shadow-2xl dark:hover:shadow-gray-900/50 hover:border-blue-200 dark:hover:border-blue-600 transition-all duration-500 transform hover:-translate-y-2">
           <div className="inline-flex p-4 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
             <HiOutlineOfficeBuilding className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.manual.features.createAccounts.title')}</h3>
+          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.createAccounts.title')}</h3>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-            {t('integration.manual.features.createAccounts.description')}
+            {t('integration.real.features.createAccounts.description')}
           </p>
         </div>
 
@@ -239,9 +245,9 @@ const SalesforceIntegration = () => {
           <div className="inline-flex p-4 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
             <HiOutlineUserGroup className="w-8 h-8 text-purple-600 dark:text-purple-400" />
           </div>
-          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.manual.features.manageContacts.title')}</h3>
+          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.manageContacts.title')}</h3>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-            {t('integration.manual.features.manageContacts.description')}
+            {t('integration.real.features.manageContacts.description')}
           </p>
         </div>
 
@@ -249,9 +255,9 @@ const SalesforceIntegration = () => {
           <div className="inline-flex p-4 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
             <FiCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
-          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.manual.features.autoValidation.title')}</h3>
+          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.autoValidation.title')}</h3>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-            {t('integration.manual.features.autoValidation.description')}
+            {t('integration.real.features.autoValidation.description')}
           </p>
         </div>
       </div>
