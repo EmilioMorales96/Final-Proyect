@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import app from './app.js';
+import app from './app-frontend-fix.js'; // USAR LA VERSIÓN CORREGIDA
 import db from './models/index.js';
 
 // Load environment variables
