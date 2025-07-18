@@ -144,7 +144,7 @@ const SalesforceIntegration = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/salesforce/demo-create-account`, {
+      const response = await fetch(`${API_URL}/api/salesforce/accounts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
