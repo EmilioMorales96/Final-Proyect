@@ -1,3 +1,15 @@
+/**
+ * HEALTH CHECK ENDPOINT
+ * GET /api/salesforce/health
+ * Returns a simple status for deployment verification
+ */
+router.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Salesforce routes are active',
+    timestamp: new Date().toISOString()
+  });
+});
 import express from 'express';
 import authenticateToken from '../middleware/auth.middleware.js';
 import db from '../models/index.js';
