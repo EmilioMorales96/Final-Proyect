@@ -4,7 +4,12 @@ import authenticateToken from '../middleware/auth.middleware.js';
 const router = express.Router();
 
 // 🎯 SALESFORCE INTEGRATION - CLEAN VERSION
-// =========================================
+// ====================/**
+ * 🔄 OAUTH CALLBACK - ENHANCED DEBUG
+ * GET /api/salesforce/oauth/callback
+ * Manejar callback de autorización OAuth con debugging mejorado
+ */
+router.get('/oauth/callback', async (req, res) => {===============
 
 /**
  * 🧪 PUBLIC TEST ENDPOINT
@@ -551,6 +556,192 @@ router.get('/debug', authenticateToken, async (req, res) => {
       message: 'Error getting debug info',
       error: error.message
     });
+  }
+});
+
+/**
+ * 🔄 OAUTH CALLBACK ALTERNATIVE - NO CONFLICTS
+ * GET /api/salesforce/auth-callback
+ * Callback alternativo que evita conflictos con archivos estáticos
+ */
+router.get('/auth-callback', async (req, res) => {
+  try {
+    const { code, state, error, error_description } = req.query;
+    
+    console.log('🔄 [OAuth Alternative Callback] DETAILED DEBUG:');
+    console.log('  - Full URL:', req.url);
+    console.log('  - Query Params:', JSON.stringify(req.query, null, 2));
+    console.log('  - Code received:', code ? 'YES ✅' : 'NO ❌');
+    console.log('  - State:', state);
+    console.log('  - Error:', error);
+    console.log('  - Error Description:', error_description);
+    
+    // Si no hay código de autorización
+    if (!code && !error) {
+      return res.send(`
+        <html>
+          <head><title>OAuth Callback - No Code</title></head>
+          <body>
+            <h1>🔍 OAuth Callback Debug - Alternative Endpoint</h1>
+            <h2>⚠️ No authorization code received</h2>
+            <p>This usually means you accessed this URL directly instead of through the OAuth flow.</p>
+            <h3>📋 Debug Information:</h3>
+            <pre>${JSON.stringify({
+              timestamp: new Date().toISOString(),
+              endpoint: '/api/salesforce/auth-callback',
+              query_params: req.query,
+              message: 'No authorization code provided'
+            }, null, 2)}</pre>
+            <h3>✅ How to test properly:</h3>
+            <ol>
+              <li>Generate OAuth URL: <code>GET /api/salesforce/oauth-url-public</code></li>
+              <li>Use that URL in your browser</li>
+              <li>Complete Salesforce authorization</li>
+              <li>You will be redirected here with a code</li>
+            </ol>
+          </body>
+        </html>
+      `);
+    }
+    
+    // Si hay error OAuth
+    if (error) {
+      console.error('❌ [OAuth Alternative Callback] OAuth Error:', error, error_description);
+      
+      return res.send(`
+        <html>
+          <head><title>OAuth Error - Alternative Callback</title></head>
+          <body>
+            <h1>🔍 OAuth Alternative Callback - Error Detected</h1>
+            <h2>❌ Error: ${error}</h2>
+            <p><strong>Description:</strong> ${error_description || 'No description provided'}</p>
+            <h3>📋 Debug Information:</h3>
+            <pre>${JSON.stringify({
+              timestamp: new Date().toISOString(),
+              endpoint: '/api/salesforce/auth-callback',
+              query_params: req.query,
+              oauth_error: error,
+              oauth_error_description: error_description
+            }, null, 2)}</pre>
+            <h3>🔧 Common Solutions:</h3>
+            <ul>
+              <li><strong>invalid_redirect_uri:</strong> Check Callback URL in Salesforce Connected App</li>
+              <li><strong>invalid_client_id:</strong> Verify Consumer Key configuration</li>
+              <li><strong>access_denied:</strong> User cancelled authorization</li>
+            </ul>
+          </body>
+        </html>
+      `);
+    }
+    
+    // Si hay código de autorización, procesar
+    if (code) {
+      console.log('✅ [OAuth Alternative Callback] Authorization code received:', code);
+      
+      // Aquí intercambiamos el código por token
+      const tokenUrl = `${process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com'}/services/oauth2/token`;
+      
+      const tokenData = new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: process.env.SALESFORCE_CLIENT_ID,
+        client_secret: process.env.SALESFORCE_CLIENT_SECRET,
+        redirect_uri: process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/auth-callback',
+        code: code
+      });
+      
+      try {
+        const tokenResponse = await fetch(tokenUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: tokenData
+        });
+        
+        const tokenResult = await tokenResponse.json();
+        
+        if (tokenResponse.ok) {
+          console.log('🎉 [OAuth Alternative Callback] Token exchange successful!');
+          
+          return res.send(`
+            <html>
+              <head><title>OAuth Success - Alternative Callback</title></head>
+              <body>
+                <h1>🎉 OAuth Authorization Successful!</h1>
+                <h2>✅ Token Exchange Completed</h2>
+                <h3>📋 Success Information:</h3>
+                <pre>${JSON.stringify({
+                  timestamp: new Date().toISOString(),
+                  endpoint: '/api/salesforce/auth-callback',
+                  status: 'success',
+                  access_token_received: !!tokenResult.access_token,
+                  instance_url: tokenResult.instance_url,
+                  token_type: tokenResult.token_type
+                }, null, 2)}</pre>
+                <h3>🔧 Next Steps:</h3>
+                <ul>
+                  <li>Integration is now working!</li>
+                  <li>Access token obtained successfully</li>
+                  <li>You can now use Salesforce API endpoints</li>
+                </ul>
+              </body>
+            </html>
+          `);
+        } else {
+          console.error('❌ [OAuth Alternative Callback] Token exchange failed:', tokenResult);
+          
+          return res.send(`
+            <html>
+              <head><title>Token Exchange Error</title></head>
+              <body>
+                <h1>❌ Token Exchange Failed</h1>
+                <h3>📋 Error Information:</h3>
+                <pre>${JSON.stringify({
+                  timestamp: new Date().toISOString(),
+                  endpoint: '/api/salesforce/auth-callback',
+                  token_error: tokenResult
+                }, null, 2)}</pre>
+              </body>
+            </html>
+          `);
+        }
+        
+      } catch (fetchError) {
+        console.error('❌ [OAuth Alternative Callback] Fetch error:', fetchError);
+        
+        return res.send(`
+          <html>
+            <head><title>Network Error</title></head>
+            <body>
+              <h1>❌ Network Error During Token Exchange</h1>
+              <h3>📋 Error Information:</h3>
+              <pre>${JSON.stringify({
+                timestamp: new Date().toISOString(),
+                endpoint: '/api/salesforce/auth-callback',
+                network_error: fetchError.message
+              }, null, 2)}</pre>
+            </body>
+          </html>
+        `);
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ [OAuth Alternative Callback] General error:', error);
+    res.status(500).send(`
+      <html>
+        <head><title>Callback Error</title></head>
+        <body>
+          <h1>❌ Callback Processing Error</h1>
+          <h3>📋 Error Information:</h3>
+          <pre>${JSON.stringify({
+            timestamp: new Date().toISOString(),
+            endpoint: '/api/salesforce/auth-callback',
+            error: error.message
+          }, null, 2)}</pre>
+        </body>
+      </html>
+    `);
   }
 });
 
