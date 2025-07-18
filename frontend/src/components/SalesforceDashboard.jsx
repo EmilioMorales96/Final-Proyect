@@ -149,7 +149,7 @@ const SalesforceDashboard = () => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          company: 'Test Company',
+          name: 'Test Company',
           phone: '+1234567890',
           industry: 'Technology'
         })
