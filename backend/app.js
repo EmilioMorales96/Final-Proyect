@@ -3,11 +3,13 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
 import session from 'express-session';
 import passport from './config/passport.js';
 import db from './models/index.js';
 
-// Essential routes
+// Rutas principales
+import salesforceRoutes from './routes/salesforce.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import likeRoutes from './routes/like.routes.js';
@@ -19,13 +21,8 @@ import formRoutes from './routes/form.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import supportRoutes from './routes/support.routes.js';
 
-// Salesforce Routes - Using existing file
-import salesforceRoutes from './routes/salesforce.routes.js';
-
 const app = express();
 
-// Middleware
-app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:5173',
@@ -33,20 +30,19 @@ app.use(cors({
   ],
   credentials: true
 }));
+app.use(express.json());
+app.use(morgan('dev'));
 
-// Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-session-secret',
   resave: false,
   saveUninitialized: false,
   cookie: { secure: false }
 }));
-
-// Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Health check endpoints
+// Endpoints de salud
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Forms API is running', 
@@ -73,7 +69,6 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// OAuth status endpoint
 app.get('/api/auth/oauth/status', (req, res) => {
   res.json({
     google: {
@@ -83,7 +78,7 @@ app.get('/api/auth/oauth/status', (req, res) => {
   });
 });
 
-// API Routes
+// Rutas API
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/likes', likeRoutes);
@@ -94,11 +89,8 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/support', supportRoutes);
-
-// Salesforce Routes
 app.use('/api/salesforce', salesforceRoutes);
 
-// Static files
 app.use('/uploads', express.static('uploads'));
 
 // 404 handler

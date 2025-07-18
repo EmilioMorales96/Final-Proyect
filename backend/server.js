@@ -1,7 +1,3 @@
-// 🚀 SERVIDOR OAUTH SIMPLE - SIN DEPENDENCIAS COMPLEJAS
-// ======================================================
-// Solo OAuth, sin importar app.js para evitar errores RegExp
-
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
