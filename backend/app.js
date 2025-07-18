@@ -35,6 +35,12 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cookieParser());
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-session-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production', sameSite: 'lax' }
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
