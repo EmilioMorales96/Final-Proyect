@@ -1,6 +1,8 @@
+
 import express from 'express';
 import authenticateToken from '../middleware/auth.middleware.js';
 import db from '../models/index.js';
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -115,20 +117,20 @@ router.get('/oauth/url', authenticateToken, async (req, res) => {
     const redirectUri = process.env.SALESFORCE_REDIRECT_URI || 'https://backend-service-pu47.onrender.com/api/salesforce/oauth/callback';
     const loginUrl = process.env.SALESFORCE_LOGIN_URL || 'https://login.salesforce.com';
 
+
     // --- PKCE Implementation ---
     // Generate code_verifier
-    function base64URLEncode(str) {
-      return str.toString('base64')
+    function base64URLEncode(buffer) {
+      return Buffer.from(buffer)
+        .toString('base64')
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=+$/, '');
     }
     function sha256(buffer) {
-      const crypto = require('crypto');
       return crypto.createHash('sha256').update(buffer).digest();
     }
     function generateCodeVerifier(length = 64) {
-      const crypto = require('crypto');
       return base64URLEncode(crypto.randomBytes(length));
     }
 
