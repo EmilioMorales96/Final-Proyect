@@ -161,7 +161,7 @@ const SalesforceIntegration = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.salesforce && data.salesforce.account) {
         // Show success message for REAL integration only
         toast.success(
           `✅ REAL SALESFORCE: Account "${data.salesforce.account.name}" created!\n` +
@@ -193,6 +193,19 @@ const SalesforceIntegration = () => {
         // Show additional info in console for demo purposes
         console.log('🏢 REAL Salesforce Integration Result:', data);
       } else {
+        // Show error if account creation failed or response is missing expected data
+        toast.error(
+          `❌ Error creating Salesforce account.\n` +
+          `Details: ${data.message || 'No account data returned.'}`,
+          {
+            duration: 8000,
+            style: {
+              background: '#fef2f2',
+              color: '#991b1b',
+              border: '1px solid #ef4444'
+            }
+          }
+        );
         // Show error with setup instructions if Salesforce is not configured
         if (data.setup_required) {
           toast.error(
