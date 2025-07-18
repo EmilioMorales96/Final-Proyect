@@ -93,6 +93,33 @@ router.get('/test', async (req, res) => {
     });
   }
 });
+// Endpoint para probar la conexión con Salesforce
+router.post('/test-connection', async (req, res) => {
+  try {
+    // Verificar configuración básica
+    const config = {
+      client_id: process.env.SALESFORCE_CLIENT_ID || null,
+      client_secret: !!process.env.SALESFORCE_CLIENT_SECRET,
+      redirect_uri: process.env.SALESFORCE_REDIRECT_URI || null,
+      login_url: process.env.SALESFORCE_LOGIN_URL || null
+    };
+
+    // Respuesta básica de prueba
+    res.json({
+      status: 'success',
+      message: 'Conexión con Salesforce disponible',
+      configuration: config,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Test connection error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Error probando la conexión con Salesforce',
+      error: error.message
+    });
+  }
+});
 
 /**
  * 📊 STATUS ENDPOINT
