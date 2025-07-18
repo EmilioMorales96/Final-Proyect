@@ -37,11 +37,25 @@ const SalesforceDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
+
   useEffect(() => {
     checkSalesforceConnection();
     fetchSyncHistory();
     fetchStats();
   }, []);
+
+  // Helper to determine connection from backend response
+  const parseConnectionStatus = (data) => {
+    // If backend returns ready_for_oauth or similar, use it
+    if (data && typeof data.ready_for_oauth !== 'undefined') {
+      return !!data.ready_for_oauth;
+    }
+    // Fallback: if status is success and configuration exists
+    if (data && data.status === 'success') {
+      return true;
+    }
+    return false;
+  };
 
   const checkSalesforceConnection = async () => {
     try {
@@ -50,15 +64,14 @@ const SalesforceDashboard = () => {
         setIsConnected(false);
         return;
       }
-
       const response = await fetch(`${API_URL}/api/salesforce/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      
       if (response.ok) {
-        setIsConnected(true);
+        const data = await response.json();
+        setIsConnected(parseConnectionStatus(data));
       } else {
         setIsConnected(false);
       }
@@ -177,37 +190,37 @@ const SalesforceDashboard = () => {
     {
       id: 'overview',
       name: t('dashboard.salesforce.overview'),
-      icon: <HiOutlineChartBar className="w-5 h-5" />,
+      icon: <HiOutlineChartBar className="w-6 h-6" />,
       color: 'blue'
     },
     {
       id: 'leads',
       name: t('dashboard.salesforce.leadScoring'),
-      icon: <FiTarget className="w-5 h-5" />,
+      icon: <FiTarget className="w-6 h-6" />,
       color: 'green'
     },
     {
       id: 'emails',
       name: t('dashboard.salesforce.emailAutomation'),
-      icon: <FiMail className="w-5 h-5" />,
+      icon: <FiMail className="w-6 h-6" />,
       color: 'purple'
     },
     {
       id: 'connection',
       name: t('dashboard.salesforce.connection'),
-      icon: <FiLink className="w-5 h-5" />,
+      icon: <FiLink className="w-6 h-6" />,
       color: 'orange'
     },
     {
       id: 'history',
       name: t('dashboard.salesforce.history'),
-      icon: <FiClock className="w-5 h-5" />,
+      icon: <FiClock className="w-6 h-6" />,
       color: 'indigo'
     }
   ];
 
   const StatCard = ({ title, value, subtitle, icon, color, trend }) => (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -219,12 +232,12 @@ const SalesforceDashboard = () => {
             <div className={`flex items-center mt-2 text-sm ${
               trend.type === 'up' ? 'text-green-600' : 'text-red-600'
             }`}>
-              <FiTrendingUp className="w-4 h-4 mr-1" />
+              <FiTrendingUp className="w-5 h-5 mr-1" />
               <span>{trend.value}</span>
             </div>
           )}
         </div>
-        <div className={`p-3 bg-${color}-100 rounded-lg`}>
+        <div className={`flex items-center justify-center p-3 bg-${color}-100 rounded-lg`} style={{ minWidth: 48, minHeight: 48 }}>
           {icon}
         </div>
       </div>

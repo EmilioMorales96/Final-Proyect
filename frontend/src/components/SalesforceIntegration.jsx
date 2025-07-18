@@ -235,9 +235,9 @@ const SalesforceIntegration = () => {
           <div className="inline-flex p-4 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
             <HiOutlineOfficeBuilding className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
-          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.createAccounts.title')}</h3>
+          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.createAccounts.title', 'Create Accounts')}</h3>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-            {t('integration.real.features.createAccounts.description')}
+            {t('integration.real.features.createAccounts.description', 'Create new accounts in Salesforce directly from your application.')}
           </p>
         </div>
 
@@ -245,9 +245,9 @@ const SalesforceIntegration = () => {
           <div className="inline-flex p-4 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
             <HiOutlineUserGroup className="w-8 h-8 text-purple-600 dark:text-purple-400" />
           </div>
-          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.manageContacts.title')}</h3>
+          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.manageContacts.title', 'Manage Contacts')}</h3>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-            {t('integration.real.features.manageContacts.description')}
+            {t('integration.real.features.manageContacts.description', 'Easily manage and sync contacts with Salesforce CRM.')}
           </p>
         </div>
 
@@ -255,9 +255,9 @@ const SalesforceIntegration = () => {
           <div className="inline-flex p-4 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
             <FiCheck className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
-          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.autoValidation.title')}</h3>
+          <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 mb-4">{t('integration.real.features.autoValidation.title', 'Automatic Validation')}</h3>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-            {t('integration.real.features.autoValidation.description')}
+            {t('integration.real.features.autoValidation.description', 'Automated validation of data and accounts for reliability.')}
           </p>
         </div>
       </div>
