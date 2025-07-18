@@ -1,6 +1,6 @@
 module.exports = {
   production: {
-    use_env_variable: 'postgresql://Formsdb_owner:npg_febSu7ZUXHC5@ep-flat-dust-a8o7mmbc-pooler.eastus2.azure.neon.tech/Formsdb?sslmode=require&channel_binding=require',
+    use_env_variable: 'DATABASE_URL',
     dialect: 'postgres',
     dialectOptions: {
       ssl: {
