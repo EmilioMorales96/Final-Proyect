@@ -150,10 +150,48 @@ export async function sendEmail({ to, templateId, variables = {}, sender = 'nore
 //   variables: ['firstName']
 // });
 
+
+/**
+ * Get an email sequence by name or key
+ */
+export function getEmailSequence(sequenceKey) {
+  return EMAIL_SEQUENCES[sequenceKey] || null;
+}
+
+/**
+ * Schedule an email sequence for a lead (dummy implementation)
+ * In production, this should trigger backend logic to schedule emails
+ */
+export async function scheduleEmailSequence({ sequenceKey, lead, variables = {}, sender = 'noreply@yourdomain.com' }) {
+  const sequence = getEmailSequence(sequenceKey);
+  if (!sequence) throw new Error('Sequence not found');
+  // Simulate scheduling: return the sequence with personalized emails
+  const scheduled = sequence.emails.map((step) => {
+    const template = EMAIL_TEMPLATES[step.template];
+    let subject = template.subject;
+    let body = template.body;
+    template.variables.forEach(variable => {
+      const regex = new RegExp(`{{${variable}}}`, 'g');
+      subject = subject.replace(regex, variables[variable] || lead[variable] || '');
+      body = body.replace(regex, variables[variable] || lead[variable] || '');
+    });
+    return {
+      to: lead.email,
+      subject,
+      body,
+      sender,
+      delayMinutes: step.delayMinutes
+    };
+  });
+  return scheduled;
+}
+
 export default {
   EMAIL_CATEGORIES,
   createEmailTemplate,
   getEmailTemplates,
   getEmailTemplateById,
-  sendEmail
+  sendEmail,
+  getEmailSequence,
+  scheduleEmailSequence
 };
